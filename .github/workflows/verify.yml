@@ -1,0 +1,54 @@
+name: Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      problems: ${{ steps.ls.outputs.problems }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: ls
+        run: |
+          problems="$(basename -s .rs verify/src/bin/*.rs | jq -R . | jq -sc .)"
+          echo "problems=$problems" >> "$GITHUB_OUTPUT"
+
+  verify:
+    name: ${{ matrix.problem }}
+    needs: list
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        problem: ${{ fromJSON(needs.list.outputs.problems) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v22
+        with:
+          determinate: false
+      - uses: DeterminateSystems/magic-nix-cache-action@v14
+        with:
+          use-flakehub: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/cplib-verify
+          key: verify-${{ matrix.problem }}
+      - name: Verify
+        env:
+          PROBLEM: ${{ matrix.problem }}
+        run: nix develop --command bash -c 'cd verify && ck "$PROBLEM"'
