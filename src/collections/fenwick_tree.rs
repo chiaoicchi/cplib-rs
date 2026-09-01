@@ -49,8 +49,8 @@ impl<M: Monoid> FenwickTree<M> {
     /// Appends the element `x` to the back of the Fenwick tree.
     ///
     /// # Complexity
-    /// - Time: worst O(log n), average: O(1)
-    /// - Space: worst O(n), average: O(1)
+    /// - Time: worst O(log n), average O(1)
+    /// - Space: worst O(n), average O(1)
     pub fn push(&mut self, mut x: M::Value) {
         let n = self.value.len();
         let mut k = 1;
@@ -62,11 +62,15 @@ impl<M: Monoid> FenwickTree<M> {
         self.value.push(x);
     }
 
-    /// Folds the elements in `0..r`.
+    /// Folds the elements in `0..r` or `id()` if `r` is `0`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
     ///
     /// # Panics
     /// Panics if `r` is out of bounds.
-    fn prefix_fold(&self, mut r: usize) -> M::Value {
+    pub fn prefix_fold(&self, mut r: usize) -> M::Value {
         assert!(
             r <= self.len(),
             "index out of bounds: r={r}, len={}",
@@ -152,9 +156,7 @@ impl<G: Group> FenwickTree<G> {
         let (l, r) = to_half_open(self.len(), range);
         assert!(
             l <= r,
-            "left bound must be less than or equal to right bound: l={}, r={}",
-            l,
-            r
+            "left bound must be less than or equal to right bound: l={l}, r={r}",
         );
         assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         self.monoid
