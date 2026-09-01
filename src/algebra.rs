@@ -46,7 +46,8 @@ pub trait Group: Monoid {
 /// A group built from closures.
 ///
 /// # Contract
-/// `(T, id, op)` must form a monoid and `inv` maps each element to its inverse.
+/// `(T, id, op, inv)` must form a group,
+/// i.e. `(T, id, op)` forms a monoid and `inv` maps each element to its inverse.
 pub struct FnGroup<T, F, G> {
     pub id: T,
     pub op: F,
