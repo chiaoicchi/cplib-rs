@@ -3,7 +3,6 @@ pub mod additive;
 /// A monoid trait
 ///
 /// # Definition
-/// ## Monoid
 /// A triple `(Value, id, op)` is called a monoid if it satisfies:
 /// - (associativity) `op(op(a, b), c) == op(a, op(b, c))` for all `a`, `b`, `c`.
 /// - (identity) `op(id(), a) == op(a, id()) == a` for all `a`.
@@ -35,7 +34,6 @@ impl<T: Clone, F: Fn(&T, &T) -> T> Monoid for FnMonoid<T, F> {
 /// A group trait
 ///
 /// # Definition
-/// ## Group
 /// A 4-tuple `(Value, id, op, inv)` is called a group if it satisfies:
 /// - (monoid) `(Value, id, op)` forms a monoid.
 /// - (inverse) `op(a, inv(a)) == op(inv(a), a) == id()` for all `a`.
@@ -65,6 +63,25 @@ impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Monoid for FnGroup<T, F, G> {
 impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
     fn inv(&self, a: &T) -> T {
         (self.inv)(a)
+    }
+}
+
+/// An action trait
+///
+/// # Definition
+/// A map `act: U x T -> T` is called an external law of composition on `T`,
+/// where the elements of `U` are called operators.
+pub trait Action<T, U> {
+    fn act(&self, f: &U, x: &T) -> T;
+}
+
+/// An action built from closures.
+pub struct FnAction<F> {
+    pub act: F,
+}
+impl<T, U, F: Fn(&U, &T) -> T> Action<T, U> for FnAction<F> {
+    fn act(&self, f: &U, x: &T) -> T {
+        (self.act)(f, x)
     }
 }
 
