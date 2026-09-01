@@ -7,7 +7,7 @@ use crate::range::to_half_open;
 /// The elements are stored in the internal array `value` as a 1-indexed array `value[1..=n]`;
 /// `value[0]` is unused. Let `a` be a 1-indexed array `a[1..=n]`.
 /// - `value[i] = op(a[i - lsb(i) + 1], a[i - lsb(i) + 2], ..., a[i])`,
-/// where `lsb` (least significant bit) is the largest power of two that divides `i`.
+///   where `lsb` (least significant bit) is the largest power of two that divides `i`.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -43,10 +43,7 @@ impl<G: Group + Commutative> FenwickTree<G> {
                 v[i + lsb] = group.op(&v[i], &v[i + lsb]);
             }
         }
-        Self {
-            group,
-            value: v.into(),
-        }
+        Self { group, value: v }
     }
 
     /// Sets the element at index `i` to `x`.
