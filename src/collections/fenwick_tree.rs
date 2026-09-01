@@ -45,14 +45,14 @@ impl<M: Monoid> FenwickTree<M> {
         self.value.push(x);
     }
 
-    /// Folds the elements in `0..r` or `id()` if `r` is `0`.
+    /// Folds the elements in `0..r`; returns `id()` if `r` is `0`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `r` is out of bounds.
+    /// Panics if `r` is greater than `self.len()`.
     pub fn prefix_fold(&self, mut r: usize) -> M::Value {
         assert!(
             r <= self.len(),
