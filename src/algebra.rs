@@ -70,15 +70,12 @@ impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
 ///
 /// # Definition
 /// A map `act: U x T -> T` is called an external law of composition on `T`,
-/// where the elements of `Map` are called operators.
+/// where the elements of `U` are called operators.
 pub trait Action<T, U> {
     fn act(&self, f: &U, x: &T) -> T;
 }
 
 /// An action built from closures.
-///
-/// # Contract
-/// `act` is an external law of composition.
 pub struct FnAction<F> {
     pub act: F,
 }
