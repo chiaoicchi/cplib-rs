@@ -3,12 +3,19 @@ use crate::range::to_half_open;
 
 /// A dual segment tree data structure.
 ///
+/// # Contract
+/// `act` must be an action of the monoid `(M::Value, id, op)` on `T`, i.e.
+/// `act(id(), x) == x` and `act(op(f, g), x) == act(g, act(f, x))` for all `f`, `g`, `x`.
+///
 /// # Invariants
-/// Node `i` covers a contiguous range of indices, and `map[i]` is a map that has not yet been
-/// applied to the elements in that range.
+/// The maps are stored in the internal array `map` as a 1-indexed binary tree in `map[1..2n)`;
+/// `map[0]` is unused. The element `a[i]` is stored as `value[i]` together with the maps on the
+/// path from the leaf `n + i` up to the root, which have not been applied to it yet.
+/// - `a[i] = act(map[1], ..., act(map[(n + i) / 2], act(map[n + i], value[i])) ...)`,
+///   i.e. the maps are applied from the leaf to the root.
 /// - The map at a node is newer than the maps at its descendants.
-/// - `a[i]` is obtained by applying `map[n + i]`, `map[(n + i) / 2]`, ..., `map[i]` to `value[i]`
-///   in the order, where `a` denotes the logical sequence of elements.
+///
+/// where `a` denotes the logical sequence of elements.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -35,7 +42,7 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         }
     }
 
-    /// Sets the element at index `i` to `f(a[i])`, where `a[i]` is the current element.
+    /// Sets the element at index `i` to `act(f, a[i])`, where `a[i]` is the current element.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -55,8 +62,8 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
     /// Applies the map `f` to the elements in `range`.
     ///
     /// # Complexity
-    /// Time: O(log n)
-    /// Space: O(1)
+    /// - Time: O(log n)
+    /// - Space: O(1)
     ///
     /// # Panics
     /// Panics if the start of `range` is greater than the end, or the end is greater than
@@ -74,18 +81,20 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
             return;
         }
         self.propagate(l);
-        self.propagate(r - 1);
+        if l != r - 1 {
+            self.propagate(r - 1);
+        }
         l >>= l.trailing_zeros();
         r >>= r.trailing_zeros();
 
         loop {
             if l >= r {
-                self.map[l] = self.monoid.op(&self.map[l], &f);
+                self.map[l] = self.monoid.op(&self.map[l], f);
                 l += 1;
                 l >>= l.trailing_zeros();
             } else {
                 r -= 1;
-                self.map[r] = self.monoid.op(&self.map[r], &f);
+                self.map[r] = self.monoid.op(&self.map[r], f);
                 r >>= r.trailing_zeros();
             }
             if l == r {

@@ -78,7 +78,7 @@ pub trait Action<T, U> {
 /// An action built from closures.
 ///
 /// # Contract
-///
+/// `act` is an external law of composition.
 pub struct FnAction<F> {
     pub act: F,
 }
