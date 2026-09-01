@@ -1,4 +1,4 @@
-use crate::algebra::{Commutative, Group};
+use crate::algebra::{Commutative, Group, Monoid};
 use crate::range::to_half_open;
 
 /// A Fenwick tree data structure.
@@ -11,21 +11,21 @@ use crate::range::to_half_open;
 ///
 /// # Complexity
 /// - Space: O(n)
-pub struct FenwickTree<G: Group + Commutative> {
-    group: G,
-    value: Vec<G::Value>,
+pub struct FenwickTree<M: Monoid> {
+    monoid: M,
+    value: Vec<M::Value>,
 }
 
-impl<G: Group + Commutative> FenwickTree<G> {
+impl<M: Monoid> FenwickTree<M> {
     /// Constructs a Fenwick tree with `n` elements, all initialized to `id()`.
     ///
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
-    pub fn new(group: G, n: usize) -> Self {
+    pub fn new(monoid: M, n: usize) -> Self {
         Self {
-            value: (0..=n).map(|_| group.id()).collect(),
-            group,
+            value: (0..=n).map(|_| monoid.id()).collect(),
+            monoid,
         }
     }
 
@@ -34,37 +34,72 @@ impl<G: Group + Commutative> FenwickTree<G> {
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
-    pub fn from_vec(group: G, mut v: Vec<G::Value>) -> Self {
+    pub fn from_vec(monoid: M, mut v: Vec<M::Value>) -> Self {
         let n = v.len();
-        v.insert(0, group.id());
+        v.insert(0, monoid.id());
         for i in 1..n {
             let lsb = lsb(i);
             if i + lsb <= n {
-                v[i + lsb] = group.op(&v[i], &v[i + lsb]);
+                v[i + lsb] = monoid.op(&v[i], &v[i + lsb]);
             }
         }
-        Self { group, value: v }
+        Self { monoid, value: v }
     }
 
-    /// Sets the element at index `i` to `x`.
+    /// Appends the element `x` to the back of the Fenwick tree.
     ///
     /// # Complexity
-    /// - Time: O(log n)
-    /// - Space: O(1)
-    ///
-    /// # Panics
-    /// Panics if `i` is out of bounds.
-    pub fn set(&mut self, i: usize, x: &G::Value) {
-        assert!(
-            i < self.len(),
-            "index out of bounds: i={i}, len={}",
-            self.len()
-        );
-        let a = self.get(i).unwrap();
-        let x = self.group.op(&self.group.inv(&a), x);
-        self.op_assign(i, &x);
+    /// - Time: worst O(log n), average: O(1)
+    /// - Space: worst O(n), average: O(1)
+    pub fn push(&mut self, mut x: M::Value) {
+        let n = self.value.len();
+        let mut k = 1;
+        let lsb = lsb(n);
+        while k < lsb {
+            x = self.monoid.op(&self.value[n - k], &x);
+            k <<= 1;
+        }
+        self.value.push(x);
     }
 
+    /// Folds the elements in `0..r`.
+    ///
+    /// # Panics
+    /// Panics if `r` is out of bounds.
+    fn prefix_fold(&self, mut r: usize) -> M::Value {
+        assert!(
+            r <= self.len(),
+            "index out of bounds: r={r}, len={}",
+            self.len()
+        );
+        let mut x = self.monoid.id();
+        while 0 < r {
+            x = self.monoid.op(&self.value[r], &x);
+            r -= lsb(r);
+        }
+        x
+    }
+
+    /// Returns the number of elements.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    pub fn len(&self) -> usize {
+        self.value.len() - 1
+    }
+
+    /// Returns `true` if the Fenwick tree contains no elements.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+impl<M: Monoid + Commutative> FenwickTree<M> {
     /// Sets the element at index `i` to `op(a[i], x)`, where `a[i]` is the current element.
     ///
     /// # Complexity
@@ -73,7 +108,7 @@ impl<G: Group + Commutative> FenwickTree<G> {
     ///
     /// # Panics
     /// Panics if `i` is out of bounds.
-    pub fn op_assign(&mut self, mut i: usize, x: &G::Value) {
+    pub fn op_assign(&mut self, mut i: usize, x: &M::Value) {
         assert!(
             i < self.len(),
             "index out of bounds: i={i}, len={}",
@@ -81,27 +116,13 @@ impl<G: Group + Commutative> FenwickTree<G> {
         );
         i += 1;
         while i < self.value.len() {
-            self.value[i] = self.group.op(&self.value[i], x);
+            self.value[i] = self.monoid.op(&self.value[i], x);
             i += lsb(i);
         }
     }
+}
 
-    /// Appends the element `x` to the back of the Fenwick tree.
-    ///
-    /// # Complexity
-    /// - Time: worst O(log n), average: O(1)
-    /// - Space: worst O(n), average: O(1)
-    pub fn push(&mut self, mut x: G::Value) {
-        let n = self.value.len();
-        let mut k = 1;
-        let lsb = lsb(n);
-        while k < lsb {
-            x = self.group.op(&self.value[n - k], &x);
-            k <<= 1;
-        }
-        self.value.push(x);
-    }
-
+impl<G: Group> FenwickTree<G> {
     /// Returns the value at index `i`, or `None` if `i` is out of bounds.
     ///
     /// # Complexity
@@ -113,24 +134,6 @@ impl<G: Group + Commutative> FenwickTree<G> {
         } else {
             Some(self.fold(i..=i))
         }
-    }
-
-    /// Folds the elements in `0..r`.
-    ///
-    /// # Panics
-    /// Panics if `r` is out of bounds.
-    fn prefix_fold(&self, mut r: usize) -> G::Value {
-        assert!(
-            r <= self.len(),
-            "index out of bounds: r={r}, len={}",
-            self.len()
-        );
-        let mut x = self.group.id();
-        while 0 < r {
-            x = self.group.op(&self.value[r], &x);
-            r -= lsb(r);
-        }
-        x
     }
 
     /// Folds the elements in `range`.
@@ -154,26 +157,29 @@ impl<G: Group + Commutative> FenwickTree<G> {
             r
         );
         assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
-        self.group
-            .op(&self.group.inv(&self.prefix_fold(l)), &self.prefix_fold(r))
+        self.monoid
+            .op(&self.monoid.inv(&self.prefix_fold(l)), &self.prefix_fold(r))
     }
+}
 
-    /// Returns the number of elements.
+impl<G: Group + Commutative> FenwickTree<G> {
+    /// Sets the element at index `i` to `x`.
     ///
     /// # Complexity
-    /// - Time: O(1)
+    /// - Time: O(log n)
     /// - Space: O(1)
-    pub fn len(&self) -> usize {
-        self.value.len() - 1
-    }
-
-    /// Returns `true` if the Fenwick tree contains no elements.
     ///
-    /// # Complexity
-    /// - Time: O(1)
-    /// - Space: O(1)
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
+    /// # Panics
+    /// Panics if `i` is out of bounds.
+    pub fn set(&mut self, i: usize, x: &G::Value) {
+        assert!(
+            i < self.len(),
+            "index out of bounds: i={i}, len={}",
+            self.len()
+        );
+        let a = self.get(i).unwrap();
+        let x = self.monoid.op(&self.monoid.inv(&a), x);
+        self.op_assign(i, &x);
     }
 }
 
