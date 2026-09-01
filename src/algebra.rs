@@ -1,3 +1,5 @@
+pub mod additive;
+
 /// A monoid trait
 ///
 /// # Definition
@@ -29,3 +31,45 @@ impl<T: Clone, F: Fn(&T, &T) -> T> Monoid for FnMonoid<T, F> {
         (self.op)(a, b)
     }
 }
+
+/// A group trait
+///
+/// # Definition
+/// ## Group
+/// A 4-tuple `(Value, id, op, inv)` is called a group if it satisfies:
+/// - (monoid) `(Value, id, op)` forms a monoid.
+/// - (inverse) `op(a, inv(a)) == op(inv(a), a) == id()` for all `a`.
+pub trait Group: Monoid {
+    fn inv(&self, a: &Self::Value) -> Self::Value;
+}
+
+/// A group built from closures.
+///
+/// # Contract
+/// `(T, id, op, inv)` must form a group,
+/// i.e. `(T, id, op)` forms a monoid and `inv` maps each element to its inverse.
+pub struct FnGroup<T, F, G> {
+    pub id: T,
+    pub op: F,
+    pub inv: G,
+}
+impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Monoid for FnGroup<T, F, G> {
+    type Value = T;
+    fn id(&self) -> T {
+        self.id.clone()
+    }
+    fn op(&self, a: &T, b: &T) -> T {
+        (self.op)(a, b)
+    }
+}
+impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
+    fn inv(&self, a: &T) -> T {
+        (self.inv)(a)
+    }
+}
+
+/// A marker trait for commutative operations.
+///
+/// # Definition
+/// An operation `op` is called commutative if `op(a, b) == op(b, a)` for all `a`, `b`.
+pub trait Commutative {}
