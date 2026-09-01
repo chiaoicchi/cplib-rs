@@ -1,27 +1,27 @@
-use crate::algebra::Group;
+use crate::algebra::{Commutative, Group};
 use crate::range::to_half_open;
 
 /// A fenwick tree data structure.
 ///
 /// # Invariants
-/// The elements are stored in the internal array `value` as a 1-indexed array `value[1..n];
-/// `value[0]` is unused. Let `a[i]` is 1-indexed array `a[1..n]`.
-/// - `value[i] = sum(a[i - lsb(i)], a[i - lsb(i) + 1], ..., a[i])`,
+/// The elements are stored in the internal array `value` as a 1-indexed array `value[1..=n];
+/// `value[0]` is unused. Let `a` be 1-indexed array `a[1..n]`.
+/// - `value[i] = op(a[i - lsb(i) + 1], a[i - lsb(i) + 2], ..., a[i])`,
 /// where `lsb`(least significant bit) is a maximum power of two by which `i` is divisible.
 ///
 /// # Complexity
 /// - Space: O(n)
-pub struct FenwickTree<G: Group> {
+pub struct FenwickTree<G: Group + Commutative> {
     group: G,
     value: Vec<G::Value>,
 }
 
-impl<G: Group> FenwickTree<G> {
+impl<G: Group + Commutative> FenwickTree<G> {
     /// Constructs a fenwick tree with `n` elements, all initialized to `id()`.
     ///
     /// # Complexity
-    /// - Time: O(1)
-    /// - Space: O(1)
+    /// - Time: O(n)
+    /// - Space: O(n)
     pub fn new(group: G, n: usize) -> Self {
         Self {
             value: (0..=n).map(|_| group.id()).collect(),
@@ -29,7 +29,7 @@ impl<G: Group> FenwickTree<G> {
         }
     }
 
-    /// Constructs a fenwick tree from a `v` of elements.
+    /// Constructs a fenwick tree from a vector `v` of elements.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -99,7 +99,7 @@ impl<G: Group> FenwickTree<G> {
         let mut k = 1;
         let lsb = lsb(n);
         while k < lsb {
-            x = self.group.op(&self.value[k], &x);
+            x = self.group.op(&self.value[n - k], &x);
             k <<= 1;
         }
         self.value.push(x);
@@ -170,7 +170,7 @@ impl<G: Group> FenwickTree<G> {
         self.value.len() - 1
     }
 
-    /// Returns `ture` if the fenwick tree contains no elements.
+    /// Returns `true` if the fenwick tree contains no elements.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -180,7 +180,7 @@ impl<G: Group> FenwickTree<G> {
     }
 }
 
-/// Returns least significant bit, which is a maximum power of two by which `i` is divisible.
+/// Returns the least significant bit, which is a maximum power of two by which `i` is divisible.
 #[inline]
 fn lsb(i: usize) -> usize {
     i & i.wrapping_neg()
