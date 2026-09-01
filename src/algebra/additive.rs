@@ -1,8 +1,8 @@
 use crate::algebra::{Commutative, Group, Monoid};
 
-/// A additivity group of `u64`, i.e. the integers modulo 2^64.
+/// A additive group of `u64`, i.e. the integers modulo 2^64.
 ///
-/// The operation is wrapping addition, the identity is `0`, and the inverse is wrapping negative.
+/// The operation is wrapping addition, the identity is `0`, and the inverse is wrapping negation.
 /// The operation is commutative.
 pub struct Additive;
 impl Monoid for Additive {

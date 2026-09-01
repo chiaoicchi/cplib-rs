@@ -46,8 +46,7 @@ pub trait Group: Monoid {
 /// A group built from closures.
 ///
 /// # Contract
-/// `(T, id, op, inv)` must form a group,
-/// i.e. `op` is associative, `id` is its identity and `inv` is inverse.
+/// `(T, id, op)` must form a monoid and `inv` maps each element to its inverse.
 pub struct FnGroup<T, F, G> {
     pub id: T,
     pub op: F,
@@ -71,5 +70,5 @@ impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
 /// A marker trait for commutative operations.
 ///
 /// # Definition
-/// An operation `op` is called commutative if `op(a, b) = op(b, a)` for all `a`, `b`.
+/// An operation `op` is called commutative if `op(a, b) == op(b, a)` for all `a`, `b`.
 pub trait Commutative {}
