@@ -29,23 +29,6 @@ impl<M: Monoid> FenwickTree<M> {
         }
     }
 
-    /// Constructs a Fenwick tree from a vector `v` of elements.
-    ///
-    /// # Complexity
-    /// - Time: O(n)
-    /// - Space: O(n)
-    pub fn from_vec(monoid: M, mut v: Vec<M::Value>) -> Self {
-        let n = v.len();
-        v.insert(0, monoid.id());
-        for i in 1..n {
-            let lsb = lsb(i);
-            if i + lsb <= n {
-                v[i + lsb] = monoid.op(&v[i], &v[i + lsb]);
-            }
-        }
-        Self { monoid, value: v }
-    }
-
     /// Appends the element `x` to the back of the Fenwick tree.
     ///
     /// # Complexity
@@ -104,6 +87,23 @@ impl<M: Monoid> FenwickTree<M> {
 }
 
 impl<M: Monoid + Commutative> FenwickTree<M> {
+    /// Constructs a Fenwick tree from a vector `v` of elements.
+    ///
+    /// # Complexity
+    /// - Time: O(n)
+    /// - Space: O(n)
+    pub fn from_vec(monoid: M, mut v: Vec<M::Value>) -> Self {
+        let n = v.len();
+        v.insert(0, monoid.id());
+        for i in 1..n {
+            let lsb = lsb(i);
+            if i + lsb <= n {
+                v[i + lsb] = monoid.op(&v[i], &v[i + lsb]);
+            }
+        }
+        Self { monoid, value: v }
+    }
+
     /// Sets the element at index `i` to `op(a[i], x)`, where `a[i]` is the current element.
     ///
     /// # Complexity
