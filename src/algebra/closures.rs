@@ -3,8 +3,7 @@ use crate::algebra::{Action, Group, Monoid};
 /// A monoid built from closures.
 ///
 /// # Contract
-/// `(T, id, op)` must form a monoid,
-/// i.e. `op` is associative and `id` is its identity.
+/// `(T, id, op)` must form a monoid.
 pub struct FnMonoid<T, F> {
     pub id: T,
     pub op: F,
@@ -22,8 +21,7 @@ impl<T: Clone, F: Fn(&T, &T) -> T> Monoid for FnMonoid<T, F> {
 /// A group built from closures.
 ///
 /// # Contract
-/// `(T, id, op, inv)` must form a group,
-/// i.e. `(T, id, op)` forms a monoid and `inv` maps each element to its inverse.
+/// `(T, id, op, inv)` must form a group.
 pub struct FnGroup<T, F, G> {
     pub id: T,
     pub op: F,

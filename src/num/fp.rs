@@ -1,3 +1,5 @@
+use crate::algebra::{Inv, One, Zero};
+
 /// # An element of the prime field `Fp = Z/pZ`.
 ///
 /// # Definition
@@ -108,6 +110,13 @@ impl<const P: u32> std::ops::Neg for Fp<P> {
         self
     }
 }
+impl<const P: u32> std::ops::Neg for &Fp<P> {
+    type Output = Fp<P>;
+    #[inline]
+    fn neg(self) -> Fp<P> {
+        -*self
+    }
+}
 
 impl<const P: u32> std::ops::Add for Fp<P> {
     type Output = Self;
@@ -120,7 +129,6 @@ impl<const P: u32> std::ops::Add for Fp<P> {
         self
     }
 }
-
 impl<const P: u32> std::ops::Sub for Fp<P> {
     type Output = Self;
     #[inline]
@@ -132,7 +140,6 @@ impl<const P: u32> std::ops::Sub for Fp<P> {
         self
     }
 }
-
 impl<const P: u32> std::ops::Mul for Fp<P> {
     type Output = Self;
     #[inline]
@@ -140,7 +147,6 @@ impl<const P: u32> std::ops::Mul for Fp<P> {
         Self((self.0 as u64 * rhs.0 as u64 % P as u64) as u32)
     }
 }
-
 #[allow(clippy::suspicious_arithmetic_impl)]
 impl<const P: u32> std::ops::Div for Fp<P> {
     type Output = Self;
@@ -149,7 +155,6 @@ impl<const P: u32> std::ops::Div for Fp<P> {
         self * rhs.inv()
     }
 }
-
 macro_rules! forward_ref_binop {
     ($($trait:ident, $method:ident);* $(;)?) => {
         $(
@@ -179,7 +184,6 @@ macro_rules! forward_ref_binop {
         )*
     };
 }
-
 forward_ref_binop! {
     Add, add;
     Sub, sub;
@@ -196,7 +200,6 @@ impl<const P: u32> std::ops::AddAssign for Fp<P> {
         }
     }
 }
-
 impl<const P: u32> std::ops::SubAssign for Fp<P> {
     #[inline]
     fn sub_assign(&mut self, rhs: Self) {
@@ -206,21 +209,18 @@ impl<const P: u32> std::ops::SubAssign for Fp<P> {
         self.0 -= rhs.0;
     }
 }
-
 impl<const P: u32> std::ops::MulAssign for Fp<P> {
     #[inline]
     fn mul_assign(&mut self, rhs: Self) {
         self.0 = (self.0 as u64 * rhs.0 as u64 % P as u64) as u32;
     }
 }
-
 impl<const P: u32> std::ops::DivAssign for Fp<P> {
     #[inline]
     fn div_assign(&mut self, rhs: Self) {
         *self = *self / rhs;
     }
 }
-
 macro_rules! forward_ref_op_assign {
     ($($trait:ident, $method:ident);* $(;)?) => {
         $(
@@ -233,12 +233,28 @@ macro_rules! forward_ref_op_assign {
         )*
     };
 }
-
 forward_ref_op_assign! {
     AddAssign, add_assign;
     SubAssign, sub_assign;
     MulAssign, mul_assign;
     DivAssign, div_assign;
+}
+
+impl<const P: u32> Zero for Fp<P> {
+    fn zero() -> Self {
+        Self::new(0)
+    }
+}
+impl<const P: u32> One for Fp<P> {
+    fn one() -> Self {
+        Self::new(1)
+    }
+}
+impl<const P: u32> Inv for Fp<P> {
+    type Output = Fp<P>;
+    fn inv(&self) -> Self {
+        Self::inv(*self)
+    }
 }
 
 impl<const P: u32> std::fmt::Debug for Fp<P> {
