@@ -1,5 +1,6 @@
 use crate::algebra::{Field, Inv, One, Ring, Semiring, Zero};
 
+/// The canonical structure of `T`, given by its own operators.
 pub struct Canonical<T>(std::marker::PhantomData<T>);
 impl<T> Canonical<T> {
     /// Creates a Canonical structure.
@@ -10,7 +11,7 @@ impl<T> Canonical<T> {
 
 impl<T> Clone for Canonical<T> {
     fn clone(&self) -> Self {
-        Self::new()
+        *self
     }
 }
 impl<T> Copy for Canonical<T> {}

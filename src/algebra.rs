@@ -86,7 +86,7 @@ pub trait Commutative {}
 /// A type with a distinguished element `zero`.
 ///
 /// # Contract
-/// `zero` is the additive identity of `T`, i.e. `T::zero() + a = a + T::zero() == a` for all `a`.
+/// `zero` is the additive identity of `T`, i.e. `T::zero() + a = a + T::zero() = a` for all `a`.
 pub trait Zero {
     fn zero() -> Self;
 }
@@ -99,11 +99,12 @@ pub trait One {
     fn one() -> Self;
 }
 
-/// A type with a distinguished function `inv`.
+/// A type whose nonzero elements have multiplicative inverses.
 ///
 /// # Contract
 /// `inv` returns the multiplicative inverse in `T`, i.e. `a * inv(a) = inv(a) * a = one` for all
-/// `a`.
+/// `a != zero`.
+/// `inv(zero())` is not defined; implementations may panics.
 pub trait Inv {
     type Output;
     fn inv(&self) -> Self::Output;

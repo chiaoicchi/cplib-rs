@@ -1,4 +1,4 @@
-use crate::algebra::{Action, Group, Monoid, Ring, Semiring};
+use crate::algebra::{Action, Group, Monoid};
 
 /// A monoid built from closures.
 ///
@@ -39,64 +39,6 @@ impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Monoid for FnGroup<T, F, G> {
 impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
     fn inv(&self, a: &T) -> T {
         (self.inv)(a)
-    }
-}
-
-/// A semiring built from closures.
-///
-/// # Contract
-/// `(T, zero, one, add, mul)` must form a semiring.
-pub struct FnSemiring<T, F> {
-    pub zero: T,
-    pub one: T,
-    pub add: F,
-    pub mul: F,
-}
-impl<T: Clone, F: Fn(&T, &T) -> T> Semiring for FnSemiring<T, F> {
-    type Value = T;
-    fn zero(&self) -> T {
-        self.zero.clone()
-    }
-    fn one(&self) -> T {
-        self.one.clone()
-    }
-    fn add(&self, a: &T, b: &T) -> T {
-        (self.add)(a, b)
-    }
-    fn mul(&self, a: &T, b: &T) -> T {
-        (self.mul)(a, b)
-    }
-}
-
-/// A ring built from closures.
-///
-/// # Contract
-/// `()`
-pub struct FnRing<T, F, G> {
-    pub zero: T,
-    pub one: T,
-    pub add: F,
-    pub mul: F,
-    pub neg: G,
-}
-impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Semiring for FnRing<T, F, G> {
-    type Value = T;
-    fn zero(&self) -> T {
-        self.zero.clone()
-    }
-    fn one(&self) -> T {
-        self.one.clone()
-    }
-    fn add(&self, a: &T, b: &T) -> T {
-        (self.add)(a, b)
-    }
-    fn mul(&self, a: &T, b: &T) -> T {
-        (self.mul)(a, b)
-    }
-}
-impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Ring for FnRing<T, F, G> {
-    fn neg(&self, a: &T) -> T {
-        (self.neg)(a)
     }
 }
 
