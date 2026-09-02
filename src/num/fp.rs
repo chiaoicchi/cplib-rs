@@ -19,7 +19,6 @@ pub struct Fp<const P: u32>(u32);
 
 impl<const P: u32> Fp<P> {
     /// The modulus `P`, checked at compile time to be prime and less than 2^31.
-    /// Evaluated at compile time.
     const MODULUS: u32 = {
         assert!(is_prime(P), "P must be prime");
         assert!(P < 1 << 31, "P must be less than 2^31");
