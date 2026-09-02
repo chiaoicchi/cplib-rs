@@ -1,46 +1,28 @@
-use crate::algebra::{Action, Monoid, One, Zero};
+use crate::algebra::{Action, Monoid, Semiring};
 
-/// The affine monoid on `T`, given by its own `std::ops::Add, std::ops::Mul`.
-pub struct Affine<T>(std::marker::PhantomData<T>);
-impl<T> Affine<T> {
-    /// Creates an affine structure.
-    pub const fn new() -> Self {
-        Self(std::marker::PhantomData)
-    }
-}
-impl<T> Default for Affine<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+/// The monoid of affine maps over a semiring `R`, under composition.
+///
+/// # Definition
+/// An element `(a, b)` represents the map `x -> a * x + b`.
+/// `op(f, g)` is the composite `g.f`, i.e. `f` is applied first.
+#[derive(Clone, Copy, Default)]
+pub struct Affine<R>(pub R);
 
-impl<T> Clone for Affine<T> {
-    fn clone(&self) -> Self {
-        *self
+impl<R: Semiring> Monoid for Affine<R> {
+    type Value = (R::Value, R::Value);
+    fn id(&self) -> (R::Value, R::Value) {
+        (self.0.one(), self.0.zero())
     }
-}
-impl<T> Copy for Affine<T> {}
-
-impl<T: Clone + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Zero + One> Monoid
-    for Affine<T>
-{
-    /// `(a, b)` means `x -> ax + b`.
-    type Value = (T, T);
-    fn id(&self) -> (T, T) {
-        (T::one(), T::zero())
-    }
-    fn op(&self, a: &(T, T), b: &(T, T)) -> (T, T) {
+    fn op(&self, f: &(R::Value, R::Value), g: &(R::Value, R::Value)) -> (R::Value, R::Value) {
         (
-            b.0.clone() * a.0.clone(),
-            b.0.clone() * a.1.clone() + b.1.clone(),
+            self.0.mul(&g.0, &f.0),
+            self.0.add(&self.0.mul(&g.0, &f.1), &g.1),
         )
     }
 }
 
-impl<T: Clone + std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Zero + One>
-    Action<T, (T, T)> for Affine<T>
-{
-    fn act(&self, f: &(T, T), x: &T) -> T {
-        f.0.clone() * x.clone() + f.1.clone()
+impl<R: Semiring> Action<R::Value, (R::Value, R::Value)> for Affine<R> {
+    fn act(&self, f: &(R::Value, R::Value), x: &R::Value) -> R::Value {
+        self.0.add(&self.0.mul(&f.0, x), &f.1)
     }
 }

@@ -1,6 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::affine::Affine;
+use cplib::algebra::canonical::Canonical;
 use cplib::collections::dual_segment_tree::DualSegmentTree;
 use cplib::num::fp::Fp;
 
@@ -27,7 +28,8 @@ fn main() {
     let q = parse!(u32);
 
     let a: Vec<Fp<P>> = (0..n).map(|_| Fp::new(parse!(u32))).collect();
-    let mut dual_segment_tree = DualSegmentTree::from_vec(Affine::new(), Affine::new(), a);
+    let mut dual_segment_tree =
+        DualSegmentTree::from_vec(Affine(Canonical::new()), Affine(Canonical::new()), a);
 
     for _ in 0..q {
         let t = parse!(u8);

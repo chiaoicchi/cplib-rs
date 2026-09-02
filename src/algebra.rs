@@ -105,7 +105,7 @@ pub trait One {
 /// # Contract
 /// `inv` returns the multiplicative inverse in `T`, i.e. `a * inv(a) = inv(a) * a = one` for all
 /// `a != zero`.
-/// `inv(zero())` is not defined; implementations may panics.
+/// `inv(zero())` is not defined; implementations may panic.
 pub trait Inv {
     type Output;
     fn inv(&self) -> Self::Output;

@@ -1,41 +1,25 @@
-use crate::algebra::{Commutative, Group, Monoid, Zero};
+use crate::algebra::{Commutative, Group, Monoid, Ring, Semiring};
 
-/// The additive group of `T`, given by its own `std::ops::Add`.
-pub struct Additive<T>(std::marker::PhantomData<T>);
-impl<T> Additive<T> {
-    /// Creates an additive structure.
-    pub const fn new() -> Self {
-        Self(std::marker::PhantomData)
-    }
-}
-impl<T> Default for Additive<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+/// The additive group of a semiring `R`, i.e. `R` with its multiplication forgotten.
+///
+/// # Definition
+/// `(R::Value, zero, add)` is a commutative monoid by the definition of a semiring,
+/// and `(R::Value, zero, add, neg)` is a commutative group when `R` is a ring.
+#[derive(Clone, Copy, Default)]
+pub struct Additive<R>(pub R);
 
-impl<T> Clone for Additive<T> {
-    fn clone(&self) -> Self {
-        *self
+impl<R: Semiring> Monoid for Additive<R> {
+    type Value = R::Value;
+    fn id(&self) -> R::Value {
+        self.0.zero()
+    }
+    fn op(&self, a: &R::Value, b: &R::Value) -> R::Value {
+        self.0.add(a, b)
     }
 }
-impl<T> Copy for Additive<T> {}
-
-impl<T: Clone + std::ops::Add<Output = T> + Zero> Monoid for Additive<T> {
-    type Value = T;
-    fn id(&self) -> T {
-        T::zero()
-    }
-    fn op(&self, a: &T, b: &T) -> T {
-        a.clone() + b.clone()
+impl<R: Ring> Group for Additive<R> {
+    fn inv(&self, a: &R::Value) -> R::Value {
+        self.0.neg(a)
     }
 }
-
-impl<T: Clone + std::ops::Add<Output = T> + std::ops::Neg<Output = T> + Zero> Group
-    for Additive<T>
-{
-    fn inv(&self, a: &T) -> T {
-        -a.clone()
-    }
-}
-impl<T: Clone + std::ops::Add<Output = T>> Commutative for Additive<T> {}
+impl<R: Semiring> Commutative for Additive<R> {}

@@ -1,6 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::affine::Affine;
+use cplib::algebra::canonical::Canonical;
 use cplib::algebra::closures::{FnAction, FnMonoid};
 use cplib::collections::lazy_segment_tree::LazySegmentTree;
 use cplib::num::fp::Fp;
@@ -34,7 +35,7 @@ fn main() {
                 (a + c, b + d)
             },
         },
-        Affine::new(),
+        Affine(Canonical::new()),
         FnAction {
             act: |(f, g): &(Fp<P>, Fp<P>), (a, b): &(Fp<P>, Fp<P>)| -> (Fp<P>, Fp<P>) {
                 (f * a + g * b, *b)
