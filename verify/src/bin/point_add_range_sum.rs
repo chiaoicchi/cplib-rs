@@ -1,6 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
+use std::num::Wrapping;
 
 use cplib::algebra::additive::Additive;
+use cplib::algebra::canonical::Canonical;
 use cplib::collections::fenwick_tree::FenwickTree;
 
 fn main() {
@@ -23,15 +25,15 @@ fn main() {
     let n = parse!(usize);
     let q = parse!(u32);
 
-    let a: Vec<u64> = (0..n).map(|_| parse!(u64)).collect();
-    let mut fenwick_tree = FenwickTree::from_vec(Additive, a);
+    let a: Vec<Wrapping<u64>> = (0..n).map(|_| Wrapping(parse!(u64))).collect();
+    let mut fenwick_tree = FenwickTree::from_vec(Additive(Canonical::new()), a);
 
     for _ in 0..q {
         let t = parse!(u8);
         if t == 0 {
             let p = parse!(usize);
             let x = parse!(u64);
-            fenwick_tree.op_assign(p, &x);
+            fenwick_tree.op_assign(p, &Wrapping(x));
         } else {
             let l = parse!(usize);
             let r = parse!(usize);

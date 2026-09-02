@@ -1,9 +1,12 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
+use cplib::algebra::affine::Affine;
+use cplib::algebra::canonical::Canonical;
 use cplib::algebra::closures::{FnAction, FnMonoid};
 use cplib::collections::lazy_segment_tree::LazySegmentTree;
+use cplib::num::fp::Fp;
 
-const MOD: u32 = 998_244_353;
+const P: u32 = 998_244_353;
 
 fn main() {
     let mut input = Vec::new();
@@ -24,28 +27,18 @@ fn main() {
 
     let n = parse!(usize);
     let q = parse!(u32);
-    let a: Vec<(u32, u32)> = (0..n).map(|_| (parse!(u32), 1)).collect();
+    let a: Vec<(Fp<P>, Fp<P>)> = (0..n).map(|_| (Fp::new(parse!(u32)), Fp::new(1))).collect();
     let mut lazy_segment_tree = LazySegmentTree::from_vec(
         FnMonoid {
-            id: (0, 0),
-            op: |(a, b): &(u32, u32), (c, d): &(u32, u32)| -> (u32, u32) {
-                let x = a + c;
-                (if x >= MOD { x - MOD } else { x }, b + d)
+            id: (Fp::new(0), Fp::new(0)),
+            op: |(a, b): &(Fp<P>, Fp<P>), (c, d): &(Fp<P>, Fp<P>)| -> (Fp<P>, Fp<P>) {
+                (a + c, b + d)
             },
         },
-        FnMonoid {
-            id: (1, 0),
-            op: |(a, b): &(u32, u32), (c, d): &(u32, u32)| -> (u32, u32) {
-                let f = (*a as u64 * *c as u64 % MOD as u64) as u32;
-                let g = (*c as u64 * *b as u64 % MOD as u64) as u32 + d;
-                (f, if g >= MOD { g - MOD } else { g })
-            },
-        },
+        Affine(Canonical::new()),
         FnAction {
-            act: |(f, g): &(u32, u32), (a, b): &(u32, u32)| -> (u32, u32) {
-                let x = (*f as u64 * *a as u64 % MOD as u64) as u32
-                    + (*g as u64 * *b as u64 % MOD as u64) as u32;
-                (if x >= MOD { x - MOD } else { x }, *b)
+            act: |(f, g): &(Fp<P>, Fp<P>), (a, b): &(Fp<P>, Fp<P>)| -> (Fp<P>, Fp<P>) {
+                (f * a + g * b, *b)
             },
         },
         a,
@@ -57,7 +50,7 @@ fn main() {
             let r = parse!(usize);
             let c = parse!(u32);
             let d = parse!(u32);
-            lazy_segment_tree.range_apply(l..r, &(c, d));
+            lazy_segment_tree.range_apply(l..r, &(Fp::new(c), Fp::new(d)));
         } else {
             let l = parse!(usize);
             let r = parse!(usize);

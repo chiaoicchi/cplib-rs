@@ -1,22 +1,25 @@
-use crate::algebra::{Commutative, Group, Monoid};
+use crate::algebra::{Commutative, Group, Monoid, Ring, Semiring};
 
-/// The additive group of `u64`, i.e. the integers modulo 2^64.
+/// The additive group of a semiring `R`, i.e. `R` with its multiplication forgotten.
 ///
-/// The operation is wrapping addition, the identity is `0`, and the inverse is wrapping negation.
-/// The operation is commutative.
-pub struct Additive;
-impl Monoid for Additive {
-    type Value = u64;
-    fn id(&self) -> u64 {
-        0
+/// # Definition
+/// `(R::Value, zero, add)` is a commutative monoid by the definition of a semiring,
+/// and `(R::Value, zero, add, neg)` is a commutative group when `R` is a ring.
+#[derive(Clone, Copy, Default)]
+pub struct Additive<R>(pub R);
+
+impl<R: Semiring> Monoid for Additive<R> {
+    type Value = R::Value;
+    fn id(&self) -> R::Value {
+        self.0.zero()
     }
-    fn op(&self, a: &u64, b: &u64) -> u64 {
-        a.wrapping_add(*b)
-    }
-}
-impl Group for Additive {
-    fn inv(&self, a: &u64) -> u64 {
-        a.wrapping_neg()
+    fn op(&self, a: &R::Value, b: &R::Value) -> R::Value {
+        self.0.add(a, b)
     }
 }
-impl Commutative for Additive {}
+impl<R: Ring> Group for Additive<R> {
+    fn inv(&self, a: &R::Value) -> R::Value {
+        self.0.neg(a)
+    }
+}
+impl<R: Semiring> Commutative for Additive<R> {}

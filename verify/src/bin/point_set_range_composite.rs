@@ -1,9 +1,11 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::closures::FnMonoid;
+use cplib::algebra::affine::Affine;
+use cplib::algebra::canonical::Canonical;
 use cplib::collections::segment_tree::SegmentTree;
+use cplib::num::fp::Fp;
 
-const MOD: u32 = 998_244_353;
+const P: u32 = 998_244_353;
 
 fn main() {
     let mut input = Vec::new();
@@ -25,18 +27,10 @@ fn main() {
     let n = parse!(usize);
     let q = parse!(u32);
 
-    let a: Vec<(u32, u32)> = (0..n).map(|_| (parse!(u32), parse!(u32))).collect();
-    let mut segment_tree = SegmentTree::from_vec(
-        FnMonoid {
-            id: (1, 0),
-            op: |&(a, b): &(u32, u32), &(c, d): &(u32, u32)| -> (u32, u32) {
-                let f = (a as u64 * c as u64 % MOD as u64) as u32;
-                let g = (c as u64 * b as u64 % MOD as u64) as u32 + d;
-                (f, if g >= MOD { g - MOD } else { g })
-            },
-        },
-        a,
-    );
+    let a: Vec<(Fp<P>, Fp<P>)> = (0..n)
+        .map(|_| (Fp::new(parse!(u32)), Fp::new(parse!(u32))))
+        .collect();
+    let mut segment_tree = SegmentTree::from_vec(Affine(Canonical::new()), a);
 
     for _ in 0..q {
         let t = parse!(u8);
@@ -44,14 +38,14 @@ fn main() {
             let p = parse!(usize);
             let c = parse!(u32);
             let d = parse!(u32);
-            segment_tree.set(p, (c, d));
+            segment_tree.set(p, (Fp::new(c), Fp::new(d)));
         } else {
             let l = parse!(usize);
             let r = parse!(usize);
-            let x = parse!(u64);
+            let x = Fp::new(parse!(u32));
             let (c, d) = segment_tree.fold(l..r);
-            let ans = (c as u64 * x % MOD as u64) as u32 + d;
-            writeln!(stdout, "{}", if ans >= MOD { ans - MOD } else { ans }).ok();
+            let ans = c * x + d;
+            writeln!(stdout, "{ans}").ok();
         }
     }
 }

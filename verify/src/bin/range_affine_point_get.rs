@@ -1,9 +1,11 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::closures::{FnAction, FnMonoid};
+use cplib::algebra::affine::Affine;
+use cplib::algebra::canonical::Canonical;
 use cplib::collections::dual_segment_tree::DualSegmentTree;
+use cplib::num::fp::Fp;
 
-const MOD: u32 = 998_244_353;
+const P: u32 = 998_244_353;
 
 fn main() {
     let mut input = Vec::new();
@@ -25,24 +27,9 @@ fn main() {
     let n = parse!(usize);
     let q = parse!(u32);
 
-    let a: Vec<u32> = (0..n).map(|_| parse!(u32)).collect();
-    let mut dual_segment_tree = DualSegmentTree::from_vec(
-        FnMonoid {
-            id: (1, 0),
-            op: |&(a, b): &(u32, u32), &(c, d): &(u32, u32)| -> (u32, u32) {
-                let f = (a as u64 * c as u64 % MOD as u64) as u32;
-                let g = (c as u64 * b as u64 % MOD as u64) as u32 + d;
-                (f, if g >= MOD { g - MOD } else { g })
-            },
-        },
-        FnAction {
-            act: |(a, b): &(u32, u32), x: &u32| -> u32 {
-                let x = (*a as u64 * *x as u64 % MOD as u64) as u32 + b;
-                if x >= MOD { x - MOD } else { x }
-            },
-        },
-        a,
-    );
+    let a: Vec<Fp<P>> = (0..n).map(|_| Fp::new(parse!(u32))).collect();
+    let mut dual_segment_tree =
+        DualSegmentTree::from_vec(Affine(Canonical::new()), Affine(Canonical::new()), a);
 
     for _ in 0..q {
         let t = parse!(u8);
@@ -51,7 +38,7 @@ fn main() {
             let r = parse!(usize);
             let b = parse!(u32);
             let c = parse!(u32);
-            dual_segment_tree.range_apply(l..r, &(b, c));
+            dual_segment_tree.range_apply(l..r, &(Fp::new(b), Fp::new(c)));
         } else {
             let i = parse!(usize);
             let ans = dual_segment_tree.get(i).unwrap();
