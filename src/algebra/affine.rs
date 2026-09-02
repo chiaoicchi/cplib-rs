@@ -4,7 +4,7 @@ use crate::algebra::{Action, Monoid, Semiring};
 ///
 /// # Definition
 /// An element `(a, b)` represents the map `x -> a * x + b`.
-/// `op(f, g)` is the composite `g.f`, i.e. `f` is applied first.
+/// `op(f, g)(x)` is the composite `g(f(x))`, i.e. `f` is applied first.
 #[derive(Clone, Copy, Default)]
 pub struct Affine<R>(pub R);
 
