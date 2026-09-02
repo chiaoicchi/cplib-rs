@@ -1,22 +1,41 @@
-use crate::algebra::{Commutative, Group, Monoid};
+use crate::algebra::{Commutative, Group, Monoid, Zero};
 
-/// The additive group of `u64`, i.e. the integers modulo 2^64.
-///
-/// The operation is wrapping addition, the identity is `0`, and the inverse is wrapping negation.
-/// The operation is commutative.
-pub struct Additive;
-impl Monoid for Additive {
-    type Value = u64;
-    fn id(&self) -> u64 {
-        0
-    }
-    fn op(&self, a: &u64, b: &u64) -> u64 {
-        a.wrapping_add(*b)
+/// The additive group of `T`, given by its own `std::ops::Add`.
+pub struct Additive<T>(std::marker::PhantomData<T>);
+impl<T> Additive<T> {
+    /// Creates an additive structure.
+    pub const fn new() -> Self {
+        Self(std::marker::PhantomData)
     }
 }
-impl Group for Additive {
-    fn inv(&self, a: &u64) -> u64 {
-        a.wrapping_neg()
+impl<T> Default for Additive<T> {
+    fn default() -> Self {
+        Self::new()
     }
 }
-impl Commutative for Additive {}
+
+impl<T> Clone for Additive<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl<T> Copy for Additive<T> {}
+
+impl<T: Clone + std::ops::Add<Output = T> + Zero> Monoid for Additive<T> {
+    type Value = T;
+    fn id(&self) -> T {
+        T::zero()
+    }
+    fn op(&self, a: &T, b: &T) -> T {
+        a.clone() + b.clone()
+    }
+}
+
+impl<T: Clone + std::ops::Add<Output = T> + std::ops::Neg<Output = T> + Zero> Group
+    for Additive<T>
+{
+    fn inv(&self, a: &T) -> T {
+        -a.clone()
+    }
+}
+impl<T: Clone + std::ops::Add<Output = T>> Commutative for Additive<T> {}
