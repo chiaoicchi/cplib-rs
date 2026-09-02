@@ -8,6 +8,11 @@ impl<T> Canonical<T> {
         Self(std::marker::PhantomData)
     }
 }
+impl<T> Default for Canonical<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl<T> Clone for Canonical<T> {
     fn clone(&self) -> Self {
