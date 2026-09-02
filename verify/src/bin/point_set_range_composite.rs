@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::FnMonoid;
+use cplib::algebra::closures::FnMonoid;
 use cplib::collections::segment_tree::SegmentTree;
 
 const MOD: u32 = 998_244_353;

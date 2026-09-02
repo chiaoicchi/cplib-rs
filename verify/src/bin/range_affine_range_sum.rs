@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::{FnAction, FnMonoid};
+use cplib::algebra::closures::{FnAction, FnMonoid};
 use cplib::collections::lazy_segment_tree::LazySegmentTree;
 
 const MOD: u32 = 998_244_353;
