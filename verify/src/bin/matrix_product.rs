@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::linear::matrix::Matrix;
+use cplib::linear::dyn_matrix::DynMatrix;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
@@ -33,8 +33,8 @@ fn main() {
         .map(|_| (0..k).map(|_| Fp::new(parse!(u32))).collect())
         .collect();
 
-    let mat_a = Matrix::from_vec(Canonical::new(), a);
-    let mat_b = Matrix::from_vec(Canonical::new(), b);
+    let mat_a = DynMatrix::from_vec(Canonical::new(), a);
+    let mat_b = DynMatrix::from_vec(Canonical::new(), b);
 
     let ans = mat_a * mat_b;
     for vi in ans.iter() {

@@ -2,6 +2,7 @@ pub mod additive;
 pub mod affine;
 pub mod canonical;
 pub mod closures;
+pub mod multiplicative;
 
 /// A monoid trait
 ///
