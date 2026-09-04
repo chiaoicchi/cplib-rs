@@ -1,10 +1,10 @@
 use crate::algebra::{Ring, Semiring};
 
-/// A matrix over a semiring `R`.
+/// A matrix over a semiring `R`, whose shape is determined at run time.
 ///
 /// # Definition
-/// An `n x m` matrix over `R` is a family `(a_ij)` of elements of `R` indexed by `0 <= i < n` and
-/// `0 <= j < m`.
+/// An `n x m` matrix over `R` is a family `(a_ij)` of elements of `R` indexed by `0 <= i < n`
+/// and `0 <= j < m`.
 /// Addition is entrywise, `(a + b)_ij = add(a_ij, b_ij)`, and multiplication of an `n x m` matrix
 /// by an `m x l` matrix is `(ab)_il = ∑_j mul(a_ij, b_jl)`, the sum taken with `add`.
 /// The `n x n` matrices form a semiring under these operations, with the zero matrix `O` and the
@@ -19,15 +19,15 @@ use crate::algebra::{Ring, Semiring};
 ///
 /// # Complexity
 /// - Space: O(nm)
-pub struct Matrix<R: Semiring> {
+pub struct DynMatrix<R: Semiring> {
     semiring: R,
     n: usize,
     m: usize,
     value: Vec<R::Value>,
 }
 
-impl<R: Semiring> Matrix<R> {
-    /// Creates the zero matrix `O`, whose entries are all `semiring.zero()`.
+impl<R: Semiring> DynMatrix<R> {
+    /// Creates the zero dynanic matrix `O`, whose entries are all `semiring.zero()`.
     ///
     /// # Complexity
     /// - Time: O(nm)
@@ -47,7 +47,7 @@ impl<R: Semiring> Matrix<R> {
         }
     }
 
-    /// Creates the identity matrix `E`, whose `(i, j)` entry is `δ_ij`.
+    /// Creates the identity dynamic matrix `E`, whose `(i, j)` entry is `δ_ij`.
     ///
     /// # Complexity
     /// - Time: O(n^2)
@@ -80,11 +80,11 @@ impl<R: Semiring> Matrix<R> {
     /// Panics if any row of `v` is empty.
     /// Panics if any row of `v` is not the same length.
     pub fn from_vec(semiring: R, v: Vec<Vec<R::Value>>) -> Self {
-        assert!(!v.is_empty(), "`v` is not matrix shape");
-        assert!(!v[0].is_empty(), "`v` is not matrix shape");
+        assert!(!v.is_empty(), "`v` must not be empty");
+        assert!(!v[0].is_empty(), "row of `v` must not be empty");
         assert!(
             v.iter().all(|vi| vi.len() == v[0].len()),
-            "`v` is not matrix shape",
+            "all rows of `v` must have the same length",
         );
         Self {
             semiring,
@@ -131,7 +131,7 @@ impl<R: Semiring> Matrix<R> {
     }
 }
 
-impl<R: Semiring + Clone> Matrix<R> {
+impl<R: Semiring + Clone> DynMatrix<R> {
     /// Raises `self` to the power of `exp`.
     ///
     /// # Complexity
@@ -153,7 +153,24 @@ impl<R: Semiring + Clone> Matrix<R> {
     }
 }
 
-impl<R: Ring> std::ops::Neg for Matrix<R> {
+impl<R: Semiring + Clone> Clone for DynMatrix<R>
+where
+    R::Value: Clone,
+{
+    /// # Complexity
+    /// - Time: O(nm)
+    /// - Space: O(nm)
+    fn clone(&self) -> Self {
+        Self {
+            semiring: self.semiring.clone(),
+            n: self.n,
+            m: self.m,
+            value: self.value.clone(),
+        }
+    }
+}
+
+impl<R: Ring> std::ops::Neg for DynMatrix<R> {
     type Output = Self;
     /// # Complexity
     /// - Time: O(nm)
@@ -165,13 +182,13 @@ impl<R: Ring> std::ops::Neg for Matrix<R> {
         self
     }
 }
-impl<R: Ring + Clone> std::ops::Neg for &Matrix<R> {
-    type Output = Matrix<R>;
+impl<R: Ring + Clone> std::ops::Neg for &DynMatrix<R> {
+    type Output = DynMatrix<R>;
     /// # Complexity
     /// - Time: O(nm)
     /// - Space: O(nm)
-    fn neg(self) -> Matrix<R> {
-        Matrix {
+    fn neg(self) -> DynMatrix<R> {
+        DynMatrix {
             semiring: self.semiring.clone(),
             n: self.n,
             m: self.m,
@@ -180,7 +197,7 @@ impl<R: Ring + Clone> std::ops::Neg for &Matrix<R> {
     }
 }
 
-impl<R: Semiring> std::ops::Add<&Matrix<R>> for Matrix<R> {
+impl<R: Semiring> std::ops::Add<&DynMatrix<R>> for DynMatrix<R> {
     type Output = Self;
     /// # Complexity
     /// - Time: O(nm)
@@ -201,7 +218,7 @@ impl<R: Semiring> std::ops::Add<&Matrix<R>> for Matrix<R> {
         self
     }
 }
-impl<R: Ring> std::ops::Sub<&Matrix<R>> for Matrix<R> {
+impl<R: Ring> std::ops::Sub<&DynMatrix<R>> for DynMatrix<R> {
     type Output = Self;
     /// # Complexity
     /// - Time: O(nm)
@@ -225,7 +242,7 @@ impl<R: Ring> std::ops::Sub<&Matrix<R>> for Matrix<R> {
 macro_rules! forward_binop {
     ($($trait:ident, $method:ident, $scalars:ident);* $(;)?) => {
         $(
-            impl<R: $scalars> std::ops::$trait for Matrix<R> {
+            impl<R: $scalars> std::ops::$trait for DynMatrix<R> {
                 type Output = Self;
                 /// # Complexity
                 /// - Time: O(nm)
@@ -245,22 +262,22 @@ forward_binop! {
     Sub, sub, Ring;
 }
 
-impl<R: Semiring + Clone> std::ops::Add<&Matrix<R>> for &Matrix<R> {
-    type Output = Matrix<R>;
+impl<R: Semiring + Clone> std::ops::Add<&DynMatrix<R>> for &DynMatrix<R> {
+    type Output = DynMatrix<R>;
     /// # Complexity
     /// - Time: O(nm)
     /// - Space: O(nm)
     ///
     /// # Panics
     /// Panics if the shapes of `self` and `rhs` differ.
-    fn add(self, rhs: &Matrix<R>) -> Matrix<R> {
+    fn add(self, rhs: &DynMatrix<R>) -> DynMatrix<R> {
         assert!(
             self.shape() == rhs.shape(),
             "shape mismatch: lhs:{:?}, rhs:{:?}",
             self.shape(),
             rhs.shape()
         );
-        Matrix {
+        DynMatrix {
             semiring: self.semiring.clone(),
             n: self.n,
             m: self.m,
@@ -273,22 +290,22 @@ impl<R: Semiring + Clone> std::ops::Add<&Matrix<R>> for &Matrix<R> {
         }
     }
 }
-impl<R: Ring + Clone> std::ops::Sub<&Matrix<R>> for &Matrix<R> {
-    type Output = Matrix<R>;
+impl<R: Ring + Clone> std::ops::Sub<&DynMatrix<R>> for &DynMatrix<R> {
+    type Output = DynMatrix<R>;
     /// # Complexity
     /// - Time: O(nm)
     /// - Space: O(nm)
     ///
     /// # Panics
     /// Panics if the shapes of `self` and `rhs` differ.
-    fn sub(self, rhs: &Matrix<R>) -> Matrix<R> {
+    fn sub(self, rhs: &DynMatrix<R>) -> DynMatrix<R> {
         assert!(
             self.shape() == rhs.shape(),
             "shape mismatch: lhs:{:?}, rhs:{:?}",
             self.shape(),
             rhs.shape(),
         );
-        Matrix {
+        DynMatrix {
             semiring: self.semiring.clone(),
             n: self.n,
             m: self.m,
@@ -304,15 +321,15 @@ impl<R: Ring + Clone> std::ops::Sub<&Matrix<R>> for &Matrix<R> {
 macro_rules! forward_ref_binop {
     ($($trait:ident, $method:ident, $scalars:ident);* $(;)?) => {
         $(
-            impl<R: $scalars + Clone> std::ops::$trait<Matrix<R>> for &Matrix<R> {
-                type Output = Matrix<R>;
+            impl<R: $scalars + Clone> std::ops::$trait<DynMatrix<R>> for &DynMatrix<R> {
+                type Output = DynMatrix<R>;
                 /// # Complexity
                 /// - Time: O(nm)
                 /// - Space: O(nm)
                 ///
                 /// # Panics
                 /// Panics if the shapes of `self` and `rhs` differ.
-                fn $method(self, rhs: Matrix<R>) -> Matrix<R> {
+                fn $method(self, rhs: DynMatrix<R>) -> DynMatrix<R> {
                     std::ops::$trait::$method(self, &rhs)
                 }
             }
@@ -324,8 +341,8 @@ forward_ref_binop! {
     Sub, sub, Ring;
 }
 
-impl<R: Semiring + Clone> std::ops::Mul<&Matrix<R>> for &Matrix<R> {
-    type Output = Matrix<R>;
+impl<R: Semiring + Clone> std::ops::Mul<&DynMatrix<R>> for &DynMatrix<R> {
+    type Output = DynMatrix<R>;
     /// # Complexity
     /// - Time: O(nml)
     /// - Space: O(nl)
@@ -334,14 +351,14 @@ impl<R: Semiring + Clone> std::ops::Mul<&Matrix<R>> for &Matrix<R> {
     ///
     /// # Panics
     /// Panics if the number of columns of `self` differs from the number of rows of `rhs`.
-    fn mul(self, rhs: &Matrix<R>) -> Matrix<R> {
+    fn mul(self, rhs: &DynMatrix<R>) -> DynMatrix<R> {
         assert!(
             self.m == rhs.n,
             "shape mismatch for multiplication: lhs:{:?}, rhs:{:?}",
             self.shape(),
             rhs.shape(),
         );
-        let mut x = Matrix::zero(self.semiring.clone(), self.n, rhs.m);
+        let mut x = DynMatrix::zero(self.semiring.clone(), self.n, rhs.m);
         for i in 0..self.n {
             let xi = &mut x[i];
             let ai = &self[i];
@@ -354,7 +371,7 @@ impl<R: Semiring + Clone> std::ops::Mul<&Matrix<R>> for &Matrix<R> {
         x
     }
 }
-impl<R: Semiring + Clone> std::ops::Mul for Matrix<R> {
+impl<R: Semiring + Clone> std::ops::Mul for DynMatrix<R> {
     type Output = Self;
     /// # Complexity
     /// - Time: O(nml)
@@ -368,7 +385,7 @@ impl<R: Semiring + Clone> std::ops::Mul for Matrix<R> {
         std::ops::Mul::mul(&self, &rhs)
     }
 }
-impl<R: Semiring + Clone> std::ops::Mul<&Matrix<R>> for Matrix<R> {
+impl<R: Semiring + Clone> std::ops::Mul<&DynMatrix<R>> for DynMatrix<R> {
     type Output = Self;
     /// # Complexity
     /// - Time: O(nml)
@@ -378,12 +395,12 @@ impl<R: Semiring + Clone> std::ops::Mul<&Matrix<R>> for Matrix<R> {
     ///
     /// # Panics
     /// Panics if the number of columns of `self` differs from the number of rows of `rhs`.
-    fn mul(self, rhs: &Matrix<R>) -> Self {
+    fn mul(self, rhs: &DynMatrix<R>) -> Self {
         std::ops::Mul::mul(&self, rhs)
     }
 }
-impl<R: Semiring + Clone> std::ops::Mul<Matrix<R>> for &Matrix<R> {
-    type Output = Matrix<R>;
+impl<R: Semiring + Clone> std::ops::Mul<DynMatrix<R>> for &DynMatrix<R> {
+    type Output = DynMatrix<R>;
     /// # Complexity
     /// - Time: O(nml)
     /// - Space: O(nl)
@@ -392,12 +409,12 @@ impl<R: Semiring + Clone> std::ops::Mul<Matrix<R>> for &Matrix<R> {
     ///
     /// # Panics
     /// Panics if the number of columns of `self` differs from the number of rows of `rhs`.
-    fn mul(self, rhs: Matrix<R>) -> Matrix<R> {
+    fn mul(self, rhs: DynMatrix<R>) -> DynMatrix<R> {
         std::ops::Mul::mul(self, &rhs)
     }
 }
 
-impl<R: Semiring> std::ops::AddAssign<&Self> for Matrix<R> {
+impl<R: Semiring> std::ops::AddAssign<&Self> for DynMatrix<R> {
     /// # Complexity
     /// - Time: O(nm)
     /// - Space: O(1)
@@ -416,7 +433,7 @@ impl<R: Semiring> std::ops::AddAssign<&Self> for Matrix<R> {
         }
     }
 }
-impl<R: Ring> std::ops::SubAssign<&Self> for Matrix<R> {
+impl<R: Ring> std::ops::SubAssign<&Self> for DynMatrix<R> {
     /// # Complexity
     /// - Time: O(nm)
     /// - Space: O(1)
@@ -438,7 +455,7 @@ impl<R: Ring> std::ops::SubAssign<&Self> for Matrix<R> {
 macro_rules! forward_op_assign {
     ($($trait:ident, $method:ident, $scalars:ident);* $(;)?) => {
         $(
-            impl<R: $scalars> std::ops::$trait for Matrix<R> {
+            impl<R: $scalars> std::ops::$trait for DynMatrix<R> {
                 /// # Complexity
                 /// - Time: O(nm)
                 /// - Space: O(1)
@@ -457,7 +474,7 @@ forward_op_assign! {
     SubAssign, sub_assign, Ring;
 }
 
-impl<R: Semiring + Clone> std::ops::MulAssign<&Self> for Matrix<R> {
+impl<R: Semiring + Clone> std::ops::MulAssign<&Self> for DynMatrix<R> {
     /// # Complexity
     /// - Time: O(nml)
     /// - Space: O(nl)
@@ -470,7 +487,7 @@ impl<R: Semiring + Clone> std::ops::MulAssign<&Self> for Matrix<R> {
         *self = std::ops::Mul::mul(&*self, rhs);
     }
 }
-impl<R: Semiring + Clone> std::ops::MulAssign for Matrix<R> {
+impl<R: Semiring + Clone> std::ops::MulAssign for DynMatrix<R> {
     /// # Complexity
     /// - Time: O(nml)
     /// - Space: O(nl)
@@ -484,7 +501,7 @@ impl<R: Semiring + Clone> std::ops::MulAssign for Matrix<R> {
     }
 }
 
-impl<R: Semiring> std::ops::Index<usize> for Matrix<R> {
+impl<R: Semiring> std::ops::Index<usize> for DynMatrix<R> {
     type Output = [R::Value];
     /// # Panics
     /// Panics if `index` is greater than or equal to the number of rows.
@@ -497,7 +514,7 @@ impl<R: Semiring> std::ops::Index<usize> for Matrix<R> {
         &self.value[index * self.m..(index + 1) * self.m]
     }
 }
-impl<R: Semiring> std::ops::IndexMut<usize> for Matrix<R> {
+impl<R: Semiring> std::ops::IndexMut<usize> for DynMatrix<R> {
     /// # Panics
     /// Panics if `index` is greater than or equal to the number of rows.
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {

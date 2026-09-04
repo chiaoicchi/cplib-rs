@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::linear::matrix::Matrix;
+use cplib::linear::dyn_matrix::DynMatrix;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
