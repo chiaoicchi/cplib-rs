@@ -78,7 +78,7 @@ impl<G: Group> PotentialDsu<G> {
     /// Imposes the constraint that the potential to `y` from `x` is `p`.
     ///
     /// If `x` and `y` are in different sets, unites them and returns `true`.
-    /// Otherwise leaves the structure unchanged and returns whether the constraint is consistent
+    /// Otherwise leaves the partition unchanged and returns whether the constraint is consistent
     /// with the existing ones, i.e. whether `potential(x, y) == Some(p)`.
     ///
     /// # Complexity
