@@ -1,3 +1,4 @@
+pub mod and;
 pub mod xor;
 
 use crate::algebra::{Monoid, Semiring};

@@ -1,5 +1,6 @@
 pub mod additive;
 pub mod affine;
+pub mod and;
 pub mod canonical;
 pub mod closures;
 pub mod multiplicative;
