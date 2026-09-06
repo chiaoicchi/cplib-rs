@@ -1,4 +1,4 @@
-use crate::algebra::{Inv, Zero};
+use crate::algebra::Zero;
 
 /// The greatest common divisor by the Euclidean algorithm.
 ///
