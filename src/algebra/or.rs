@@ -1,12 +1,12 @@
 use crate::algebra::{Monoid, Zero};
 
-/// The xor monoid of `(F_2)^n`.
+/// The or monoid of `({0, 1}, 0, |)^n`.
 ///
 /// # Definition
-/// `F_2 = ({0, 1}, 0, |)` is a commutative monoid. `(F_2)^n` is the `n`-fold direct product of
-/// `F_2`, whose operation is defined componentwise:
-/// - `(x + y)_i = x_i + y_i` in `F_2`. Identifying `x` in `[0, 2^n)` with its binary digits
-///   `(x_0, ..., x_{n-1})`.
+/// `({0, 1}, 0, |)` is a commutative idempotent monoid, i.e. a join-semilattice with bottom `0`.
+/// Its `n`-fold direct product has the operation defined componentwise:
+/// - `(x | y)_i = x_i | y_i`. Identifying `x` in `[0, 2^n)` with its binary digits
+///   `(x_0, ..., x_{n-1})`, this is the bitwise or, with identity `0`.
 pub struct Or<T>(std::marker::PhantomData<T>);
 impl<T> Or<T> {
     pub const fn new() -> Self {

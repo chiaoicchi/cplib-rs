@@ -1,4 +1,7 @@
 pub mod and;
+pub mod gcd;
+pub mod lcm;
+pub mod or;
 pub mod xor;
 
 use crate::algebra::{Monoid, Semiring};

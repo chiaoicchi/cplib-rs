@@ -3,6 +3,8 @@ pub mod affine;
 pub mod and;
 pub mod canonical;
 pub mod closures;
+pub mod gcd;
+pub mod lcm;
 pub mod multiplicative;
 pub mod or;
 pub mod xor;

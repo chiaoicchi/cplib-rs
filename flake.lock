@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788704568,
-        "narHash": "sha256-67F/dyyXWJBAWAqMVrLB7CV1GNycEiM1nsJ9cBjdqcg=",
+        "lastModified": 1788715890,
+        "narHash": "sha256-14N2MduwocbjNdgXAr8G4j6iD1gbcZ2Y1HxFlYzhO+U=",
         "owner": "chiaoicchi",
         "repo": "bundle-rs",
-        "rev": "78b04af7668127f8c7e9177f50e1ca45346e92ef",
+        "rev": "31849e514753184c35eccce0b6bbd9bd4d281dcd",
         "type": "github"
       },
       "original": {
