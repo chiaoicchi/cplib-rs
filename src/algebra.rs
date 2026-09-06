@@ -1,8 +1,14 @@
 pub mod additive;
 pub mod affine;
+pub mod and;
 pub mod canonical;
 pub mod closures;
+pub mod cyclic;
+pub mod gcd;
+pub mod lcm;
 pub mod multiplicative;
+pub mod or;
+pub mod xor;
 
 /// A monoid trait
 ///
@@ -77,6 +83,15 @@ pub trait Ring: Semiring {
 /// `inv(zero())` is not defined; implementations may panic.
 pub trait Field: Ring {
     fn inv(&self, a: &Self::Value) -> Self::Value;
+}
+
+/// A field with a chosen system of roots of unity.
+///
+/// # Contract
+/// `root_of_unity(n)` is `Some(w)` iff the field contains a primitive `n`-th root of unity, and
+/// then `w` has order exactly `n`.
+pub trait RootOfUnity: Field {
+    fn root_of_unity(&self, n: usize) -> Option<Self::Value>;
 }
 
 /// A marker trait for commutative operations.

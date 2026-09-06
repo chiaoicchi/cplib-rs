@@ -7,9 +7,10 @@
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    cpbin-rs = {
-      url = "github:chiaoicchi/cpbin-rs";
+    bundle-rs = {
+      url = "github:chiaoicchi/bundle-rs";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-overlay.follows = "rust-overlay";
     };
   };
 
@@ -18,7 +19,7 @@
       self,
       nixpkgs,
       rust-overlay,
-      cpbin-rs,
+      bundle-rs,
     }:
     let
       system = "x86_64-linux";
@@ -27,6 +28,8 @@
         overlays = [ rust-overlay.overlays.default ];
       };
       toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      bundleRs = bundle-rs.packages.${system}.bundle-rs;
+      bdTool = bundle-rs.packages.${system}.bd;
       ckTool = pkgs.writeShellApplication {
         name = "ck";
         runtimeInputs = [
@@ -38,36 +41,27 @@
           pkgs.python3
           pkgs.gcc
           toolchain
+          bundleRs
         ];
         text = builtins.readFile ./tools/ck.sh;
-      };
-      bdTool = pkgs.writeShellApplication {
-        name = "bd";
-        runtimeInputs = [
-          pkgs.git
-          pkgs.coreutils
-          pkgs.gnused
-          pkgs.rustfmt
-          cpbin-rs.packages.${system}.bundle-rs
-          pkgs.wl-clipboard
-        ];
-        text = builtins.readFile ./tools/bd.sh;
       };
     in
     {
       packages.${system} = {
         ck = ckTool;
-        bd = bdTool;
       };
       devShells.${system}.default = pkgs.mkShell {
         packages = [
-          (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+          toolchain
           ckTool
           bdTool
+          bundleRs
         ];
         shellHook = ''
+          export CPLIB_ROOT="$(git rev-parse --show-toplevel)"
           echo "cplib environment"
           echo "  rust: $(rustc --version)"
+          echo "  bundle-rs: $(command -v bundle-rs)"
         '';
       };
     };
