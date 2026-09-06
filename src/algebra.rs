@@ -3,6 +3,8 @@ pub mod affine;
 pub mod canonical;
 pub mod closures;
 pub mod multiplicative;
+pub mod or;
+pub mod xor;
 
 /// A monoid trait
 ///
