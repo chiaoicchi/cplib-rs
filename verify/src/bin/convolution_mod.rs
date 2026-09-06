@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::convolution::convolve_poly;
+use cplib::convolution::cyclic::convolve_poly;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
