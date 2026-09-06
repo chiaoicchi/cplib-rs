@@ -9,8 +9,7 @@ impl<R: Semiring> Transform<R> for Or<usize> {
     /// The rows of `Z` are the characters `x -> [x | s = s]` of `({0, 1}, 0, |)^n`:
     /// `(x | y) | s = s` iff `x | s = s` and `y | s = s`, which is `Z(f * g) = Z(f) .* Z(g)`.
     /// They take values in `{0, 1}`, so they exist in every semiring; hence the bound `Semiring`.
-    /// `Z` is the `n`-fold Kronecker product of `Z_1 = [[1, 0], [1, 1]]`, i.e. `Z_1` applied along
-    /// each of the `n` axes of `f` viewed as a `2 x ... x 2` array.
+    /// `Z` is the `n`-fold Kronecker product of `Z_1 = [[1, 0], [1, 1]]`.
     ///
     /// # Complexity
     /// - Time: O(2^n n)

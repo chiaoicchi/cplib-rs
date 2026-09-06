@@ -12,7 +12,7 @@ impl<R: Semiring> Transform<R> for Gcd<usize> {
     /// They take values in `{0, 1}`, so they exist in every semiring; hence the bound `Semiring`.
     ///
     /// Under `x -> (v_p(x))_p` the positive integers are the direct product of the chains
-    /// `(N, min)` over the primes `p`, so `Z` restricted to `[1, N)` is the Kronecker product of
+    /// `(N, min)` over the primes `p`, so `Z` restricted to `[1, n)` is the Kronecker product of
     /// the zeta transforms of these chains.
     ///
     /// Index `0` is the identity of `gcd`: `0 | x` iff `x = 0`, and `d | 0` for every `d`, so

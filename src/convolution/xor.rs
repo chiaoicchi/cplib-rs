@@ -6,10 +6,10 @@ impl<R: Ring> Transform<R> for Xor<usize> {
     /// The Walsh-Hadamard transform `(Hf)(s) = Σ_x (-1)^{<s, x>} f(x)`.
     ///
     /// # Definition
-    /// The rows of `H` are the characters `x -> (-1)^{<s, x>}` of `(F_2)^n`, which exist exactly
-    /// when `-1` in `R`; hence the bound `Ring`. `H` is the `n`-fold Kronecker product
-    /// of `H_1 = [[1, 1], [1, -1]]`, i.e. `H_1` applied along each of the `n` axes of `f` viewed as
-    /// a `2 x ... x 2` array.
+    /// The rows of `H` are the characters `x -> (-1)^{<s, x>}` of `(F_2)^n`, which exist iff
+    /// `R` has an element `-1` with `(-1)^2 = 1` and `-1 != 1`, i.e. iff `R` is a ring of
+    /// characteristic other than `2`; hence the bound `Ring`. `H` is the `n`-fold Kronecker product
+    /// of `H_1 = [[1, 1], [1, -1]]`.
     ///
     /// # Complexity
     /// - Time: O(2^n n)
@@ -36,15 +36,15 @@ impl<R: Ring> Transform<R> for Xor<usize> {
     }
 }
 impl<R: Field> InverseTransform<R> for Xor<usize> {
-    /// The inverse Walsh-Hadamard transform `H^{-1} = N^{-1}H`, where `N = f.len()`.
+    /// The inverse Walsh-Hadamard transform `H^{-1} = N^{-1}H`, where `N = 2^n`.
     ///
     /// # Definition
-    /// `H^2 = N id`, since `Σ_s (-1)^{<s, x + y>} = N [x = y]; hence `H^{-1} = N^{-1} H`.
-    /// This requires `N = 2^n`, and therefor `2`, to be invertible in `R`, which is the reason for
+    /// `H^2 = N id`, since `Σ_s (-1)^{<s, x + y>} = N [x = y]`; hence `H^{-1} = N^{-1} H`.
+    /// This requires `N = 2^n`, and therefore `2`, to be invertible in `R`, which is the reason for
     /// the bound `Field`.
     ///
     /// # Complexity
-    /// - Time: O(N log N)
+    /// - Time: O(2^n n)
     /// - Space: O(1)
     ///
     /// # Panics
