@@ -38,9 +38,16 @@ if [ -z "$dir" ]; then
   exit 1
 fi
 
+edition="$(sed -n 's/^edition *= *"\([0-9]*\)".*/\1/p' Cargo.toml | head -n 1)"
+bundled="$(mktemp --suffix=.rs)"
+bin="$(mktemp)"
+tmp="$(mktemp)"
+trap 'rm -f "$bundled" "$bin" "$tmp"' EXIT
+
+echo "bundle"
+bundle-rs --lib "$root" "src/bin/$p.rs" | rustfmt --edition "$edition" >"$bundled"
 echo "build"
-cargo build --release --bin "$p"
-bin="$(cargo metadata --format-version 1 | jq -r .target_directory)/release/$p"
+rustc --edition "$edition" -O --crate-name "$p" -o "$bin" "$bundled"
 
 echo "test"
 ulimit -s unlimited
