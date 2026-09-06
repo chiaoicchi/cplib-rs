@@ -1,6 +1,6 @@
 use crate::algebra::RootOfUnity;
 use crate::algebra::cyclic::Cyclic;
-use crate::convolution::{InverseTransform, Transform};
+use crate::convolution::{InverseTransform, Transform, convolve};
 
 impl<R: RootOfUnity> Transform<R> for Cyclic {
     /// The discrete Fourier transform `(Ff)(s) = Σ_x w^{sx} f(x)`, where `w` is a primitive
@@ -22,7 +22,7 @@ impl<R: RootOfUnity> Transform<R> for Cyclic {
     /// Panics if `f.len() != self.len()`, if `n` is not a power of two, or if `R` has no primitive
     /// `n`-th root of unity.
     fn transform(&self, ring: &R, f: &mut [R::Value]) {
-        let w = check(self, ring, f);
+        let w = root(self, ring, f);
         fft(ring, f, w);
     }
 }
@@ -43,7 +43,7 @@ impl<R: RootOfUnity> InverseTransform<R> for Cyclic {
     /// Panics if `f.len() != self.len()`, if `n` is not a power of two, or if `R` has no primitive
     /// `n`-th root of unity.
     fn inverse_transform(&self, ring: &R, f: &mut [R::Value]) {
-        let w = check(self, ring, f);
+        let w = root(self, ring, f);
         fft(ring, f, ring.inv(&w));
         let mut n = ring.one();
         for _ in 0..f.len().trailing_zeros() {
@@ -61,9 +61,9 @@ impl<R: RootOfUnity> InverseTransform<R> for Cyclic {
 /// # Panics
 /// Panics if `f.len() != c.len()`, if the length is not a power of two, or `R` has no primitive
 /// root of unity of that order.
-fn check<R: RootOfUnity>(c: &Cyclic, ring: &R, f: &[R::Value]) -> R::Value {
+fn root<R: RootOfUnity>(c: &Cyclic, ring: &R, f: &[R::Value]) -> R::Value {
     let n = f.len();
-    assert_eq!(n, c.len(), "length must be {}: len={n}", c.len());
+    assert_eq!(n, c.order(), "length must be {}: len={n}", c.order());
     assert!(
         n.is_power_of_two(),
         "length must be a power of two: len={n}"
@@ -113,4 +113,33 @@ fn fft<R: RootOfUnity>(ring: &R, f: &mut [R::Value], w: R::Value) {
         }
         len <<= 1;
     }
+}
+
+/// Returns the product of `f` and `g` in `R[t]`, of length `f.len() + g.len() - 1`.
+///
+/// # Definition
+/// `R[N] = R[t]` embeds into `R[Z/nZ] = R[t]/(t^n - 1)`, injectively on polynomials of degree less
+/// than `n`. For `n >= f.len() + g.len() - 1` the product has degree less than `n`, so it is
+/// recovered from the cyclic convolution of length `n` without wrap-around.
+///
+/// # Complexity
+/// - Time: O(n log n) with `n` the least power of two at least `f.len() + g.len() - 1`
+///
+/// # Panics
+/// Panics if `R` has no primitive `n`-th root of unity.
+pub fn convolve_poly<R: RootOfUnity>(
+    ring: &R,
+    mut f: Vec<R::Value>,
+    mut g: Vec<R::Value>,
+) -> Vec<R::Value> {
+    if f.is_empty() || g.is_empty() {
+        return vec![];
+    }
+    let len = f.len() + g.len() - 1;
+    let n = len.next_power_of_two();
+    f.resize_with(n, || ring.zero());
+    g.resize_with(n, || ring.zero());
+    let mut h = convolve(ring, &Cyclic::new(n), f, g);
+    h.truncate(len);
+    h
 }

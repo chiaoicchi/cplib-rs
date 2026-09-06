@@ -16,8 +16,7 @@ impl Cyclic {
     pub const fn new(n: usize) -> Self {
         Self { n }
     }
-    #[allow(clippy::len_without_is_empty)]
-    pub const fn len(&self) -> usize {
+    pub const fn order(&self) -> usize {
         self.n
     }
 }

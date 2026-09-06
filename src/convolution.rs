@@ -5,8 +5,7 @@ pub mod lcm;
 pub mod or;
 pub mod xor;
 
-use crate::algebra::cyclic::Cyclic;
-use crate::algebra::{Monoid, RootOfUnity, Semiring};
+use crate::algebra::{Monoid, Semiring};
 
 /// A transform diagonalizing `R[Self]`, where `Self` is a monoid structure on `usize`.
 ///
@@ -57,33 +56,4 @@ pub fn convolve<R: Semiring, T: Transform<R> + InverseTransform<R>>(
     }
     t.inverse_transform(ring, &mut f);
     f
-}
-
-/// Returns the product of `f` and `g` in `R[t]`, of length `f.len() + g.len() - 1`.
-///
-/// # Definition
-/// `R[N] = R[t]` embeds into `R[Z/nZ] = R[t]/(t^n - 1)`, injectively on polynomials of degree less
-/// than `n`. For `n >= f.len() + g.len() - 1` the product has degree less than `n`, so it is
-/// recovered from the cyclic convolution of length `n` without wrap-around.
-///
-/// # Complexity
-/// - Time: O(n log n) with `n` the least power of two at least `f.len() + g.len() - 1`
-///
-/// # Panics
-/// Panics if `R` has no primitive `n`-th root of unity.
-pub fn convolve_poly<R: RootOfUnity>(
-    ring: &R,
-    mut f: Vec<R::Value>,
-    mut g: Vec<R::Value>,
-) -> Vec<R::Value> {
-    if f.is_empty() || g.is_empty() {
-        return vec![];
-    }
-    let len = f.len() + g.len() - 1;
-    let n = len.next_power_of_two();
-    f.resize_with(n, || ring.zero());
-    g.resize_with(n, || ring.zero());
-    let mut h = convolve(ring, &Cyclic::new(n), f, g);
-    h.truncate(len);
-    h
 }

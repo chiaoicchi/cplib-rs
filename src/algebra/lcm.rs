@@ -1,5 +1,5 @@
 use crate::algebra::{Monoid, One, Zero};
-use crate::num::gcd::lcm;
+use crate::num::euclid::lcm;
 
 /// The lcm monoid of the non-negative integers.
 ///

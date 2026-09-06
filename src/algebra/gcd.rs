@@ -1,5 +1,5 @@
 use crate::algebra::{Monoid, Zero};
-use crate::num::gcd::gcd;
+use crate::num::euclid::gcd;
 
 /// The gcd monoid of the non-negative integers.
 ///

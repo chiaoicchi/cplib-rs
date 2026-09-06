@@ -51,8 +51,6 @@ rustc --edition "$edition" -O --crate-name "$p" -o "$bin" "$bundled"
 
 echo "test"
 ulimit -s unlimited
-tmp="$(mktemp)"
-trap 'rm -f "$tmp"' EXIT
 passed=0
 failed=0
 for input in "$dir"/in/*.in; do
