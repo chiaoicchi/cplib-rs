@@ -44,7 +44,7 @@ impl<R: Ring> InverseTransform<R> for Lcm<usize> {
     /// The divisor Möbius transform `Z^{-1}`, `(Z^{-1} g)(d) = Σ_{x: x|d} μ(d / x) g(x)`.
     ///
     /// # Definition
-    /// `Z` is unitriangular, so `Z^{-1}` exists over every ring; its entries are the function `μ`.
+    /// `Z` is unitriangular, so `Z^{-1}` exists over every ring; its entries are the Möbius function `μ`.
     /// It needs subtraction but no division, hence the bound `Ring`.
     ///
     /// # Complexity
