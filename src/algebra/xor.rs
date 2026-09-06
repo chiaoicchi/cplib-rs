@@ -1,4 +1,4 @@
-se crate::algebra::{Monoid, Zero};
+use crate::algebra::{Monoid, Zero};
 
 /// The xor monoid of `(F_2)^n`.
 ///

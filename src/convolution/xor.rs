@@ -36,12 +36,11 @@ impl<R: Ring> Transform<R> for Xor<usize> {
     }
 }
 impl<R: Field> InverseTransform<R> for Xor<usize> {
-    /// The inverse Walsh-Hadamard transform `H^{-1} = N^{-1}H`, where `N = 2^n`.
+    /// The inverse Walsh-Hadamard transform `H^{-1} = N^{-1}H`.
     ///
     /// # Definition
-    /// `H^2 = N id`, since `Σ_s (-1)^{<s, x + y>} = N [x = y]`; hence `H^{-1} = N^{-1} H`.
-    /// This requires `N = 2^n`, and therefore `2`, to be invertible in `R`, which is the reason for
-    /// the bound `Field`.
+    /// `H^2 = 2^n id`, since `Σ_s (-1)^{<s, x + y>} = N [x = y]`; hence `H^{-1} = 2^{-n} H`.
+    /// This requires `2`, to be invertible in `R`, which is the reason for the bound `Field`.
     ///
     /// # Complexity
     /// - Time: O(2^n n)
