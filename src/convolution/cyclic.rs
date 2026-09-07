@@ -1,6 +1,6 @@
 use crate::algebra::RootOfUnity;
 use crate::algebra::cyclic::Cyclic;
-use crate::convolution::{InverseTransform, Transform, convolve};
+use crate::convolution::{InverseTransform, Transform, convolve_by_transform};
 
 impl<R: RootOfUnity> Transform<R> for Cyclic {
     /// The discrete Fourier transform `(Ff)(s) = Σ_x w^{sx} f(x)`, where `w` is a primitive
@@ -139,7 +139,7 @@ pub fn convolve_poly<R: RootOfUnity>(
     let n = len.next_power_of_two();
     f.resize_with(n, || ring.zero());
     g.resize_with(n, || ring.zero());
-    let mut h = convolve(ring, &Cyclic::new(n), f, g);
+    let mut h = convolve_by_transform(&Cyclic::new(n), ring, f, g);
     h.truncate(len);
     h
 }

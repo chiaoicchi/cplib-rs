@@ -1,6 +1,6 @@
+use crate::algebra::Monoid;
 use crate::algebra::canonical::Canonical;
 use crate::algebra::multiplicative::Multiplicative;
-use crate::algebra::{Monoid, Semiring};
 use crate::num::prime::spf;
 
 /// Evaluates a multiplicative function from its values `f(p, e) = f(p^e)` at prime powers.
@@ -61,40 +61,6 @@ where
         table.push(v);
     }
     table
-}
-
-/// The Dirichlet convolution of two arithmetic functions tabulated on `[1, n]`.
-///
-/// # Definition
-/// `(f * g)(m) = Σ_{ab=m} f(a)g(b)` for `1 <= m <= n`, the sum over ordered pairs of positive
-/// integers. Only values of `f` and `g` on `[1, n]` enter, since `ab = m <= n` forces `a, b <= n`,
-/// so `{1, ..., n}` is closed under `*`.
-/// Index `0` is outside the domain and is set to `zero()`.
-///
-/// # Complexity
-/// - Time: O(n log n)
-/// - Space: O(n)
-///
-/// # Panics
-/// Panics if `f.len() != g.len()`.
-/// Panics if `f` or `g` is empty.
-pub fn dirichlet_convolve<R: Semiring>(ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
-    assert_eq!(
-        f.len(),
-        g.len(),
-        "length must agree: {} != {}",
-        f.len(),
-        g.len()
-    );
-    assert!(f.is_empty(), "f must not be empty");
-    let n = f.len() - 1;
-    let mut h: Vec<R::Value> = (0..=n).map(|_| ring.zero()).collect();
-    for a in 1..=n {
-        for b in 1..=n / a {
-            h[a * b] = ring.add(&h[a * b], &ring.mul(&f[a], &g[b]));
-        }
-    }
-    h
 }
 
 /// Euler's totient `φ(n)` from a factorization of `n`.

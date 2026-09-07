@@ -2,7 +2,7 @@ use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
 use cplib::algebra::lcm::Lcm;
-use cplib::convolution::convolve;
+use cplib::convolution::convolve_by_transform;
 use cplib::num::fp::{Fp, fp};
 
 const P: u32 = 998_244_353;
@@ -32,7 +32,7 @@ fn main() {
         .map(|i| if i == 0 { fp!(0) } else { Fp::new(parse!(u32)) })
         .collect();
 
-    let ans = convolve(&Canonical::new(), &Lcm::new(), a, b);
+    let ans = convolve_by_transform(&Lcm::new(), &Canonical::new(), a, b);
     for ans in &ans[1..] {
         write!(stdout, "{ans} ").ok();
     }

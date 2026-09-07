@@ -2,7 +2,7 @@ use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
 use cplib::algebra::xor::Xor;
-use cplib::convolution::convolve;
+use cplib::convolution::convolve_by_transform;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
@@ -28,7 +28,7 @@ fn main() {
     let a: Vec<Fp<P>> = (0..1 << n).map(|_| Fp::new(parse!(u32))).collect();
     let b: Vec<Fp<P>> = (0..1 << n).map(|_| Fp::new(parse!(u32))).collect();
 
-    let ans = convolve(&Canonical::new(), &Xor::new(), a, b);
+    let ans = convolve_by_transform(&Xor::new(), &Canonical::new(), a, b);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }
