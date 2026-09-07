@@ -31,7 +31,7 @@ pub fn multiplicative<M: Monoid>(
 /// powers.
 ///
 /// # Definition
-/// `table[m] = f(m) = Π f(p^e)` over `m = Π p^e` for `1 <= m < n`; in particular
+/// `table[m] = f(m) = Π f(p^e)` over `m = Π p^e` for `1 <= m <= n`; in particular
 /// `table[1] = 1`. `table[0]` is set to `id()`, `0` being outside the domain.
 ///
 /// # Complexity
