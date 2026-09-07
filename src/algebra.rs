@@ -8,6 +8,7 @@ pub mod gcd;
 pub mod lcm;
 pub mod multiplicative;
 pub mod or;
+pub mod power;
 pub mod xor;
 
 /// A monoid trait
