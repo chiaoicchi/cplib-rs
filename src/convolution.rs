@@ -122,7 +122,7 @@ impl<R: Semiring, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
 }
 impl<R: Ring, C: Convolution<R>> Ring for MonoidAlgebra<R, C> {
     /// # Panics
-    /// Panics if the lengths of `a` differ from `self`.
+    /// Panics if the length of `a` differs from `self`.
     fn neg(&self, a: &Vec<R::Value>) -> Vec<R::Value> {
         assert!(
             a.len() == self.len,
