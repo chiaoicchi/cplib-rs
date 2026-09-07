@@ -1,7 +1,7 @@
 use crate::algebra::gcd::Gcd;
 use crate::algebra::{Ring, Semiring};
 use crate::convolution::{InverseTransform, Transform};
-use crate::num::primes::primes;
+use crate::num::prime::primes;
 
 impl<R: Semiring> Transform<R> for Gcd<usize> {
     /// The multiple zeta transform `(Zf)(d) = Σ_{x: d|x} f(x)`.
@@ -23,7 +23,7 @@ impl<R: Semiring> Transform<R> for Gcd<usize> {
     /// - Space: O(n)
     fn transform(&self, ring: &R, f: &mut [R::Value]) {
         let n = f.len();
-        for p in primes(n) {
+        for p in primes(n - 1) {
             for i in (1..n.div_ceil(p)).rev() {
                 f[i] = ring.add(&f[i], &f[i * p]);
             }
@@ -58,7 +58,7 @@ impl<R: Ring> InverseTransform<R> for Gcd<usize> {
                 *x = ring.add(x, &neg);
             }
         }
-        for p in primes(n) {
+        for p in primes(n - 1) {
             for i in 1..n.div_ceil(p) {
                 f[i] = ring.add(&f[i], &ring.neg(&f[i * p]));
             }

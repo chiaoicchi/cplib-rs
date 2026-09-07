@@ -1,5 +1,6 @@
 use crate::algebra::canonical::Canonical;
 use crate::algebra::{Inv, One, RootOfUnity, Zero};
+use crate::num::prime::is_prime;
 
 /// An element of the prime field `Fp = Z/pZ`.
 ///
@@ -287,28 +288,6 @@ impl<const P: u32> std::fmt::Debug for Fp<P> {
 impl<const P: u32> std::fmt::Display for Fp<P> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
-    }
-}
-
-/// Returns `true` if `n` is prime.
-///
-/// # Complexity
-/// - Time: O(√n)
-/// - Space: O(1)
-const fn is_prime(n: u32) -> bool {
-    if n < 2 {
-        false
-    } else if n & 1 == 0 {
-        n == 2
-    } else {
-        let mut d = 3;
-        while d <= n / d {
-            if n % d == 0 {
-                return false;
-            }
-            d += 2;
-        }
-        true
     }
 }
 
