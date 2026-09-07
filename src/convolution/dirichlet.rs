@@ -6,8 +6,7 @@ use crate::convolution::Convolution;
 impl<R: Semiring> Convolution<R> for Multiplicative<Canonical<usize>> {
     /// The Dirichlet convolution `(f * g)(m) = Σ_{ab=m} f(a)g(b)`, tabulated on `[0, n)`.
     ///
-    /// # Definition
-    /// No transform diagonalized `R[(N, x)]` truncated to `[0, n)`: it is
+    /// No transform diagonalizes `R[(N, x)]` truncated to `[0, n)`: it is
     /// `R[x_p: p prime]` modulo the monomials of index `>= n`, in which every `x_p` is
     /// nilpotent, so the algebra is not semisimple. The product is computed directly.
     ///
@@ -17,7 +16,6 @@ impl<R: Semiring> Convolution<R> for Multiplicative<Canonical<usize>> {
     ///
     /// # Panics
     /// Panics if `f.len() != g.len()`.
-    /// Panics if `f` or `g` is empty.
     fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
         assert_eq!(
             f.len(),
@@ -26,11 +24,10 @@ impl<R: Semiring> Convolution<R> for Multiplicative<Canonical<usize>> {
             f.len(),
             g.len()
         );
-        assert!(f.is_empty(), "f must not be empty");
-        let n = f.len() - 1;
-        let mut h: Vec<R::Value> = (0..=n).map(|_| ring.zero()).collect();
-        for a in 1..=n {
-            for b in 1..=n / a {
+        let n = f.len();
+        let mut h: Vec<R::Value> = (0..n).map(|_| ring.zero()).collect();
+        for a in 1..n {
+            for b in 1..n.div_ceil(a) {
                 h[a * b] = ring.add(&h[a * b], &ring.mul(&f[a], &g[b]));
             }
         }
