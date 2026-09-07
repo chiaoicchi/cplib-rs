@@ -47,7 +47,7 @@ where
 {
     let spf = spf(n);
     let mut table = Vec::with_capacity(n + 1);
-    for m in 0..n {
+    for m in 0..=n {
         if m < 2 {
             table.push(monoid.id());
             continue;
@@ -78,14 +78,16 @@ where
 ///
 /// # Panics
 /// Panics if `f.len() != g.len()`.
+/// Panics if `f` or `g` is empty.
 pub fn dirichlet_convolve<R: Semiring>(ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
     assert_eq!(
         f.len(),
         g.len(),
-        "length must be agree: {} != {}",
+        "length must agree: {} != {}",
         f.len(),
         g.len()
     );
+    assert!(f.is_empty(), "f must not be empty");
     let n = f.len() - 1;
     let mut h: Vec<R::Value> = (0..=n).map(|_| ring.zero()).collect();
     for a in 1..=n {
@@ -99,7 +101,7 @@ pub fn dirichlet_convolve<R: Semiring>(ring: &R, f: &[R::Value], g: &[R::Value])
 /// Euler's totient `φ(n)` from a factorization of `n`.
 ///
 /// # Definition
-/// `φ(n) = #{s in [1, n]: gcd(s, n) = 1} = |(Z/nZ)^*|. It is multiplicative, since the Chinese
+/// `φ(n) = #{s in [1, n]: gcd(s, n) = 1} = |(Z/nZ)^*|`. It is multiplicative, since the Chinese
 /// remainder theorem gives `(Z/abZ)^* = (Z/aZ)^* x (Z/bZ)^*` for coprime `a`, `b`, with
 /// `φ(p^e) = p^e - p^{e-1}`, the multiples of `p` being the residues not coprime to `p^e`. Hence
 /// `φ(n) = Π p^{e-1}(p - 1) = n Π (1 - 1/p)`.
@@ -130,21 +132,7 @@ pub fn phi_table(n: usize) -> Vec<u64> {
     })
 }
 
-/// The Möbius function `μ(m)` for `1 <= m <= n`.
-///
-/// # Definition
-/// See [`mobius`]; tabulated by [`multiplicative_table`].
-///
-/// # Complexity
-/// - Time: O(n log log n)
-/// - Space: O(n)
-pub fn mobius_table(n: usize) -> Vec<i64> {
-    multiplicative_table(&Multiplicative(Canonical::new()), n, |_, e| {
-        if e == 1 { -1 } else { 0 }
-    })
-}
-
-/// The Möbius function `μ(n)` from a factorizaton of `n`.
+/// The Möbius function `μ(n)` from a factorization of `n`.
 ///
 /// # Definition
 /// `μ(n) = (-1)^r` if `n` is a product of `r` distinct primes and `μ(n) = 0` if `n` has a square
@@ -159,6 +147,20 @@ pub fn mobius_table(n: usize) -> Vec<i64> {
 /// - Space: O(1)
 pub fn mobius(factors: &[(u64, u32)]) -> i64 {
     multiplicative(&Multiplicative(Canonical::new()), factors, |_, e| {
+        if e == 1 { -1 } else { 0 }
+    })
+}
+
+/// The Möbius function `μ(m)` for `1 <= m <= n`.
+///
+/// # Definition
+/// See [`mobius`]; tabulated by [`multiplicative_table`].
+///
+/// # Complexity
+/// - Time: O(n log log n)
+/// - Space: O(n)
+pub fn mobius_table(n: usize) -> Vec<i64> {
+    multiplicative_table(&Multiplicative(Canonical::new()), n, |_, e| {
         if e == 1 { -1 } else { 0 }
     })
 }

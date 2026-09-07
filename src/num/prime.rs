@@ -20,7 +20,7 @@ pub const fn is_prime(n: u32) -> bool {
     }
 }
 
-/// The primes below `n` by the sieve of Eratosthenes.
+/// The primes up to `n` by the sieve of Eratosthenes.
 ///
 /// # Complexity
 /// - Time: O(n log log n)
@@ -75,7 +75,7 @@ pub fn factorize(mut n: u64) -> Vec<(u64, u32)> {
     factors
 }
 
-/// The smallest prime factor of every integer below `n` by the linear sieve.
+/// The smallest prime factor of every integer up to `n` by the linear sieve.
 ///
 /// # Definition
 /// `spf[m]` is the least prime dividing `m` for `m >= 2`; `spf[m] == m` iff `m` is prime.

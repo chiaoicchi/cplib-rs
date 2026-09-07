@@ -1,7 +1,7 @@
 use crate::algebra::lcm::Lcm;
 use crate::algebra::{Ring, Semiring};
 use crate::convolution::{InverseTransform, Transform};
-use crate::num::primes::primes;
+use crate::num::prime::primes;
 
 impl<R: Semiring> Transform<R> for Lcm<usize> {
     /// The divisor zeta transform `(Zf)(d) = Σ_{x: x|d} f(x)`.
@@ -32,7 +32,7 @@ impl<R: Semiring> Transform<R> for Lcm<usize> {
                 *zero = ring.add(zero, x);
             }
         }
-        for p in primes(n) {
+        for p in primes(n - 1) {
             for i in 1..n.div_ceil(p) {
                 f[i * p] = ring.add(&f[i * p], &f[i]);
             }
@@ -52,7 +52,7 @@ impl<R: Ring> InverseTransform<R> for Lcm<usize> {
     /// - Space: O(n)
     fn inverse_transform(&self, ring: &R, f: &mut [R::Value]) {
         let n = f.len();
-        for p in primes(n) {
+        for p in primes(n - 1) {
             for i in (1..n.div_ceil(p)).rev() {
                 f[i * p] = ring.add(&f[i * p], &ring.neg(&f[i]));
             }
