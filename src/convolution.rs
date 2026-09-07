@@ -57,8 +57,7 @@ pub trait Convolution<R: Semiring>: Monoid<Value = usize> {
 /// multiplication is `C::convolve`.
 ///
 /// # Contract
-/// `id < n`, and the truncation to `[0, n)` is a ring homomorphism (see [`Convolution`]).
-/// All values have length `n`.
+/// The truncation to `[0, n)` is a ring homomorphism (see [`Convolution`]).
 ///
 /// # Complexity
 /// - Space: O(n) per value
@@ -69,6 +68,8 @@ pub struct MonoidAlgebra<R, C> {
 }
 
 impl<R: Semiring, C: Convolution<R>> MonoidAlgebra<R, C> {
+    /// # Panics
+    /// Panics if `id >= len`.
     pub fn new(ring: R, conv: C, len: usize) -> Self {
         assert!(
             conv.id() < len,
@@ -80,11 +81,14 @@ impl<R: Semiring, C: Convolution<R>> MonoidAlgebra<R, C> {
     pub fn len(&self) -> usize {
         self.len
     }
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
 }
 impl<R: Semiring, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
     type Value = Vec<R::Value>;
     fn zero(&self) -> Vec<R::Value> {
-        (0..self.len()).map(|_| self.ring.zero()).collect()
+        (0..self.len).map(|_| self.ring.zero()).collect()
     }
     fn one(&self) -> Vec<R::Value> {
         let mut e = self.zero();
@@ -118,11 +122,11 @@ impl<R: Semiring, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
 }
 impl<R: Ring, C: Convolution<R>> Ring for MonoidAlgebra<R, C> {
     /// # Panics
-    /// Panics if the lengths of `a`, `b` and `self` differ.
+    /// Panics if the lengths of `a` differ from `self`.
     fn neg(&self, a: &Vec<R::Value>) -> Vec<R::Value> {
         assert!(
             a.len() == self.len,
-            "length mismatch: lhs={}, len={}",
+            "length mismatch: a={}, len={}",
             a.len(),
             self.len
         );
