@@ -251,6 +251,25 @@ forward_ref_op_assign! {
     DivAssign, div_assign;
 }
 
+macro_rules! impl_fold {
+    ($($trait:ident, $method:ident, $id:expr, $op:tt);* $(;)?) => {$(
+        impl<const P: u32> std::iter::$trait for Fp<P> {
+            fn $method<I: Iterator<Item = Self>>(iter: I) -> Self {
+                iter.fold($id, |acc, x| acc $op x)
+            }
+        }
+        impl<'a, const P: u32> std::iter::$trait<&'a Fp<P>> for Fp<P> {
+            fn $method<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
+                iter.fold($id, |acc, x| acc $op x)
+            }
+        }
+    )*};
+}
+impl_fold! {
+    Sum, sum, Self::zero(), +;
+    Product, product, Self::one(), *;
+}
+
 impl<const P: u32> Zero for Fp<P> {
     fn zero() -> Self {
         Self::new(0)
