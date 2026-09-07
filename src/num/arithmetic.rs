@@ -47,18 +47,17 @@ where
 {
     let spf = spf(n);
     let mut table = Vec::with_capacity(n + 1);
-    for m in 0..=n {
+    for (m, spf) in spf.iter().enumerate() {
         if m < 2 {
             table.push(monoid.id());
             continue;
         }
-        let p = spf[m];
         let (mut k, mut e) = (m, 0);
-        while k % p == 0 {
-            k /= p;
+        while k % spf == 0 {
+            k /= spf;
             e += 1;
         }
-        let v = monoid.op(&table[k], &f(p, e));
+        let v = monoid.op(&table[k], &f(*spf, e));
         table.push(v);
     }
     table
