@@ -25,7 +25,7 @@ fn main() {
     let b: Vec<u32> = (0..m).map(|_| parse!(u32)).collect();
     let idx = monotone_minima(n + m - 1, m, |i: usize, j: usize| {
         if i < j || i - j >= n {
-            std::u32::MAX
+            u32::MAX
         } else {
             a[i - j] + b[j]
         }
