@@ -1,3 +1,4 @@
+pub mod compression;
 pub mod dsu;
 pub mod dual_segment_tree;
 pub mod fenwick_tree;
