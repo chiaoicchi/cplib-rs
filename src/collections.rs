@@ -5,3 +5,4 @@ pub mod fenwick_tree;
 pub mod lazy_segment_tree;
 pub mod potential_dsu;
 pub mod segment_tree;
+pub mod tree;

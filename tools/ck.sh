@@ -30,6 +30,7 @@ else
 fi
 
 echo "generate test cases"
+ulimit -s unlimited
 (cd "$lcp" && ./generate.py -p "$p")
 
 dir="$(find "$lcp" -mindepth 2 -maxdepth 2 -type d -name "$p" | head -n 1)"
