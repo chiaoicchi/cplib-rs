@@ -6,5 +6,4 @@ pub mod lazy_segment_tree;
 pub mod potential_dsu;
 pub mod segment_tree;
 pub mod sparse_table;
-pub mod suffix_array;
 pub mod tree;

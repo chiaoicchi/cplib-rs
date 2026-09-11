@@ -6,8 +6,8 @@ use crate::collections::sparse_table::SparseTable;
 /// # Definition
 /// Let `s` be a sequence of length `n` over a totally ordered alphabet, and `s[i..]` its suffix
 /// starting at `i`. `sa` is the permutation of `[0, n)` such that `s[sa[0]..] < s[sa[1]..] < ...`
-/// in lexicographic order, and `isa` is its inverse. `lcp[k]` is the length of the longest common prefix
-/// of `s[sa[k]..]` and `s[sa[k + 1]..]` for `k` in `[0, n - 1)`.
+/// in lexicographic order, and `isa` is its inverse. `lcp[k]` is the length of the longest common
+/// prefix of `s[sa[k]..]` and `s[sa[k + 1]..]` for `k` in `[0, n - 1)`.
 ///
 /// For `i != j` with `isa[i] < isa[j]`, the longest common prefix of `s[i..]` and `s[j..]` has
 /// length `min(lcp[isa[i]..isa[j]])`, since the longest common prefix of two suffixes is the

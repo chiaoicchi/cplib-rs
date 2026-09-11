@@ -5,3 +5,4 @@ pub mod linear;
 pub mod monge;
 pub mod num;
 mod range;
+pub mod string;
