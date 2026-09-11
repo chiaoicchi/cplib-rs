@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, One, Zero};
+use crate::algebra::{Commutative, Idempotent, Monoid, One, Semigroup, Zero};
 use crate::num::euclid::lcm;
 
 /// The lcm monoid of the non-negative integers.
@@ -40,13 +40,26 @@ impl<
         + std::ops::Rem<Output = T>
         + Zero
         + One,
-> Monoid for Lcm<T>
+> Semigroup for Lcm<T>
 {
     type Value = T;
-    fn id(&self) -> T {
-        T::one()
-    }
     fn op(&self, a: &T, b: &T) -> T {
         lcm(a.clone(), b.clone())
     }
 }
+impl<
+    T: Clone
+        + PartialEq
+        + std::ops::Mul<Output = T>
+        + std::ops::Div<Output = T>
+        + std::ops::Rem<Output = T>
+        + Zero
+        + One,
+> Monoid for Lcm<T>
+{
+    fn id(&self) -> T {
+        T::one()
+    }
+}
+impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for Lcm<T> {}
+impl<T: Clone + std::ops::BitOr<Output = T>> Idempotent for Lcm<T> {}

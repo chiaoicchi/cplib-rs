@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, Semiring};
+use crate::algebra::{Monoid, Semigroup, Semiring};
 
 /// The multiplicative monoid of a semiring `R`, i.e. `R` with its addition forgotten.
 ///
@@ -7,12 +7,14 @@ use crate::algebra::{Monoid, Semiring};
 #[derive(Clone, Copy, Default)]
 pub struct Multiplicative<R>(pub R);
 
-impl<R: Semiring> Monoid for Multiplicative<R> {
+impl<R: Semiring> Semigroup for Multiplicative<R> {
     type Value = R::Value;
-    fn id(&self) -> R::Value {
-        self.0.one()
-    }
     fn op(&self, a: &R::Value, b: &R::Value) -> R::Value {
         self.0.mul(a, b)
+    }
+}
+impl<R: Semiring> Monoid for Multiplicative<R> {
+    fn id(&self) -> R::Value {
+        self.0.one()
     }
 }

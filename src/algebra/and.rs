@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, Zero};
+use crate::algebra::{Commutative, Idempotent, Monoid, Semigroup, Zero};
 
 /// The and monoid of `(F_2)^n`.
 ///
@@ -31,12 +31,16 @@ impl<T> Clone for And<T> {
 }
 impl<T> Copy for And<T> {}
 
-impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T> + Zero> Monoid for And<T> {
+impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T>> Semigroup for And<T> {
     type Value = T;
-    fn id(&self) -> T {
-        !T::zero()
-    }
     fn op(&self, a: &T, b: &T) -> T {
         a.clone() & b.clone()
     }
 }
+impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T> + Zero> Monoid for And<T> {
+    fn id(&self) -> T {
+        !T::zero()
+    }
+}
+impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for And<T> {}
+impl<T: Clone + std::ops::BitOr<Output = T>> Idempotent for And<T> {}

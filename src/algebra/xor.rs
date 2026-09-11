@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, Zero};
+use crate::algebra::{Commutative, Monoid, Semigroup, Zero};
 
 /// The xor monoid of `(F_2)^n`.
 ///
@@ -26,12 +26,15 @@ impl<T> Clone for Xor<T> {
 }
 impl<T> Copy for Xor<T> {}
 
-impl<T: Clone + std::ops::BitXor<Output = T> + Zero> Monoid for Xor<T> {
+impl<T: Clone + std::ops::BitXor<Output = T>> Semigroup for Xor<T> {
     type Value = T;
-    fn id(&self) -> T {
-        T::zero()
-    }
     fn op(&self, a: &T, b: &T) -> T {
         a.clone() ^ b.clone()
     }
 }
+impl<T: Clone + std::ops::BitXor<Output = T> + Zero> Monoid for Xor<T> {
+    fn id(&self) -> T {
+        T::zero()
+    }
+}
+impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for Xor<T> {}

@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::Monoid;
 use cplib::algebra::affine::Affine;
 use cplib::algebra::canonical::Canonical;
+use cplib::algebra::{Monoid, Semigroup};
 use cplib::collections::segment_tree::SegmentTree;
 use cplib::collections::tree::{Segment, Tree};
 use cplib::num::fp::{Fp, fp};

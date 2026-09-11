@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, Zero};
+use crate::algebra::{Commutative, Idempotent, Monoid, Semigroup, Zero};
 use crate::num::euclid::gcd;
 
 /// The gcd monoid of the non-negative integers.
@@ -34,12 +34,16 @@ impl<T> Clone for Gcd<T> {
 }
 impl<T> Copy for Gcd<T> {}
 
-impl<T: Clone + PartialEq + std::ops::Rem<Output = T> + Zero> Monoid for Gcd<T> {
+impl<T: Clone + PartialEq + std::ops::Rem<Output = T> + Zero> Semigroup for Gcd<T> {
     type Value = T;
-    fn id(&self) -> T {
-        T::zero()
-    }
     fn op(&self, a: &T, b: &T) -> T {
         gcd(a.clone(), b.clone())
     }
 }
+impl<T: Clone + PartialEq + std::ops::Rem<Output = T> + Zero> Monoid for Gcd<T> {
+    fn id(&self) -> T {
+        T::zero()
+    }
+}
+impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for Gcd<T> {}
+impl<T: Clone + std::ops::BitOr<Output = T>> Idempotent for Gcd<T> {}
