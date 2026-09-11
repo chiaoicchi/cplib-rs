@@ -1,4 +1,4 @@
-use crate::algebra::Monoid;
+use crate::algebra::{Monoid, Semigroup};
 
 /// The additive group `Z/nZ`.
 ///
@@ -21,12 +21,14 @@ impl Cyclic {
     }
 }
 
-impl Monoid for Cyclic {
+impl Semigroup for Cyclic {
     type Value = usize;
-    fn id(&self) -> usize {
-        0
-    }
     fn op(&self, a: &usize, b: &usize) -> usize {
         (a + b) % self.n
+    }
+}
+impl Monoid for Cyclic {
+    fn id(&self) -> usize {
+        0
     }
 }

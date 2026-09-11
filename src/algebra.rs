@@ -6,10 +6,22 @@ pub mod closures;
 pub mod cyclic;
 pub mod gcd;
 pub mod lcm;
+pub mod max;
+pub mod min;
 pub mod multiplicative;
 pub mod or;
 pub mod power;
 pub mod xor;
+
+/// A semigroup trait
+///
+/// # Definition
+/// A tuple `(Value, op)` is called a semigroup if it satisfies:
+/// - (associativity) `op(op(a, b), c) = op(a, op(b, c))` for all `a`, `b`, `c`.
+pub trait Semigroup {
+    type Value;
+    fn op(&self, a: &Self::Value, b: &Self::Value) -> Self::Value;
+}
 
 /// A monoid trait
 ///
@@ -17,10 +29,8 @@ pub mod xor;
 /// A triple `(Value, id, op)` is called a monoid if it satisfies:
 /// - (associativity) `op(op(a, b), c) = op(a, op(b, c))` for all `a`, `b`, `c`.
 /// - (identity) `op(id(), a) = op(a, id()) = a` for all `a`.
-pub trait Monoid {
-    type Value;
+pub trait Monoid: Semigroup {
     fn id(&self) -> Self::Value;
-    fn op(&self, a: &Self::Value, b: &Self::Value) -> Self::Value;
 }
 
 /// A group trait
@@ -101,6 +111,12 @@ pub trait RootOfUnity: Field {
 /// An operation `op` is called commutative if `op(a, b) = op(b, a)` for all `a`, `b`.
 pub trait Commutative {}
 
+/// A marker trait for idempotent operations.
+///
+/// # Definition
+/// An operation `op` is cvalled idempotent if `op(a, op(a, b)) = op(a, b)` for all `a  , `b`.
+pub trait Idempotent {}
+
 /// A type with a distinguished element `zero`.
 ///
 /// # Contract
@@ -115,6 +131,16 @@ pub trait Zero {
 /// `one` is the multiplicative identity of `T`, i.e. `T::one() * a = a * T::one() = a` for all `a`.
 pub trait One {
     fn one() -> Self;
+}
+
+/// A type with a least and a greatest element.
+///
+/// # Contract
+/// `min_value` and `max_value` are the least and the greatest element of `T` under `Ord`,
+/// i.e. `T::min_value() <= a <= T::max_value()` for all `a`.
+pub trait Bounded: Ord {
+    fn min_value() -> Self;
+    fn max_value() -> Self;
 }
 
 /// A type whose nonzero elements have multiplicative inverses.

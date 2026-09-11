@@ -1,4 +1,4 @@
-use crate::algebra::{Monoid, Zero};
+use crate::algebra::{Commutative, Idempotent, Monoid, Semigroup, Zero};
 
 /// The or monoid of `({0, 1}, 0, |)^n`.
 ///
@@ -26,12 +26,16 @@ impl<T> Clone for Or<T> {
 }
 impl<T> Copy for Or<T> {}
 
-impl<T: Clone + std::ops::BitOr<Output = T> + Zero> Monoid for Or<T> {
+impl<T: Clone + std::ops::BitOr<Output = T>> Semigroup for Or<T> {
     type Value = T;
-    fn id(&self) -> T {
-        T::zero()
-    }
     fn op(&self, a: &T, b: &T) -> T {
         a.clone() | b.clone()
     }
 }
+impl<T: Clone + std::ops::BitOr<Output = T> + Zero> Monoid for Or<T> {
+    fn id(&self) -> T {
+        T::zero()
+    }
+}
+impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for Or<T> {}
+impl<T: Clone + std::ops::BitOr<Output = T>> Idempotent for Or<T> {}

@@ -1,4 +1,4 @@
-use crate::algebra::{Action, Monoid, Semiring};
+use crate::algebra::{Action, Monoid, Semigroup, Semiring};
 
 /// The monoid of affine maps over a semiring `R`, under composition.
 ///
@@ -8,16 +8,18 @@ use crate::algebra::{Action, Monoid, Semiring};
 #[derive(Clone, Copy, Default)]
 pub struct Affine<R>(pub R);
 
-impl<R: Semiring> Monoid for Affine<R> {
+impl<R: Semiring> Semigroup for Affine<R> {
     type Value = (R::Value, R::Value);
-    fn id(&self) -> (R::Value, R::Value) {
-        (self.0.one(), self.0.zero())
-    }
     fn op(&self, f: &(R::Value, R::Value), g: &(R::Value, R::Value)) -> (R::Value, R::Value) {
         (
             self.0.mul(&g.0, &f.0),
             self.0.add(&self.0.mul(&g.0, &f.1), &g.1),
         )
+    }
+}
+impl<R: Semiring> Monoid for Affine<R> {
+    fn id(&self) -> (R::Value, R::Value) {
+        (self.0.one(), self.0.zero())
     }
 }
 

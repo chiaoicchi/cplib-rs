@@ -1,4 +1,4 @@
-use crate::algebra::{Commutative, Group, Monoid, Ring, Semiring};
+use crate::algebra::{Commutative, Group, Monoid, Ring, Semigroup, Semiring};
 
 /// The additive group of a semiring `R`, i.e. `R` with its multiplication forgotten.
 ///
@@ -8,13 +8,15 @@ use crate::algebra::{Commutative, Group, Monoid, Ring, Semiring};
 #[derive(Clone, Copy, Default)]
 pub struct Additive<R>(pub R);
 
-impl<R: Semiring> Monoid for Additive<R> {
+impl<R: Semiring> Semigroup for Additive<R> {
     type Value = R::Value;
-    fn id(&self) -> R::Value {
-        self.0.zero()
-    }
     fn op(&self, a: &R::Value, b: &R::Value) -> R::Value {
         self.0.add(a, b)
+    }
+}
+impl<R: Semiring> Monoid for Additive<R> {
+    fn id(&self) -> R::Value {
+        self.0.zero()
     }
 }
 impl<R: Ring> Group for Additive<R> {
