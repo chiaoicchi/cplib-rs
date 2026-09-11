@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::string::suffix_array::SuffixArray;
+use cplib::sequence::suffix_array::SuffixArray;
 
 fn main() {
     let mut input = Vec::new();
