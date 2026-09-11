@@ -32,7 +32,7 @@ impl<T: Clone + Ord> Semigroup for Min<T> {
 }
 impl<T: Clone + Ord + Bounded> Monoid for Min<T> {
     fn id(&self) -> T {
-        T::min_value()
+        T::max_value()
     }
 }
 impl<T: Clone + Ord> Commutative for Min<T> {}

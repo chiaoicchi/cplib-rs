@@ -114,7 +114,7 @@ pub trait Commutative {}
 /// A marker trait for idempotent operations.
 ///
 /// # Definition
-/// An operation `op` is cvalled idempotent if `op(a, op(a, b)) = op(a, b)` for all `a  , `b`.
+/// An operation `op` is called idempotent if `op(a, a) = a` for all `a`.
 pub trait Idempotent {}
 
 /// A type with a distinguished element `zero`.

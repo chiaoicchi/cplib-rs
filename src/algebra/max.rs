@@ -3,7 +3,7 @@ use crate::algebra::{Bounded, Commutative, Idempotent, Monoid, Semigroup};
 /// The max monoid of a totally ordered set.
 ///
 /// # Definition
-/// `max` is associative, commutative and idempotent, so `(T, max)` is join-semilattice under `Ord`,
+/// `max` is associative, commutative and idempotent, so `(T, max)` is a join-semilattice under `Ord`,
 /// and the least element of `T` is the identity of the join: `max(min_value, x) = x`.
 pub struct Max<T>(std::marker::PhantomData<T>);
 impl<T> Max<T> {
@@ -32,7 +32,7 @@ impl<T: Clone + Ord> Semigroup for Max<T> {
 }
 impl<T: Clone + Ord + Bounded> Monoid for Max<T> {
     fn id(&self) -> T {
-        T::max_value()
+        T::min_value()
     }
 }
 impl<T: Clone + Ord> Commutative for Max<T> {}
