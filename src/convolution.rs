@@ -1,3 +1,4 @@
+pub mod additive;
 pub mod and;
 pub mod cyclic;
 pub mod dirichlet;
@@ -47,6 +48,29 @@ pub trait InverseTransform<R: Semiring>: Transform<R> {
 /// Panics if `f.len() != g.len()`, or if the length is not supported by `Self`.
 pub trait Convolution<R: Semiring>: Monoid<Value = usize> {
     fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value>;
+}
+
+/// A convolution in `R[Self]` solved online, i.e. with the first factor determined coefficient by
+/// coefficient from the partial products; also known as relaxed multiplication.
+///
+/// # Definition
+/// Given `g` and a map `step`, `online_convolve(ring, g, step)` returns the unique `f` with
+/// `f(t) = step(t, Σ_{op(x, y) = t, y != id} f(x) g(y))` for `t` in `[0, n)`, where `n = g.len()`.
+/// The sum ranges over `x < t` by the contract, so `f(t)` is determined by `f(0), ..., f(t - 1)`.
+///
+/// # Contract
+/// `op(x, y) > x` for all `x` and all `y != id`, so that the truncation to `[0, n)` is a ring
+/// homomorphism (see [`Convolution`]) and `R[Self]` is strictly graded by the index.
+///
+/// # Panics
+/// Panics if the length is not supported by `Self`.
+pub trait OnlineConvolution<R: Semiring>: Convolution<R> {
+    fn online_convolve(
+        &self,
+        ring: &R,
+        g: &[R::Value],
+        step: impl FnMut(usize, R::Value) -> R::Value,
+    ) -> Vec<R::Value>;
 }
 
 /// The monoid algebra `R[C]` truncated to `[0, n)`, as a semiring with values `Vec<R::Value>`.
