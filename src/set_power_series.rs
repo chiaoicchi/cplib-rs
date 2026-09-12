@@ -8,8 +8,8 @@ use crate::convolution::{InverseTransform, Transform};
 /// `R[x_1, ..., x_n] / (x_1^2, ..., x_n^2)`, the free `R`-module on the subsets of `[0, n)`
 /// (the monomial `Π_{v in S} x_v` is indexed by `S`) with the product extended bilinearly from
 /// `x_S x_T = x_{S or T}` if `S and T = 0` and `0` otherwise, i.e. the subset convolution
-/// `(f * g)(S) = Σ_{T is subset of S} f(T) g(S\T)`. Its zero is the zero vector, its one is `δ_0`,
-/// and addition is pointwise.
+/// `(f * g)(S) = Σ_{T is subset of S} f(T) g(S\T)`. Its zero is the zero vector,
+/// its one is `δ_0`, and addition is pointwise.
 ///
 /// # Complexity
 /// - Space: O(2^n) per value
