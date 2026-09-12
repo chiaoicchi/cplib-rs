@@ -9,12 +9,18 @@ impl<R: RootOfUnity> Convolution<R> for Additive<Canonical<usize>>
 where
     R::Value: Clone,
 {
+    /// The polynomial product `(f * g)(k) = Σ_{i + j = k} f(i) g(j)`, tablated on `[0, n)`.
+    ///
+    /// `R[(N, +)] = R[t]` is computed by the cyclic convolution of a length at least `2n - 1`,
+    /// in which the product has no wrap-around (see [`convolve_poly`]).
+    ///
     /// # Complexity
     /// - Time: O(n log n)
     /// - Space: O(n)
     ///
     /// # Panics
     /// Panics if `f.len() != g.len()`.
+    /// Panics if `R` has no primitive root of unity of order at least `2n`.
     fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
         assert_eq!(
             f.len(),
@@ -31,6 +37,9 @@ impl<R: RootOfUnity> OnlineConvolution<R> for Additive<Canonical<usize>>
 where
     R::Value: Clone,
 {
+    /// The online polynomial product by the divide and conquer of [`cdq`], each block
+    /// contributing through [`convolve_poly`].
+    ///
     /// # Complexity
     /// - Time: O(n log^2 n), and `n` calls of `step`
     /// - Space: O(n)
