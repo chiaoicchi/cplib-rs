@@ -1,3 +1,5 @@
+use crate::divide_and_conquer::cdq;
+
 /// The row minima of a monotone matrix.
 ///
 /// # Definition
@@ -75,31 +77,25 @@ pub fn monge_dp<T: PartialOrd + Clone + std::ops::Add<Output = T>>(
     zero: T,
     cost: impl Fn(usize, usize) -> T,
 ) -> Vec<T> {
-    fn rec<T: PartialOrd + Clone + std::ops::Add<Output = T>>(
-        cost: &impl Fn(usize, usize) -> T,
-        dp: &mut [Option<T>],
-        (l, r): (usize, usize),
-    ) {
-        if r - l <= 1 {
-            return;
-        }
-        let o = l + (r - l) / 2;
-        rec(cost, dp, (l, o));
-        let f = |i: usize, j: usize| dp[l + j].clone().unwrap() + cost(l + j, o + i);
-        let argmin = monotone_minima(r - o, o - l, f);
-        for (i, &j) in argmin.iter().enumerate() {
-            let v = dp[l + j].clone().unwrap() + cost(l + j, o + i);
-            let cur = &mut dp[o + i];
-            if cur.as_ref().is_none_or(|c| v < *c) {
-                *cur = Some(v);
-            }
-        }
-        rec(cost, dp, (o, r));
-    }
     let mut dp = vec![None; n];
     if n > 0 {
         dp[0] = Some(zero);
-        rec(&cost, &mut dp, (0, n));
+        cdq(
+            n,
+            |l: usize, m: usize, r: usize| {
+                let argmin = monotone_minima(r - m, m - l, |i, j| {
+                    dp[l + j].clone().unwrap() + cost(l + j, m + i)
+                });
+                for (i, &j) in argmin.iter().enumerate() {
+                    let v = dp[l + j].clone().unwrap() + cost(l + j, m + i);
+                    let cur = &mut dp[m + i];
+                    if cur.as_ref().is_none_or(|c| v < *c) {
+                        *cur = Some(v);
+                    }
+                }
+            },
+            |_| {},
+        );
     }
     dp.into_iter().map(Option::unwrap).collect()
 }
