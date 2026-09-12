@@ -6,3 +6,4 @@ pub mod monge;
 pub mod num;
 mod range;
 pub mod sequence;
+pub mod set_power_series;
