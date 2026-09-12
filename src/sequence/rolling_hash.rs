@@ -51,7 +51,7 @@ impl<const K: u32> SequenceHash<K> {
 /// # Definition
 /// `H(t u) = H(t) b^|u| + H(u)`, with the empty sequence as the identity.
 #[derive(Clone, Copy)]
-pub struct Concat<const K: u32>(Mersenne<K>);
+pub struct Concat<const K: u32>(pub Mersenne<K>);
 impl<const K: u32> Semigroup for Concat<K> {
     type Value = SequenceHash<K>;
     /// # Complexity
