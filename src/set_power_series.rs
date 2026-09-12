@@ -253,6 +253,9 @@ where
     ranked_mobius(ring, n, &mut h)
 }
 
+/// Returns `Z(f_d)` for each rank `d` in `[0, n]`, where `f_d(S) = [|S| = d] f(S)` and `Z` is the
+/// subset zeta transform `(Zf)(S) = Σ_{T subset of S} f(T)`.
+///
 /// # Complexity
 /// - Time: O(2^n n^2)
 /// - Space: O(2^n n)
@@ -271,8 +274,11 @@ where
     layers
 }
 
+/// Returns `S -> Z^{-1}(h_{|S|})(S)`, the subset Möbius transform of each layer read on the
+/// diagonal, which recovers `f` from `ranked_zeta(f)`.
+///
 /// # Complexity
-/// - Time: O(2^n n)
+/// - Time: O(2^n n^2)
 /// - Space: O(2^n n)
 fn ranked_mobius<R: Ring>(ring: &R, n: usize, layers: &mut [Vec<R::Value>]) -> Vec<R::Value>
 where
