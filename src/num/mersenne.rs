@@ -91,7 +91,7 @@ impl<const K: u32> Mersenne<K> {
     /// Panics if `self == 0`.
     pub fn inv(self) -> Self {
         assert!(self.0 != 0, "zero has no inverse in Z/(2^{K}-1)Z");
-        self.pow(Self::MODULUS as u64 - 2)
+        self.pow(Self::MODULUS - 2)
     }
 }
 
