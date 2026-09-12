@@ -15,27 +15,29 @@
 /// - Time: O(n) calls of `contribute`, whose widths `r - l` sum to O(n log n), and `n` calls of
 ///   `finish`
 /// - Space: O(log n)
-pub fn cdq(
+pub fn cdq<S>(
     n: usize,
-    mut contribute: impl FnMut(usize, usize, usize),
-    mut finish: impl FnMut(usize),
+    state: &mut S,
+    mut contribute: impl FnMut(&mut S, usize, usize, usize),
+    mut finish: impl FnMut(&mut S, usize),
 ) {
-    fn rec(
+    fn rec<S>(
         l: usize,
         r: usize,
-        contribute: &mut impl FnMut(usize, usize, usize),
-        finish: &mut impl FnMut(usize),
+        state: &mut S,
+        contribute: &mut impl FnMut(&mut S, usize, usize, usize),
+        finish: &mut impl FnMut(&mut S, usize),
     ) {
         if r - 1 == l {
-            finish(l);
+            finish(state, l);
             return;
         }
         let m = l + (r - l) / 2;
-        rec(l, m, contribute, finish);
-        contribute(l, m, r);
-        rec(m, r, contribute, finish);
+        rec(l, m, state, contribute, finish);
+        contribute(state, l, m, r);
+        rec(m, r, state, contribute, finish);
     }
     if n > 0 {
-        rec(0, n, &mut contribute, &mut finish);
+        rec(0, n, state, &mut contribute, &mut finish);
     }
 }

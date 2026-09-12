@@ -82,7 +82,8 @@ pub fn monge_dp<T: PartialOrd + Clone + std::ops::Add<Output = T>>(
         dp[0] = Some(zero);
         cdq(
             n,
-            |l: usize, m: usize, r: usize| {
+            &mut dp,
+            |dp, l, m, r| {
                 let argmin = monotone_minima(r - m, m - l, |i, j| {
                     dp[l + j].clone().unwrap() + cost(l + j, m + i)
                 });
@@ -94,7 +95,7 @@ pub fn monge_dp<T: PartialOrd + Clone + std::ops::Add<Output = T>>(
                     }
                 }
             },
-            |_| {},
+            |_, _| {},
         );
     }
     dp.into_iter().map(Option::unwrap).collect()
