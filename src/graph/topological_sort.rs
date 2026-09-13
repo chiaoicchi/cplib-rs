@@ -23,12 +23,7 @@ pub fn topological_sort(adjacency: &[Vec<usize>]) -> Option<Vec<usize>> {
             degree[v] += 1;
         }
     }
-    let mut stack = vec![];
-    for i in 0..n {
-        if degree[i] == 0 {
-            stack.push(i);
-        }
-    }
+    let mut stack: Vec<usize> = (0..n).filter(|i| degree[*i] == 0).collect();
     let mut order = Vec::with_capacity(n);
     while let Some(u) = stack.pop() {
         order.push(u);
