@@ -8,7 +8,7 @@
 /// Adjacent intervals with equal values are not merged automatically; see [`RangeMap::merge`].
 ///
 /// # Invariants
-/// `value` maps `a_i` to `(b_i, v_i)` with `a_i < b_i`, and consecutive keys `a_i < a_j`
+/// The maps sends `a_i` to `(b_i, v_i)` with `a_i < b_i`, and consecutive keys `a_i < a_j`
 /// satisfy `b_i <= a_j`.
 ///
 /// # Complexity
@@ -90,9 +90,12 @@ impl<K: Ord + Copy, V: Clone> RangeMap<K, V> {
     ///
     /// # Panics
     /// Panics if `l >= r`.
-    pub fn range(&self, l: K, r: K) -> impl Iterator<Item = (K, K, &V)> {
+    pub fn range(&self, l: K, r: K) -> impl DoubleEndedIterator<Item = (K, K, &V)> {
         assert!(l < r, "l must be less than r");
-        self.0.range(l..r).map(|(&a, (b, v))| (a, *b, v))
+        let head = self.0.range(..l).next_back().filter(|(_, (b, _))| l < *b);
+        head.into_iter()
+            .chain(self.0.range(l..r))
+            .map(|(&a, (b, v))| (a, *b, v))
     }
 
     /// Iterates over all intervals in increasing order, as `(a, b, &v)`.
@@ -100,7 +103,7 @@ impl<K: Ord + Copy, V: Clone> RangeMap<K, V> {
     /// # Complexity
     /// - Time: O(m) to exhaust
     /// - Space: O(1)
-    pub fn iter(&self) -> impl Iterator<Item = (K, K, &V)> {
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = (K, K, &V)> {
         self.0.iter().map(|(&a, (b, v))| (a, *b, v))
     }
 
@@ -170,5 +173,11 @@ impl<K: Ord + Copy, V: Clone + PartialEq> RangeMap<K, V> {
             b = d;
         }
         Some((a, b))
+    }
+}
+
+impl<K: Ord + Copy, V: Clone> Default for RangeMap<K, V> {
+    fn default() -> Self {
+        Self::new()
     }
 }
