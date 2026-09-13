@@ -1,4 +1,5 @@
 pub mod algebra;
+pub mod binary_optimization;
 pub mod collections;
 pub mod convolution;
 pub mod divide_and_conquer;
