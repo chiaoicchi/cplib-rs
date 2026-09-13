@@ -4,7 +4,7 @@ use crate::collections::range_map::RangeMap;
 /// stored as its decomposition into maximal intervals.
 ///
 /// # Definition
-/// A finite subset `S` of `K` of the form `[a_1, b_1) or ... or [a_m, b_m)` with
+/// A finite subset `S` of `K` of the union of `[a_1, b_1), ..., [a_m, b_m)` with
 /// `a_1 < b_1 < a_2 < b_2 < ... < a_m < b_m`. The decomposition is unique.
 ///
 /// # Invariants

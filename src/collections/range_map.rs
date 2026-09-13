@@ -8,7 +8,7 @@
 /// Adjacent intervals with equal values are not merged automatically; see [`RangeMap::merge`].
 ///
 /// # Invariants
-/// The maps sends `a_i` to `(b_i, v_i)` with `a_i < b_i`, and consecutive keys `a_i < a_j`
+/// The map sends `a_i` to `(b_i, v_i)` with `a_i < b_i`, and consecutive keys `a_i < a_j`
 /// satisfy `b_i <= a_j`.
 ///
 /// # Complexity
