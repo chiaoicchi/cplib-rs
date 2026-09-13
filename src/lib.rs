@@ -2,6 +2,7 @@ pub mod algebra;
 pub mod collections;
 pub mod convolution;
 pub mod divide_and_conquer;
+pub mod graph;
 pub mod linear;
 pub mod monge;
 pub mod num;
