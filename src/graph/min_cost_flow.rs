@@ -113,7 +113,7 @@ impl<
     ///
     /// # Complexity
     /// - Time: O(F (n + m) log n), where `F` is the number of augmentations, plus the
-    /// recomputation of the potential if needed.
+    ///   recomputation of the potential if needed.
     /// - Space: O(n)
     ///
     /// # Panics
