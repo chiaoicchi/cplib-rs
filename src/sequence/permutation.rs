@@ -15,6 +15,9 @@ pub fn next_permutation<T: Ord>(a: &mut [T]) -> bool {
 
 /// Rewrites `a` as the next rearrangement in the lexicographic order induced by `compare`.
 ///
+/// # Definition
+/// As `next_permutation`, with `compare` in place of the order of `T`.
+///
 /// # Contract
 /// `compare` is a total order: it is reflexive, antisymmetric, transitive, and total.
 ///
@@ -73,7 +76,7 @@ pub fn prev_permutation<T: Ord>(a: &mut [T]) -> bool {
 /// As `prev_permutation`, with `compare` in place of the order of `T`. Equivalently, it is
 /// `next_permutation_by` for the opposite order.
 ///
-/// # Cotract
+/// # Contract
 /// `compare` is a total order.
 ///
 /// # Complexity
