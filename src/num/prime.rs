@@ -74,33 +74,3 @@ pub fn factorize(mut n: u64) -> Vec<(u64, u32)> {
     }
     factors
 }
-
-/// The smallest prime factor of every integer up to `n` by the linear sieve.
-///
-/// # Definition
-/// `spf[m]` is the least prime dividing `m` for `m >= 2`; `spf[m] == m` iff `m` is prime.
-/// `spf[0] = 0` and `spf[1] = 1`; neither is a prime factor.
-///
-/// # Complexity
-/// - Time: O(n)
-/// - Space: O(n)
-pub fn spf(n: usize) -> Vec<usize> {
-    let mut spf = vec![0; n + 1];
-    if n > 1 {
-        spf[1] = 1;
-    }
-    let mut ps = Vec::new();
-    for i in 2..=n {
-        if spf[i] == 0 {
-            spf[i] = i;
-            ps.push(i);
-        }
-        for &p in &ps {
-            if p > spf[i] || i * p > n {
-                break;
-            }
-            spf[i * p] = p;
-        }
-    }
-    spf
-}
