@@ -48,11 +48,11 @@ where
     let lpf = Lpf::new(n);
     let mut table = Vec::with_capacity(n + 1);
     for i in 0..=n {
-        let lpf = lpf.lpf(i);
         if i < 2 {
             table.push(monoid.id());
             continue;
         }
+        let lpf = lpf.lpf(i);
         let (mut k, mut e) = (i, 0);
         while k % lpf == 0 {
             k /= lpf;

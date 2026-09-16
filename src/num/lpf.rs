@@ -2,7 +2,7 @@
 ///
 /// # Definition
 /// For `m >= 2`, `lpf(m)` is the least prime dividing `m`; it exists by unique factorization, and
-/// `lpf(m) == m` exactly when `m` is prime. Dividing `lpf(m)` out repeatedly strictly decreases
+/// `lpf(m) = m` exactly when `m` is prime. Dividing `lpf(m)` out repeatedly strictly decreases
 /// `m`, so the table determines the factorization of every `m` in `[1, n]` in `Ω(m)` divisions,
 /// where `Ω(m)` is the number of prime factors of `m` with multiplicity and `ω(m)` the number of
 /// distinct ones.
@@ -87,7 +87,7 @@ impl Lpf {
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m > bound()`
+    /// Panics if `m > bound()`.
     pub fn is_prime(&self, m: usize) -> bool {
         assert!(
             m <= self.bound(),
@@ -110,7 +110,7 @@ impl Lpf {
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m == 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > bound()`.
     pub fn prime_factors(&self, mut m: usize) -> impl Iterator<Item = (usize, u32)> + '_ {
         assert!(m > 0, "m must be greater than 0: m={m}");
         assert!(
@@ -134,12 +134,15 @@ impl Lpf {
 
     /// The prime factorization of `m`, collected.
     ///
+    /// # Definition
+    /// See [`Lpf::prime_factors`].
+    ///
     /// # Complexity
     /// - Time: O(Ω(m))
     /// - Space: O(ω(m))
     ///
     /// # Panics
-    /// Panics if `m == 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > bound()`.
     pub fn factorize(&self, m: usize) -> Vec<(usize, u32)> {
         self.prime_factors(m).collect()
     }
