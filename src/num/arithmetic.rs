@@ -1,7 +1,7 @@
 use crate::algebra::Monoid;
 use crate::algebra::canonical::Canonical;
 use crate::algebra::multiplicative::Multiplicative;
-use crate::num::prime::spf;
+use crate::num::lpf::Lpf;
 
 /// Evaluates a multiplicative function from its values `f(p, e) = f(p^e)` at prime powers.
 ///
@@ -45,19 +45,20 @@ pub fn multiplicative_table<M: Monoid>(
 where
     M::Value: Clone,
 {
-    let spf = spf(n);
+    let lpf = Lpf::new(n);
     let mut table = Vec::with_capacity(n + 1);
-    for (m, spf) in spf.iter().enumerate() {
-        if m < 2 {
+    for i in 0..=n {
+        if i < 2 {
             table.push(monoid.id());
             continue;
         }
-        let (mut k, mut e) = (m, 0);
-        while k % spf == 0 {
-            k /= spf;
+        let lpf = lpf.lpf(i);
+        let (mut k, mut e) = (i, 0);
+        while k % lpf == 0 {
+            k /= lpf;
             e += 1;
         }
-        let v = monoid.op(&table[k], &f(*spf, e));
+        let v = monoid.op(&table[k], &f(lpf, e));
         table.push(v);
     }
     table
