@@ -10,4 +10,5 @@ pub mod num;
 pub mod poly;
 mod range;
 pub mod sequence;
+pub mod set_function;
 pub mod set_power_series;
