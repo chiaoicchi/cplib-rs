@@ -16,7 +16,7 @@ impl<R: Semiring> Convolution<R> for Multiplicative<Canonical<usize>> {
     ///
     /// # Panics
     /// Panics if `f.len() != g.len()`.
-    fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
+    fn convolve(&self, ring: &R, f: Vec<R::Value>, g: Vec<R::Value>) -> Vec<R::Value> {
         assert_eq!(
             f.len(),
             g.len(),

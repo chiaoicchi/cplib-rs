@@ -7,6 +7,7 @@ pub mod graph;
 pub mod linear;
 pub mod monge;
 pub mod num;
+pub mod poly;
 mod range;
 pub mod sequence;
 pub mod set_power_series;

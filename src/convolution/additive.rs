@@ -1,14 +1,11 @@
 use crate::algebra::RootOfUnity;
 use crate::algebra::additive::Additive;
 use crate::algebra::canonical::Canonical;
-use crate::convolution::cyclic::convolve_poly;
-use crate::convolution::{Convolution, OnlineConvolution};
+use crate::algebra::cyclic::Cyclic;
+use crate::convolution::{Convolution, OnlineConvolution, convolve_by_transform};
 use crate::divide_and_conquer::cdq;
 
-impl<R: RootOfUnity> Convolution<R> for Additive<Canonical<usize>>
-where
-    R::Value: Clone,
-{
+impl<R: RootOfUnity> Convolution<R> for Additive<Canonical<usize>> {
     /// The polynomial product `(f * g)(k) = Σ_{i + j = k} f(i) g(j)`, tablated on `[0, n)`.
     ///
     /// `R[(N, +)] = R[t]` is computed by the cyclic convolution of a length at least `2n - 1`,
@@ -19,17 +16,18 @@ where
     /// - Space: O(n)
     ///
     /// # Panics
-    /// Panics if `f.len() != g.len()`.
     /// Panics if `R` has no primitive root of unity of order at least `2n`.
-    fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
-        assert_eq!(
-            f.len(),
-            g.len(),
-            "length must agree: {} != {}",
-            f.len(),
-            g.len()
-        );
-        convolve_poly(ring, f.to_vec(), g.to_vec())
+    fn convolve(&self, ring: &R, mut f: Vec<R::Value>, mut g: Vec<R::Value>) -> Vec<R::Value> {
+        if f.is_empty() || g.is_empty() {
+            return Vec::new();
+        }
+        let len = f.len() + g.len() - 1;
+        let n = len.next_power_of_two();
+        f.resize_with(n, || ring.zero());
+        g.resize_with(n, || ring.zero());
+        let mut h = convolve_by_transform(&Cyclic::new(n), ring, f, g);
+        h.truncate(len);
+        h
     }
 }
 
@@ -61,7 +59,7 @@ where
             n,
             &mut state,
             |(f, acc), l, m, r| {
-                let h = convolve_poly(ring, f[l..m].to_vec(), g[1..r - l].to_vec());
+                let h = self.convolve(ring, f[l..m].to_vec(), g[1..r - l].to_vec());
                 for t in m..r {
                     acc[t] = ring.add(&acc[t], &h[t - l - 1]);
                 }

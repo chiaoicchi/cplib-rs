@@ -1,9 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::additive::Additive;
 use cplib::algebra::canonical::Canonical;
-use cplib::convolution::Convolution;
 use cplib::num::fp::Fp;
+use cplib::poly::Poly;
 
 const P: u32 = 998_244_353;
 
@@ -25,12 +24,15 @@ fn main() {
     }
 
     let n = parse!(usize);
-    let m = parse!(usize);
-    let a: Vec<Fp<P>> = (0..n).map(|_| Fp::new(parse!(u32))).collect();
-    let b: Vec<Fp<P>> = (0..m).map(|_| Fp::new(parse!(u32))).collect();
+    let c = Fp::<P>::new(parse!(u32));
+    let a: Poly<Canonical<_>> = Poly::from_vec(
+        (0..n)
+            .map(|_| Fp::<P>::new(parse!(u32)))
+            .collect::<Vec<_>>(),
+    );
 
-    let ans = Additive::default().convolve(&Canonical::default(), a, b);
-    for ans in ans {
+    let ans = a.taylor_shift(&c);
+    for ans in ans.coefficients(n) {
         write!(stdout, "{ans} ").ok();
     }
     writeln!(stdout).ok();

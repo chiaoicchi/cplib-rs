@@ -1,6 +1,6 @@
 use crate::algebra::RootOfUnity;
 use crate::algebra::cyclic::Cyclic;
-use crate::convolution::{InverseTransform, Transform, convolve_by_transform};
+use crate::convolution::{InverseTransform, Transform};
 
 impl<R: RootOfUnity> Transform<R> for Cyclic {
     /// The discrete Fourier transform `(Ff)(s) = Σ_x w^{sx} f(x)`, where `w` is a primitive
@@ -113,33 +113,4 @@ fn fft<R: RootOfUnity>(ring: &R, f: &mut [R::Value], w: R::Value) {
         }
         len <<= 1;
     }
-}
-
-/// Returns the product of `f` and `g` in `R[t]`, of length `f.len() + g.len() - 1`.
-///
-/// # Definition
-/// `R[N] = R[t]` embeds into `R[Z/nZ] = R[t]/(t^n - 1)`, injectively on polynomials of degree less
-/// than `n`. For `n >= f.len() + g.len() - 1` the product has degree less than `n`, so it is
-/// recovered from the cyclic convolution of length `n` without wrap-around.
-///
-/// # Complexity
-/// - Time: O(n log n) with `n` the least power of two at least `f.len() + g.len() - 1`
-///
-/// # Panics
-/// Panics if `R` has no primitive `n`-th root of unity.
-pub fn convolve_poly<R: RootOfUnity>(
-    ring: &R,
-    mut f: Vec<R::Value>,
-    mut g: Vec<R::Value>,
-) -> Vec<R::Value> {
-    if f.is_empty() || g.is_empty() {
-        return vec![];
-    }
-    let len = f.len() + g.len() - 1;
-    let n = len.next_power_of_two();
-    f.resize_with(n, || ring.zero());
-    g.resize_with(n, || ring.zero());
-    let mut h = convolve_by_transform(&Cyclic::new(n), ring, f, g);
-    h.truncate(len);
-    h
 }

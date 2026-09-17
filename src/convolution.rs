@@ -47,7 +47,7 @@ pub trait InverseTransform<R: Semiring>: Transform<R> {
 /// # Panics
 /// Panics if `f.len() != g.len()`, or if the length is not supported by `Self`.
 pub trait Convolution<R: Semiring>: Monoid<Value = usize> {
-    fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value>;
+    fn convolve(&self, ring: &R, f: Vec<R::Value>, g: Vec<R::Value>) -> Vec<R::Value>;
 }
 
 /// A convolution in `R[Self]` solved online, i.e. with the first factor determined coefficient by
@@ -109,7 +109,7 @@ impl<R: Semiring, C: Convolution<R>> MonoidAlgebra<R, C> {
         self.len == 0
     }
 }
-impl<R: Semiring, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
+impl<R: Semiring<Value: Clone>, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
     type Value = Vec<R::Value>;
     fn zero(&self) -> Vec<R::Value> {
         (0..self.len).map(|_| self.ring.zero()).collect()
@@ -141,10 +141,12 @@ impl<R: Semiring, C: Convolution<R>> Semiring for MonoidAlgebra<R, C> {
             b.len(),
             self.len
         );
+        let a = a.clone();
+        let b = b.clone();
         self.conv.convolve(&self.ring, a, b)
     }
 }
-impl<R: Ring, C: Convolution<R>> Ring for MonoidAlgebra<R, C> {
+impl<R: Ring<Value: Clone>, C: Convolution<R>> Ring for MonoidAlgebra<R, C> {
     /// # Panics
     /// Panics if the length of `a` differs from `self`.
     fn neg(&self, a: &Vec<R::Value>) -> Vec<R::Value> {
@@ -196,8 +198,7 @@ macro_rules! impl_convolution_by_transform {
             Self: Transform<R> + InverseTransform<R>,
             R::Value: Clone,
         {
-            fn convolve(&self, ring: &R, f: &[R::Value], g: &[R::Value]) -> Vec<R::Value> {
-                let (f, g) = (f.to_vec(), g.to_vec());
+            fn convolve(&self, ring: &R, f: Vec<R::Value>, g: Vec<R::Value>) -> Vec<R::Value> {
                 convolve_by_transform(self, ring, f, g)
             }
         }
