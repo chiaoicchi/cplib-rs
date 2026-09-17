@@ -1,14 +1,13 @@
 pub mod algebra;
 pub mod binary_optimization;
 pub mod collections;
-pub mod convolution;
 pub mod divide_and_conquer;
 pub mod graph;
 pub mod linear;
 pub mod monge;
 pub mod num;
+pub mod periodic_function;
 pub mod poly;
 mod range;
 pub mod sequence;
 pub mod set_function;
-pub mod set_power_series;
