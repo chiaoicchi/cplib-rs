@@ -3,6 +3,7 @@ pub mod arithmetic_function;
 pub mod binary_optimization;
 pub mod collections;
 pub mod divide_and_conquer;
+pub mod fps;
 pub mod graph;
 pub mod linear;
 pub mod monge;
