@@ -1,9 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::additive::Additive;
 use cplib::algebra::canonical::Canonical;
-use cplib::convolution::Convolution;
 use cplib::num::fp::Fp;
+use cplib::poly::poly_convolve;
 
 const P: u32 = 998_244_353;
 
@@ -29,7 +28,7 @@ fn main() {
     let a: Vec<Fp<P>> = (0..n).map(|_| Fp::new(parse!(u32))).collect();
     let b: Vec<Fp<P>> = (0..m).map(|_| Fp::new(parse!(u32))).collect();
 
-    let ans = Additive::default().convolve(&Canonical::default(), a, b);
+    let ans = poly_convolve(&Canonical::default(), a, b);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }
