@@ -48,7 +48,7 @@ pub fn divisor_mobius<R: Ring>(ring: &R, f: &mut [R::Value]) {
     }
 }
 
-/// the lcm convolution of `f` and `g`.
+/// The lcm convolution of `f` and `g`.
 ///
 /// # Definition
 /// `(fg)(d) = Σ_{lcm(x,y)=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with

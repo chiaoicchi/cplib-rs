@@ -1,6 +1,6 @@
 use crate::algebra::Semiring;
 
-/// The Dirichlet convolutio of `f` and `g`.
+/// The Dirichlet convolution of `f` and `g`.
 ///
 /// # Definition
 /// `(fg)(d) = Σ_{xy=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with
