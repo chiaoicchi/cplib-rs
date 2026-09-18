@@ -51,10 +51,10 @@ pub fn divisor_mobius<R: Ring>(ring: &R, f: &mut [R::Value]) {
 /// the lcm convolution of `f` and `g`.
 ///
 /// # Definition
-/// `(fg)(d) = Σ_{lcm(x,y)=d} f(x) g(y)` for `d < n`, the product of monoid algebra `R[(N, lcm)]`
-/// with the terms of `lcm(x, y) >= n` discard; `lcm(x, 0) = 0`, so `0` absorbs. Since
-/// `lcm(x, y) | d` iff `x | d` and `y | d`, [`divisor_zeta`] carries it to the pointwise product:
-/// `Z(fg) = Z(f) Z(g)`.
+/// `(fg)(d) = Σ_{lcm(x,y)=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with
+/// `lcm(x, y) = 0` or `lcm(x, y) >= n`: the product of the monoid algebra `R[(N, lcm)/I]`, where
+/// `I = {0} ∪ [n, ∞)` is an ideal of `(N, lcm)` and `0` its class. Since `lcm(x, y) | d` iff
+/// `x | d` and `y | d`, [`divisor_zeta`] carries it to the pointwise product: `Z(fg) = Z(f) Z(g)`.
 ///
 /// # Complexity
 /// - Time: O(n log log n)

@@ -3,8 +3,9 @@ use crate::algebra::Semiring;
 /// The Dirichlet convolutio of `f` and `g`.
 ///
 /// # Definition
-/// `(fg)(d) = Σ_{xy=d} f(x) g(y)` for `d < n`, the product of the monoid algebra `R[(N, x)]` with
-/// the terms of `xy >= n` discarded; `x * 0 = 0`, so `0` absorbs.
+/// `(fg)(d) = Σ_{xy=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with
+/// `xy = 0` or `xy >= n`: the product of the monoid algebra `R[(N, x)/I]`, where `I = {0} ∪ [n, ∞)`
+/// is an ideal of `(N, x)` and `0` its class.
 ///
 /// # Complexity
 /// - Time: O(n log n)
@@ -27,17 +28,21 @@ pub fn dirichlet_convolve<R: Semiring>(
     let n = f.len();
     let mut h: Vec<R::Value> = (0..n).map(|_| ring.zero()).collect();
     for a in 1..n {
-        for b in 1..=(n - 1) / a {
-            h[a * b] = ring.add(&h[a * b], &ring.mul(&f[a], &g[b]));
+        let fa = &f[a];
+        for (hd, gb) in h[a..].iter_mut().step_by(a).zip(&g[1..]) {
+            *hd = ring.add(hd, &ring.mul(fa, gb));
         }
     }
+    let mut suffix: Vec<R::Value> = (0..=n).map(|_| ring.zero()).collect();
+    for b in (0..n).rev() {
+        suffix[b] = ring.add(&suffix[b + 1], &g[b]);
+    }
+    for a in 1..n {
+        let overflow = ring.add(&g[0], &suffix[n.div_ceil(a)]);
+        h[0] = ring.add(&h[0], &ring.mul(&f[a], &overflow));
+    }
     if n > 0 {
-        for b in 0..n {
-            h[0] = ring.add(&h[0], &ring.mul(&f[0], &g[b]));
-        }
-        for a in 1..n {
-            h[0] = ring.add(&h[0], &ring.mul(&f[a], &g[0]));
-        }
+        h[0] = ring.add(&h[0], &ring.mul(&f[0], &suffix[0]));
     }
     h
 }
