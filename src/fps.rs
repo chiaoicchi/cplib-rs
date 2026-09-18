@@ -226,7 +226,7 @@ impl<R: Semiring<Value: PartialEq + Clone> + Default> Fps<R> {
 }
 
 impl<R: Field<Value: PartialEq> + Default> Fps<R> {
-    /// The integral of `self` vanishing at `0`, of preision `n + 1`.
+    /// The integral of `self` vanishing at `0`, of precision `n + 1`.
     ///
     /// # Definition
     /// The `R`-linear map `x^k -> x^{k+1} / (k + 1)`.
