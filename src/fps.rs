@@ -438,7 +438,7 @@ forward_binop! {
 /// The solution `f` of `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j))`, of precision `n`.
 ///
 /// # Definition
-/// `f` is the series with `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j)` for `0 <= i < n`, the sum
+/// `f` is the series with `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j))` for `0 <= i < n`, the sum
 /// being the coefficient of `x^i` in `f g` without the term `g(0) f(i)`. `step` is called for
 /// `i = 0, 1, ..., n - 1` in this order.
 ///
@@ -448,7 +448,7 @@ forward_binop! {
 ///
 /// # Panics
 /// Panics if [`poly_convolve`] panics on operands of lengths `[n/2]` and `n - 1`, that is if `R`
-/// has no primitive `N`-th root of unity for the least power of two N >= [n/2] + n - 2`.
+/// has no primitive `N`-th root of unity for the least power of two `N >= [n/2] + n - 2`.
 pub fn semi_relaxed<R: RootOfUnity<Value: PartialEq + Clone> + Default>(
     g: &Fps<R>,
     mut step: impl FnMut(usize, R::Value) -> R::Value,
