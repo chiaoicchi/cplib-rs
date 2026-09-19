@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::arithmetic_function::divisor::lcm_convolve;
-use cplib::num::fp::{Fp, fp};
+use cplib::fps::Fps;
+use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
 
@@ -24,15 +24,16 @@ fn main() {
     }
 
     let n = parse!(usize);
-    let a: Vec<Fp<P>> = (0..=n)
-        .map(|i| if i == 0 { fp!(0) } else { Fp::new(parse!(u32)) })
-        .collect();
-    let b: Vec<Fp<P>> = (0..=n)
-        .map(|i| if i == 0 { fp!(0) } else { Fp::new(parse!(u32)) })
-        .collect();
+    let m = parse!(u64);
+    let a: Fps<Canonical<_>> = Fps::from_vec(
+        (0..n)
+            .map(|_| Fp::<P>::new(parse!(u32)))
+            .collect::<Vec<_>>(),
+        n,
+    );
 
-    let ans = lcm_convolve(&Canonical::new(), a, b);
-    for ans in &ans[1..] {
+    let ans = a.pow(m);
+    for ans in ans.coefficients() {
         write!(stdout, "{ans} ").ok();
     }
     writeln!(stdout).ok();

@@ -1,4 +1,3 @@
-pub mod arithmetic;
 pub mod euclid;
 pub mod factorial;
 pub mod fp;

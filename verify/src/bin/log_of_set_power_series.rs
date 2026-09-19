@@ -2,7 +2,7 @@ use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
 use cplib::num::fp::Fp;
-use cplib::set_power_series::SetPowerSeries;
+use cplib::set_function::set_power_series::SetPowerSeries;
 
 const P: u32 = 998_244_353;
 

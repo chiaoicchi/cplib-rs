@@ -1,8 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::algebra::gcd::Gcd;
-use cplib::convolution::convolve_by_transform;
+use cplib::arithmetic_function::multiple::gcd_convolve;
 use cplib::num::fp::{Fp, fp};
 
 const P: u32 = 998_244_353;
@@ -32,7 +31,7 @@ fn main() {
         .map(|i| if i == 0 { fp!(0) } else { Fp::new(parse!(u32)) })
         .collect();
 
-    let ans = convolve_by_transform(&Gcd::new(), &Canonical::new(), a, b);
+    let ans = gcd_convolve(&Canonical::new(), a, b);
     for ans in &ans[1..] {
         write!(stdout, "{ans} ").ok();
     }
