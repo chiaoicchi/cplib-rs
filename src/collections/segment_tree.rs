@@ -143,6 +143,98 @@ impl<M: Monoid> SegmentTree<M> {
         self.monoid.op(&left, &right)
     }
 
+    /// Returns an `r` in `[l, n]` at which `pred` switches from `true` to `false`.
+    ///
+    /// # Definition
+    /// Returns some `r` in `[l, n]` such that
+    /// - `pred(fold(l..r))` is `true`
+    /// - `r = n` or `pred(fold(l..r + 1))` is `false`
+    ///
+    /// If `pred(fold(l..r))` is monotone in `r` (once `false`, it stays `false`), this is the
+    /// maximum `r` such that `pred(fold(l..r))` is `true`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `l > self.len()`.
+    /// Panics if `pred(id())` is false.
+    pub fn max_right(&self, l: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
+        let n = self.len();
+        assert!(l <= n, "index out of bounds: l={l}, len={n}");
+        let mut acc = self.monoid.id();
+        assert!(pred(&acc), "pred(id()) must be true");
+        let mut l = l + n;
+        let r = n << 1;
+        while l < r {
+            let k = l.trailing_zeros().min((r - l).ilog2());
+            let mut i = l >> k;
+            let next = self.monoid.op(&acc, &self.value[i]);
+            if pred(&next) {
+                acc = next;
+                l += 1 << k;
+                continue;
+            }
+            while i < n {
+                i <<= 1;
+                let next = self.monoid.op(&acc, &self.value[i]);
+                if pred(&next) {
+                    acc = next;
+                    i |= 1;
+                }
+            }
+            return i - n;
+        }
+        n
+    }
+
+    /// Returns an `l` in `[0, r]` at which `pred` switches from `true` to `false`.
+    ///
+    /// # Definition
+    /// Returns some `l` in `[0, r]` such that
+    /// - `pred(fold(l..r))` is `true`
+    /// - `l = 0` or `pred(fold(l - 1..r))` is `false`.
+    ///
+    /// If `pred(fold(l..r))` is monotone in `l` (once `false` as `l` decreases, it stays `false`),
+    /// this is the minimum `l` such that `pred(fold(l..r))` is `true`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `r > self.len()`.
+    /// Panics if `pred(id())` is `false`.
+    pub fn min_left(&self, r: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
+        let n = self.len();
+        assert!(r <= n, "index out of bounds: r={r}, len={n}");
+        let mut acc = self.monoid.id();
+        assert!(pred(&acc), "pred(id()) must be true");
+        let l = n;
+        let mut r = r + n;
+        while l < r {
+            let k = r.trailing_zeros().min((r - l).ilog2());
+            let mut i = (r >> k) - 1;
+            let next = self.monoid.op(&self.value[i], &acc);
+            if pred(&next) {
+                acc = next;
+                r -= 1 << k;
+                continue;
+            }
+            while i < n {
+                i = (i << 1) | 1;
+                let next = self.monoid.op(&self.value[i], &acc);
+                if pred(&next) {
+                    acc = next;
+                    i -= 1;
+                }
+            }
+            return i + 1 - n;
+        }
+        0
+    }
+
     /// Returns the number of elements.
     ///
     /// # Complexity
