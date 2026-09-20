@@ -5,6 +5,7 @@ pub mod collections;
 pub mod divide_and_conquer;
 pub mod fps;
 pub mod graph;
+pub mod grid;
 pub mod linear;
 pub mod monge;
 pub mod num;
