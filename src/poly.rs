@@ -6,6 +6,7 @@
 //! are the lengths of the operands `f` and `g`.
 
 pub mod calculus;
+pub mod evaluation;
 pub mod geometric;
 pub mod interpolation;
 pub mod subproduct_tree;

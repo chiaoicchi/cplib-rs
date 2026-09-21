@@ -29,15 +29,14 @@ pub fn poly_derivative<R: Semiring>(ring: &R, f: &[R::Value]) -> Vec<R::Value> {
 /// `n + 1`.
 ///
 /// # Contract
-/// `1, ..., n` are invertible in `R`,that is the characteristic is `0` or greater than
-/// `f.len()`.
+/// `1, ..., n` are invertible in `R`, that is the characteristic is `0` or greater than `n`.
 ///
 /// # Complexity
 /// - Time: O(n)
 /// - Space: O(n)
 pub fn poly_integral<R: Field>(ring: &R, f: &[R::Value]) -> Vec<R::Value> {
     if f.is_empty() {
-        return Vec::new();
+        return vec![ring.zero()];
     }
     let one = ring.one();
     let minus_one = ring.neg(&one);

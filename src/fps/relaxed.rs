@@ -2,20 +2,21 @@ use crate::algebra::RootOfUnity;
 use crate::divide_and_conquer::cdq;
 use crate::poly::poly_convolve;
 
-/// The solution `f` of `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j))`, of precision `n`.
+/// The series `f` in `R[[x]]/(x^n)` with `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j))`, as its `n`
+/// coefficients.
 ///
 /// # Definition
-/// `f` is the series with `f(i) = step(i, Σ_{j=1,...,i} g(j) f(i - j))` for `0 <= i < n`, the sum
-/// being the coefficient of `x^i` in `f g` without the term `g(0) f(i)`. `step` is called for
-/// `i = 0, 1, ..., n - 1` in this order.
+/// The sum is the coefficient of `x^i` in `fg` without the term `g(0) f(i)`, and is `0` for
+/// `i = 0`. `step` is called for `i = 0, 1, ..., n - 1` in this order.
 ///
 /// # Complexity
-/// - Time: O(n log^2 n), and `n` calls of `step`
+/// - Time: O(n log^2 n)
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if [`poly_convolve`] panics on operands of lengths `[n/2]` and `n - 1`, that is if `R`
-/// has no primitive `N`-th root of unity for the least power of two `N >= [n/2] + n - 2`.
+/// Panics if `n >= 2` and `g.len() < n`.
+/// Panics only if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+/// least `2n`, apart from the above.
 pub fn semi_relaxed<R: RootOfUnity<Value: PartialEq + Clone> + Default>(
     ring: &R,
     g: &[R::Value],

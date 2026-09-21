@@ -1,13 +1,12 @@
 use crate::algebra::RootOfUnity;
+use crate::fps::fps_convolve;
 use crate::periodic_function::{dft, inverse_dft};
 use crate::poly::calculus::{poly_derivative, poly_integral};
-use crate::poly::poly_convolve;
 
 /// The inverse of `f` in `R[[x]]/(x^n)`, as its `n` coefficients.
 ///
 /// # Definition
-/// `g(0) = f(0)^{-1}` and `g(k) = -f(0)^{-1} Σ_{i=1,...,k} f(i) g(k - i)` for `k >= 1`, where
-/// `f(i) = 0` for `i >= f.len()`.
+/// `g(0) = f(0)^{-1}` and `g(k) = -f(0)^{-1} Σ_{i=1,...,k} f(i) g(k - i)` for `k >= 1`.
 ///
 /// # Contract
 /// `f(0)` is invertible in `R`, unless `n = 0`.
@@ -17,7 +16,8 @@ use crate::poly::poly_convolve;
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if `R` has no primitive root of unity of order the least power of two at least `2n`.
+/// Panics if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+/// least `n`.
 pub fn fps_inv<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Value> {
     if n == 0 {
         return Vec::new();
@@ -51,11 +51,11 @@ pub fn fps_inv<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
     g
 }
 
-/// The logarithm `g` of `g` in `R[[x]]/(x^n)`, with `g(0) = 0` and `g' = f' / f`, as its `n`
+/// The logarithm `g` of `f` in `R[[x]]/(x^n)`, with `g(0) = 0` and `g' = f' / f`, as its `n`
 /// coefficients.
 ///
 /// # Definition
-/// `log f = Σ_{k>=1} (-1)^{k+1} (f - 1)^k / k`, where `f(i) = 0` for `i >= f.len()`.
+/// `log f = Σ_{k>=1} (-1)^{k+1} (f - 1)^k / k`.
 ///
 /// # Contract
 /// `f(0) = 1`, unless `n = 0`. `1, ..., n - 1` are invertible in `R`.
@@ -65,17 +65,18 @@ pub fn fps_inv<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if `R` has no primitive root of unity of order the least power of two at elast `2n`.
+/// Panics only if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+/// least `2n`.
 pub fn fps_log<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Value> {
     if n == 0 {
         return Vec::new();
     }
-    let mut h = poly_convolve(
+    let h = fps_convolve(
         ring,
         poly_derivative(ring, &f[..f.len().min(n)]),
         fps_inv(ring, f, n - 1),
+        n - 1,
     );
-    h.resize_with(n - 1, || ring.zero());
     poly_integral(ring, &h)
 }
 
@@ -83,14 +84,18 @@ pub fn fps_log<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
 /// coefficients.
 ///
 /// # Definition
-/// `exp f = Σ_{k>=0} f^k / k!`, where `f(i) = 0` for `i >= n`.
+/// `exp f = Σ_{k>=0} f^k / k!`.
 ///
 /// # Contract
-/// `f(0) = 0`. `1, ..., n - 1` are invertible in `R`.
+/// `f(0) = 0`, unless `n = 0`. `1, ..., n - 1` are invertible in `R`.
 ///
 /// # Complexity
 /// - Time: O(n log n)
 /// - Space: O(n)
+///
+/// # Panics
+/// Panics only if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+/// least `2n`.
 pub fn fps_exp<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Value> {
     if n == 0 {
         return Vec::new();
@@ -104,15 +109,27 @@ pub fn fps_exp<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
         for (t, x) in t.iter_mut().zip(f) {
             *t = ring.add(t, x);
         }
-        g = poly_convolve(ring, g, t);
-        g.truncate(m);
+        g = fps_convolve(ring, g, t, m);
     }
     g
 }
 
+/// The power `f^k` in `R[[x]]/(x^n)`, as its `n` coefficients.
+///
+/// # Definition
+/// `f^0 = 1`, also for `f = 0`, and `f^k = f f^{k-1}` for `k >= 1`.
+///
+/// # Contract
+/// If `k >= 1` and `kv < n`, `1, ..., n - v - 1` are invertible in `R`, where `v` is the least
+/// index with `f(v) != 0`.
+///
 /// # Complexity
 /// - Time: O(n log n + log k)
 /// - Space: O(n)
+///
+/// # Panics
+/// Panics only if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+/// least `2n`.
 pub fn fps_pow<R: RootOfUnity<Value: PartialEq>>(
     ring: &R,
     f: &[R::Value],

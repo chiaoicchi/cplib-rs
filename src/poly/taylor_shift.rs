@@ -16,8 +16,8 @@ use crate::poly::poly_convolve;
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if both `f` and `g` are longer than 32 and `R` has no primitive `N`-th root of unity,
-/// where `N` is the least power of two at least `2n - 1`.
+/// Panics if `n > 32` and `R` has no primitive `N`-th root of unity, where `N` is the least power
+/// of two at least `2n - 1`.
 pub fn poly_taylor_shift<R: RootOfUnity>(ring: &R, f: &[R::Value], c: &R::Value) -> Vec<R::Value> {
     let n = f.len();
     if n == 0 {

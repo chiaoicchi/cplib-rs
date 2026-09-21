@@ -1,5 +1,5 @@
 use crate::algebra::Field;
-use crate::poly::interpolation::lagrange_interpolate_iota;
+use crate::poly::evaluation::iota_evaluate;
 
 /// The value of the series `Σ_{i>=0} r^i f(i)`, for a polynomial `f` given by its values.
 ///
@@ -9,16 +9,16 @@ use crate::poly::interpolation::lagrange_interpolate_iota;
 /// rational function `P(rx) / (1 - rx)^m` with `deg P < m`. Returns `A(1)`, which is the sum of the
 /// series whenever that converges.
 ///
-/// Equivalently, there are a unique constant `C` and a unique polynomial `h` of degree less than `m`
-/// with `Σ_{i<k} r^i f(i) = C + r^k h(k)` for all `k >= 0`, and `A(1) = C`.
+/// Equivalently, `A(1)` is the unique constant `C` such that `Σ_{i<k} r^i f(i) = C + r^k h(k)` for
+/// all `k >= 0`, for some polynomial `h` of degree less than `m`.
 ///
 /// # Contract
-/// `1 - r` and `m!` are invertible in `R`.
+/// `1, ..., m - 1` are invertible in `R`, `1 - r` is invertible in `R`, unless `m = 0`.
 ///
 /// # Complexity
 /// - Time: O(m)
 /// - Space: O(m)
-pub fn poly_geometric_series<R: Field>(ring: &R, y: &[R::Value], r: &R::Value) -> R::Value {
+pub fn iota_geometric_series<R: Field>(ring: &R, y: &[R::Value], r: &R::Value) -> R::Value {
     let m = y.len();
     if m == 0 {
         return ring.zero();
@@ -71,16 +71,16 @@ pub fn poly_geometric_series<R: Field>(ring: &R, y: &[R::Value], r: &R::Value) -
 /// The sum `Σ_{i=0,...,n-1} r^i f(i)`, for a polynomial `f` given by its values.
 ///
 /// # Definition
-/// For `f` as in [`poly_geometric_series`], with `r^0 = 1` also for `r = 0`. For `f = 1` it is
+/// For `f` as in [`iota_geometric_series`], with `r^0 = 1` also for `r = 0`. For `f = 1` it is
 /// [`geometric_sum`](crate::algebra::power::geometric_sum).
 ///
 /// # Contract
-/// `m!` is invertible in `R`.
+/// `1, ..., m - 1` are invertible in `R`.
 ///
 /// # Complexity
 /// - Time: O(m + log n)
 /// - Space: O(m)
-pub fn poly_geometric_sum<R: Field<Value: PartialEq>>(
+pub fn iota_geometric_sum<R: Field<Value: PartialEq>>(
     ring: &R,
     y: &[R::Value],
     r: &R::Value,
@@ -113,10 +113,10 @@ pub fn poly_geometric_sum<R: Field<Value: PartialEq>>(
         for i in 0..m {
             g.push(ring.add(&g[i], &y[i]));
         }
-        return lagrange_interpolate_iota(ring, &g, &n_image);
+        return iota_evaluate(ring, &g, &n_image);
     }
 
-    let c = poly_geometric_series(ring, y, r);
+    let c = iota_geometric_series(ring, y, r);
     let minus_c = ring.neg(&c);
     let inv_r = ring.inv(r);
     let mut h: Vec<R::Value> = Vec::with_capacity(m);
@@ -129,6 +129,6 @@ pub fn poly_geometric_sum<R: Field<Value: PartialEq>>(
         pow_r = ring.mul(&pow_r, r);
         pow_inv_r = ring.mul(&pow_inv_r, &inv_r);
     }
-    let h_n = lagrange_interpolate_iota(ring, &h, &n_image);
+    let h_n = iota_evaluate(ring, &h, &n_image);
     ring.add(&c, &ring.mul(&r_n, &h_n))
 }

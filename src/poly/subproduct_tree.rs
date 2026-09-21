@@ -6,14 +6,15 @@ use crate::poly::poly_convolve;
 /// The subproduct tree of the points `x(0), ..., x(n - 1)`.
 ///
 /// # Definition
-/// The complete binary tree with `size` leaves, `size` the least power of two at least `n`. Leaf
-/// `j` carries `t - x(j)`, with `x(j) = 0` for `j >= n`, and an inner node carries the product of
-/// its two children. The root carries `t^{size - n} Π_j (t - x(j))`.
+/// The binary tree whose leaves carry `t - x(0), ..., t - x(n - 1)` in this order and whose inner
+/// nodes carry the product of their two children, so that the root carries `Π_j (t - x(j))`.
 ///
 /// # Invariants
+/// - The tree is complete with `size` leaves, `size` the least power of two at least `n`. Leaf `j`
+///   carries `t - x(j)`, with `x(j) = 0` for `n <= j < size`.
 /// - Node `i` in heap order, `1 <= i < 2 size`, carries a monic polynomial `g_i` of degree
 ///   `d_i = size / 2^depth(i)`; leaf `j` is node `size + j`.
-/// - `root` is the coefficients of `g_1`, of length `size + 1`.
+/// - `root` is the coefficients of `g_1 = t^{size - n} Π_j (t - x(j))`, of length `size + 1`.
 /// - `nodes` is, for each depth from `1` to `log size` and each node `i` of that depth in order,
 ///   the values of `g_i` at the `2 d_i`-th roots of unity, in the order [`dif`] produces.
 /// - `table` and `inv_table` are [`twiddles`] for the forward and the inverse transform.
@@ -35,7 +36,8 @@ impl<R: RootOfUnity> SubproductTree<R> {
     /// - Space: O(n log n)
     ///
     /// # Panics
-    /// Panics if `R` has no primitive root of unity of the order the transforms need.
+    /// Panics if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
+    /// least `n`.
     pub fn new(ring: R, xs: &[R::Value]) -> Self {
         let n = xs.len();
         let size = n.next_power_of_two();
@@ -143,7 +145,8 @@ impl<R: RootOfUnity> SubproductTree<R> {
     /// - Space: O(m + n)
     ///
     /// # Panics
-    /// Panics if `R` has no primitive root of unity of order the least power of two at least `2m`.
+    /// Panics if `n > 0` and `R` has no primitive `N`-th root of unity, where `N` is the least
+    /// power of two at least `m` if `m < 32`, and at least `2m - 1` otherwise.
     pub fn evaluate(&self, f: &[R::Value]) -> Vec<R::Value> {
         let m = f.len();
         if self.n == 0 {
@@ -228,7 +231,8 @@ impl<R: RootOfUnity> SubproductTree<R> {
     ///
     /// # Panics
     /// Panics if `ys.len() != n`.
-    /// Panics if `R` has no primitive root of unity of order the least power of two at least `2n`.
+    /// Panics if `n > 32` and `R` has no primitive `N`-th root of unity, where `N` is the least
+    /// power of two at least `2n - 1`.
     pub fn interpolate(&self, ys: &[R::Value]) -> Vec<R::Value> {
         assert!(
             ys.len() == self.n,
