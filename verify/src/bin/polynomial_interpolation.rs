@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::fps::elementary::fps_pow;
-use cplib::num::fp::Fp;
+use cplib::num::fp::{Fp, fp};
+use cplib::poly::subproduct_tree::SubproductTree;
 
 const P: u32 = 998_244_353;
 
@@ -24,12 +24,9 @@ fn main() {
     }
 
     let n = parse!(usize);
-    let m = parse!(u64);
-    let a: Vec<Fp<P>> = (0..n)
-        .map(|_| Fp::<P>::new(parse!(u32)))
-        .collect::<Vec<_>>();
-
-    let ans = fps_pow(&Canonical::new(), &a, n, m);
+    let x: Vec<Fp<P>> = (0..n).map(|_| fp!(parse!(u32))).collect();
+    let y: Vec<Fp<P>> = (0..n).map(|_| fp!(parse!(u32))).collect();
+    let ans = SubproductTree::new(Canonical::new(), &x).interpolate(&y);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }

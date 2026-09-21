@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::fps::Fps;
+use cplib::fps::elementary::fps_log;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
@@ -24,15 +24,11 @@ fn main() {
     }
 
     let n = parse!(usize);
-    let a: Fps<Canonical<_>> = Fps::from_vec(
-        (0..n)
-            .map(|_| Fp::<P>::new(parse!(u32)))
-            .collect::<Vec<_>>(),
-        n,
-    );
-
-    let ans = a.log();
-    for ans in ans.coefficients() {
+    let a: Vec<Fp<P>> = (0..n)
+        .map(|_| Fp::<P>::new(parse!(u32)))
+        .collect::<Vec<_>>();
+    let ans = fps_log(&Canonical::new(), &a, n);
+    for ans in ans {
         write!(stdout, "{ans} ").ok();
     }
     writeln!(stdout).ok();

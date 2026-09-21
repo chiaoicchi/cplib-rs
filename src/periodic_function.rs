@@ -125,7 +125,7 @@ fn root_of_unity<R: RootOfUnity>(ring: &R, n: usize) -> R::Value {
 ///
 /// # Panics
 /// Panics if `n` is not a power of two.
-fn twiddles<R: RootOfUnity>(ring: &R, mut omega: R::Value, n: usize) -> Vec<R::Value> {
+pub(crate) fn twiddles<R: RootOfUnity>(ring: &R, mut omega: R::Value, n: usize) -> Vec<R::Value> {
     assert!(n.is_power_of_two(), "n must be a power of two: n={n}");
     let mut table: Vec<R::Value> = (0..n).map(|_| ring.one()).collect();
     let mut h = n >> 1;
@@ -153,7 +153,7 @@ fn twiddles<R: RootOfUnity>(ring: &R, mut omega: R::Value, n: usize) -> Vec<R::V
 /// # Complexity
 /// - Time: O(n log n)
 /// - Space: O(1)
-fn dif<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Value]) {
+pub(crate) fn dif<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Value]) {
     let mut h = f.len() >> 1;
     while h >= 1 {
         for block in f.chunks_mut(h << 1) {
@@ -180,7 +180,7 @@ fn dif<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Value]) {
 /// # Complexity
 /// - Time: O(n log n)
 /// - Space: O(1)
-fn dit<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Value]) {
+pub(crate) fn dit<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Value]) {
     let mut h = 1;
     while h < f.len() {
         for block in f.chunks_mut(h << 1) {

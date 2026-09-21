@@ -1,8 +1,10 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::fps::elementary::fps_pow;
-use cplib::num::fp::Fp;
+use cplib::algebra::multiplicative::Multiplicative;
+use cplib::arithmetic_function::multiplicative::multiplicative_table;
+use cplib::num::fp::{Fp, fp};
+use cplib::poly::geometric::poly_geometric_sum;
 
 const P: u32 = 998_244_353;
 
@@ -23,15 +25,13 @@ fn main() {
         }};
     }
 
-    let n = parse!(usize);
-    let m = parse!(u64);
-    let a: Vec<Fp<P>> = (0..n)
-        .map(|_| Fp::<P>::new(parse!(u32)))
-        .collect::<Vec<_>>();
-
-    let ans = fps_pow(&Canonical::new(), &a, n, m);
-    for ans in ans {
-        write!(stdout, "{ans} ").ok();
-    }
-    writeln!(stdout).ok();
+    let r = parse!(u32);
+    let d = parse!(usize);
+    let n = parse!(u64);
+    let mut y = multiplicative_table(&Multiplicative(Canonical::<Fp<P>>::new()), d, |p, e| {
+        fp!(p.pow(e) as u32).pow(d as u64)
+    });
+    y[0] = fp!((d == 0) as u32);
+    let ans = poly_geometric_sum(&Canonical::new(), &y, &fp!(r), n);
+    writeln!(stdout, "{ans}").ok();
 }
