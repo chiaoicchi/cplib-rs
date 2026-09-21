@@ -47,6 +47,15 @@ impl<const P: u32> Fp<P> {
         Self(n % Self::MODULUS)
     }
 
+    /// Returns the representative.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    pub fn val(self) -> u32 {
+        self.0
+    }
+
     /// Raises `self` to the power of `exp`.
     ///
     /// # Complexity
