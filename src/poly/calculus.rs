@@ -36,7 +36,7 @@ pub fn poly_derivative<R: Semiring>(ring: &R, f: &[R::Value]) -> Vec<R::Value> {
 /// - Time: O(n)
 /// - Space: O(n)
 pub fn poly_integral<R: Field>(ring: &R, f: &[R::Value]) -> Vec<R::Value> {
-    if f.len() == 0 {
+    if f.is_empty() {
         return Vec::new();
     }
     let one = ring.one();

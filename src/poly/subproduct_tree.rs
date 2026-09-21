@@ -49,13 +49,18 @@ impl<R: RootOfUnity> SubproductTree<R> {
 
         let one = ring.one();
         let minus_one = ring.neg(&one);
-        let mut nodes: Vec<R::Value> = (0..size * depth << 1).map(|_| ring.zero()).collect();
+        let mut nodes: Vec<R::Value> = (0..(size * depth) << 1).map(|_| ring.zero()).collect();
         if depth >= 1 {
-            let leaves = &mut nodes[size * (depth - 1) << 1..];
-            for (p, leaf) in leaves.chunks_exact_mut(2).enumerate() {
-                let neg_x = if p < n { ring.neg(&xs[p]) } else { ring.zero() };
+            let leaves = &mut nodes[(size * (depth - 1)) << 1..];
+            let (real, padding) = leaves.split_at_mut(n << 1);
+            for (leaf, x) in real.chunks_exact_mut(2).zip(xs) {
+                let neg_x = ring.neg(x);
                 leaf[0] = ring.add(&one, &neg_x);
                 leaf[1] = ring.add(&minus_one, &neg_x);
+            }
+            for leaf in padding.chunks_exact_mut(2) {
+                leaf[0] = ring.one();
+                leaf[1] = ring.neg(&one);
             }
         }
 
@@ -64,8 +69,8 @@ impl<R: RootOfUnity> SubproductTree<R> {
         for l in (1..depth).rev() {
             let d = size >> l;
             inv_d = ring.mul(&inv_d, &half);
-            let (upper, lower) = nodes.split_at_mut(size * l << 1);
-            let parents = &mut upper[size * (l - 1) << 1..];
+            let (upper, lower) = nodes.split_at_mut((size * l) << 1);
+            let parents = &mut upper[(size * (l - 1)) << 1..];
             let children = &lower[..size << 1];
             for (node, pair) in parents
                 .chunks_exact_mut(d << 1)
@@ -184,7 +189,7 @@ impl<R: RootOfUnity> SubproductTree<R> {
                     break;
                 }
                 dif(&self.ring, block, &self.table);
-                let (left, right) = self.nodes[offset + (p * d << 1)..][..d << 1].split_at(d);
+                let (left, right) = self.nodes[offset + ((p * d) << 1)..][..d << 1].split_at(d);
                 for (sibling, child) in [(right, p << 1), (left, (p << 1) + 1)] {
                     if child * h >= self.n {
                         continue;
@@ -263,7 +268,7 @@ impl<R: RootOfUnity> SubproductTree<R> {
         let half = self.ring.inv(&self.ring.add(&one, &one));
         let mut inv_h = self.ring.one();
         let mut h = 1;
-        let mut offset = self.size * (self.size.trailing_zeros() as usize).saturating_sub(1) << 1;
+        let mut offset = (self.size * (self.size.trailing_zeros() as usize).saturating_sub(1)) << 1;
         let mut next: Vec<R::Value> = (0..self.size).map(|_| self.ring.zero()).collect();
         let mut tmp: Vec<R::Value> = (0..self.size).map(|_| self.ring.zero()).collect();
         while h < self.size {

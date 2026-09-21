@@ -75,9 +75,8 @@ pub fn fps_log<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
         poly_derivative(ring, &f[..f.len().min(n)]),
         fps_inv(ring, f, n - 1),
     );
-    h.truncate(n - 1);
-    let g = poly_integral(ring, &h);
-    g
+    h.resize_with(n - 1, || ring.zero());
+    poly_integral(ring, &h)
 }
 
 /// The exponential `g` of `f` in `R[[x]]/(x^n)`, with `g(0) = 1` and `g' = f'g`, as its `n`
