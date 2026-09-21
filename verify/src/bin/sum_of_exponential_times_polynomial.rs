@@ -4,7 +4,7 @@ use cplib::algebra::canonical::Canonical;
 use cplib::algebra::multiplicative::Multiplicative;
 use cplib::arithmetic_function::multiplicative::multiplicative_table;
 use cplib::num::fp::{Fp, fp};
-use cplib::poly::geometric::poly_geometric_sum;
+use cplib::poly::geometric::iota_geometric_sum;
 
 const P: u32 = 998_244_353;
 
@@ -32,6 +32,6 @@ fn main() {
         fp!(p.pow(e) as u32).pow(d as u64)
     });
     y[0] = fp!((d == 0) as u32);
-    let ans = poly_geometric_sum(&Canonical::new(), &y, &fp!(r), n);
+    let ans = iota_geometric_sum(&Canonical::new(), &y, &fp!(r), n);
     writeln!(stdout, "{ans}").ok();
 }

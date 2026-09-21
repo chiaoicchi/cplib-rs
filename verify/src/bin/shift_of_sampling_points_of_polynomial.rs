@@ -2,7 +2,7 @@ use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
 use cplib::num::fp::{Fp, fp};
-use cplib::poly::interpolation::shift_of_sampling_points;
+use cplib::poly::evaluation::iota_shift;
 
 const P: u32 = 998_244_353;
 
@@ -27,7 +27,7 @@ fn main() {
     let m = parse!(usize);
     let c = Fp::<P>::new(parse!(u32));
     let f: Vec<Fp<P>> = (0..n).map(|_| fp!(parse!(u32))).collect();
-    let ans = shift_of_sampling_points(&Canonical::new(), &f, &c, m);
+    let ans = iota_shift(&Canonical::new(), &f, &c, m);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }
