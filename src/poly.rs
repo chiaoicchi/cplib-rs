@@ -13,7 +13,7 @@ pub mod subproduct_tree;
 pub mod taylor_shift;
 
 use crate::algebra::RootOfUnity;
-use crate::periodic_function::cyclic_convolve;
+use crate::cyclic::cyclic_convolve;
 
 /// The length of the shorter operand up to which [`poly_convolve`] multiplies directly.
 const NAIVE_LIMIT: usize = 32;

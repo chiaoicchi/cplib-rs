@@ -1,9 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::Semiring;
 use cplib::algebra::canonical::Canonical;
+use cplib::bitwise::set_power_series::sps_convolve;
 use cplib::num::fp::Fp;
-use cplib::set_function::set_power_series::SetPowerSeries;
 
 const P: u32 = 998_244_353;
 
@@ -28,7 +27,7 @@ fn main() {
     let a: Vec<Fp<P>> = (0..1 << n).map(|_| Fp::new(parse!(u32))).collect();
     let b: Vec<Fp<P>> = (0..1 << n).map(|_| Fp::new(parse!(u32))).collect();
 
-    let ans = SetPowerSeries::new(Canonical::new(), n).mul(&a, &b);
+    let ans = sps_convolve(&Canonical::new(), a, b);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }

@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
+use cplib::bitwise::set_power_series::elementary::sps_log;
 use cplib::num::fp::Fp;
-use cplib::set_function::set_power_series::SetPowerSeries;
 
 const P: u32 = 998_244_353;
 
@@ -26,7 +26,7 @@ fn main() {
     let n = parse!(usize);
     let b: Vec<Fp<P>> = (0..1 << n).map(|_| Fp::new(parse!(u32))).collect();
 
-    let ans = SetPowerSeries::new(Canonical::new(), n).log(&b);
+    let ans = sps_log(&Canonical::new(), &b);
     for ans in ans {
         write!(stdout, "{ans} ").ok();
     }

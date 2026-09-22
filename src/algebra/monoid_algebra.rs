@@ -2,10 +2,10 @@ use crate::algebra::{Field, Ring, RootOfUnity, Semiring};
 use crate::arithmetic_function::dirichlet::dirichlet_convolve;
 use crate::arithmetic_function::divisor::lcm_convolve;
 use crate::arithmetic_function::multiple::gcd_convolve;
-use crate::periodic_function::cyclic_convolve;
-use crate::set_function::subset::or_convolve;
-use crate::set_function::superset::and_convolve;
-use crate::set_function::xor::xor_convolve;
+use crate::bitwise::and::and_convolve;
+use crate::bitwise::or::or_convolve;
+use crate::bitwise::xor::xor_convolve;
+use crate::cyclic::cyclic_convolve;
 
 /// A convolution over `R`, the type of the products of the named monoid algebras.
 pub type Convolve<R> =

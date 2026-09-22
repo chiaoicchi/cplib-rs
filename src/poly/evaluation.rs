@@ -1,5 +1,5 @@
 use crate::algebra::{Field, RootOfUnity};
-use crate::periodic_function::cyclic_convolve;
+use crate::cyclic::cyclic_convolve;
 use crate::poly::subproduct_tree::SubproductTree;
 
 /// The values at the points `xs` of the polynomial with coefficients `f`.

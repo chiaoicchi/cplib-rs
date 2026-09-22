@@ -1,7 +1,9 @@
 pub mod algebra;
 pub mod arithmetic_function;
 pub mod binary_optimization;
+pub mod bitwise;
 pub mod collections;
+pub mod cyclic;
 pub mod divide_and_conquer;
 pub mod fps;
 pub mod graph;
@@ -9,8 +11,6 @@ pub mod grid;
 pub mod linear;
 pub mod monge;
 pub mod num;
-pub mod periodic_function;
 pub mod poly;
 mod range;
 pub mod sequence;
-pub mod set_function;

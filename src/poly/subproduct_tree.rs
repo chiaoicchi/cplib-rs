@@ -1,6 +1,6 @@
 use crate::algebra::RootOfUnity;
+use crate::cyclic::{dif, dit, twiddles};
 use crate::fps::elementary::fps_inv;
-use crate::periodic_function::{dif, dit, twiddles};
 use crate::poly::poly_convolve;
 
 /// The subproduct tree of the points `x(0), ..., x(n - 1)`.

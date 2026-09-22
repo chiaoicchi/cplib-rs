@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
+use cplib::bitwise::xor::xor_convolve;
 use cplib::num::fp::Fp;
-use cplib::set_function::xor::xor_convolve;
 
 const P: u32 = 998_244_353;
 

@@ -1,24 +1,65 @@
-//! Periodic functions on `Z` and the group algebra they form.
+//! The cyclic group `Z/nZ`, the functions on it, and the group algebra they form.
 //!
-//! A periodic function `f` of period `n` is a function on `Z/nZ` and is stored as a slice of length
-//! `n` with `f(x)` at index `x`. Throughout this module `n` is that length, a power of two, `ω` is
-//! a primitive `n`-th root of unity of `R`, `ω_{2h} = ω^{n/2h}` is the primitive `2h`-th root of
-//! unity it determines, and `s`, `x` denote residues modulo `n`.
-use crate::algebra::RootOfUnity;
+//! A function `f` on `Z/nZ` is stored as a slice of length `n` with `f(x)` at index `x`, and `s`,
+//! `x` denote residues modulo `n`. For the transforms and the convolution, `n` is that length, a
+//! power of two, `ω` is the primitive `n`-th root of unity given by
+//! [`RootOfUnity::root_of_unity`], and `ω_{2h} = ω^{n/2h}` is the primitive `2h`-th root of unity
+//! it determines.
 
-/// The discrete Fourier transform on `f`, in place.
+use crate::algebra::{Group, Monoid, RootOfUnity, Semigroup};
+
+/// The additive group `Z/nZ`.
 ///
 /// # Definition
-/// `(Ff)(s) = Σ_x ω^{sx} f(x)`, the expansion of `f` in the characters `x -> ω^{sx}` of `Z/nZ`,
-/// which exist iff `R` has a primitive `n`-th root of unity.
+/// `(Z/nZ, 0, +)` is the cyclic group of order `n`. Identifying `[0, n)` with the residues, the
+/// operation is `(a + b) % n`.
+///
+/// # Contract
+/// `n >= 1`, and the values are in `[0, n)`.
+#[derive(Clone, Copy)]
+pub struct Cyclic {
+    n: usize,
+}
+impl Cyclic {
+    /// The additive group `Z/nZ`.
+    pub const fn new(n: usize) -> Self {
+        Self { n }
+    }
+    /// The order `n`.
+    pub const fn order(&self) -> usize {
+        self.n
+    }
+}
+
+impl Semigroup for Cyclic {
+    type Value = usize;
+    fn op(&self, a: &usize, b: &usize) -> usize {
+        (a + b) % self.n
+    }
+}
+impl Monoid for Cyclic {
+    fn id(&self) -> usize {
+        0
+    }
+}
+impl Group for Cyclic {
+    fn inv(&self, a: &Self::Value) -> Self::Value {
+        if *a == 0 { 0 } else { self.n - a }
+    }
+}
+
+/// The discrete Fourier transform of `f`, in place.
+///
+/// # Definition
+/// `(Ff)(s) = Σ_x ω^{sx} f(x)`, the expansion of `f` in the characters `x -> ω^{sx}` of `Z/nZ`.
 ///
 /// # Complexity
 /// - Time: O(n log n)
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if `n` is not a power of two.
 /// Panics if `R` has no primitive `n`-th root of unity.
+/// Panics if `n` is not a power of two.
 pub fn dft<R: RootOfUnity>(ring: &R, f: &mut [R::Value]) {
     let table = twiddles(ring, root_of_unity(ring, f.len()), f.len());
     dif(ring, f, &table);
@@ -28,17 +69,16 @@ pub fn dft<R: RootOfUnity>(ring: &R, f: &mut [R::Value]) {
 /// The inverse discrete Fourier transform of `f`, in place, inverting [`dft`].
 ///
 /// # Definition
-/// `(F^{-1}f)(x) = n^{-1} Σ_s ω^{-sx} f(s)`, by the orthogonality of the characters of `Z/nZ`:
-/// `Σ_s ω^{s(x-y)}` is `n` if `x = y` and `0` otherwise. A primitive `n`-th root of unity exists
-/// only if `n != 0` in `R`, so `n^{-1}` exists whenever `F` does.
+/// `(F^{-1}f)(x) = n^{-1} Σ_s ω^{-sx} f(s)`. `n` is invertible in `R`, as `R` has a primitive
+/// `n`-th root of unity.
 ///
 /// # Complexity
 /// - Time: O(n log n)
 /// - Space: O(n)
 ///
 /// # Panics
-/// Panics if `n` is not a power of two.
 /// Panics if `R` has no primitive `n`-th root of unity.
+/// Panics if `n` is not a power of two.
 pub fn inverse_dft<R: RootOfUnity>(ring: &R, f: &mut [R::Value]) {
     let omega = root_of_unity(ring, f.len());
     let table = twiddles(ring, ring.inv(&omega), f.len());
@@ -58,8 +98,6 @@ pub fn inverse_dft<R: RootOfUnity>(ring: &R, f: &mut [R::Value]) {
 ///
 /// # Definition
 /// `(fg)(x) = Σ_{y+z=x} f(y) g(z)`, the product of the group algebra `R[Z/nZ] = R[t]/(t^n - 1)`.
-/// The characters are multiplicative, `ω^{s(y+z)} = ω^{sy} ω^{sz}`, so [`dft`] carries it to the
-/// pointwise product: `F(fg) = F(f) F(g)`.
 ///
 /// # Complexity
 /// - Time: O(n log n)
@@ -67,8 +105,8 @@ pub fn inverse_dft<R: RootOfUnity>(ring: &R, f: &mut [R::Value]) {
 ///
 /// # Panics
 /// Panics if `f` and `g` differ in length.
-/// Panics if that length is not a power of two.
 /// Panics if `R` has no primitive `n`-th root of unity.
+/// Panics if `n` is not a power of two.
 pub fn cyclic_convolve<R: RootOfUnity>(
     ring: &R,
     mut f: Vec<R::Value>,
@@ -102,7 +140,7 @@ pub fn cyclic_convolve<R: RootOfUnity>(
     f
 }
 
-/// A primitive `n`-th root of unity of `R`.
+/// The primitive `n`-th root of unity given by [`RootOfUnity::root_of_unity`].
 ///
 /// # Panics
 /// Panics if `R` has no primitive `n`-th root of unity.
@@ -111,13 +149,11 @@ fn root_of_unity<R: RootOfUnity>(ring: &R, n: usize) -> R::Value {
         .unwrap_or_else(|| panic!("no primitive {n}-th root of unity"))
 }
 
-/// The powers of `omega` at every stage.
+/// The powers of `omega` used by [`dif`] and [`dit`].
 ///
 /// # Definition
-/// `ω_{2h}^j` at index `h + j` for `j < h` and `h = n/2, ..., 1`, where `ω` is `omega`.
-///
-/// # Contract
-/// `omega` is a primitive `n`-th root of unity.
+/// `ω_{2h}^j` at index `h + j` for `j < h` and `h = n/2, ..., 1`, where `ω` is `omega` and
+/// `ω_{2h} = ω^{n/2h}`. Index `0` holds `1`.
 ///
 /// # Complexity
 /// - Time: O(n)
@@ -144,11 +180,11 @@ pub(crate) fn twiddles<R: RootOfUnity>(ring: &R, mut omega: R::Value, n: usize) 
 /// # Definition
 /// For `h = n/2, ..., 1`, `(a, b) -> (a + b, (a - b) ω_{2h}^j)` on the pairs `(f(x), f(x + h))`,
 /// `j = x mod h`, of each block of length `2h`: the reduction of the block modulo `t^h - 1` and
-/// modulo `t^h + 1`, the latter followed by `t -> ω_{2h} u`, since
-/// `R[t]/(t^{2h} - 1) = R[t]/(t^h - 1) x R[t]/(t^h + 1)`.
+/// modulo `t^h + 1`, the latter followed by `t -> ω_{2h} u`.
 ///
 /// # Contract
-/// `table` is [`twiddles`] of `n` for the root of unity of the transform.
+/// `n` is a power of two, and `table` is [`twiddles`] of some `N >= n` for a primitive `N`-th root
+/// of unity `ω`, with `ω_{2h} = ω^{N/2h}`.
 ///
 /// # Complexity
 /// - Time: O(n log n)
@@ -171,11 +207,11 @@ pub(crate) fn dif<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Valu
 /// # Definition
 /// For `h = 1, ..., n/2`, `(a, b) -> (a + ω_{2h}^j b, a - ω_{2h}^j b)` on the pairs
 /// `(f(x), f(x + h))`, `j = x mod h`, of each block of length `2h`: the transform of a block from
-/// the transforms of its even and odd parts, since `Σ_y ω_{2h}^{sy} f(y)` splits by the parity of
-/// `y` into `Σ_z ω_h^{sz} f(2z) + ω_{2h}^s Σ_z ω_h^{sz} f(2z + 1)`.
+/// the transforms of its even and odd parts.
 ///
 /// # Contract
-/// `table` is [`twiddles`] of `n` for the root of unity of the transform.
+/// `n` is a power of two, and `table` is [`twiddles`] of some `N >= n` for a primitive `N`-th root
+/// of unity `ω`, with `ω_{2h} = ω^{N/2h}`.
 ///
 /// # Complexity
 /// - Time: O(n log n)
@@ -198,6 +234,9 @@ pub(crate) fn dit<R: RootOfUnity>(ring: &R, f: &mut [R::Value], table: &[R::Valu
 ///
 /// # Definition
 /// `f(x) -> f(rev(x))`, where `rev` reverses the `log n` bits of `x`. It is an involution.
+///
+/// # Contract
+/// `n` is `0` or a power of two.
 ///
 /// # Complexity
 /// - Time: O(n)

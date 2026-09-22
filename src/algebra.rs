@@ -1,18 +1,14 @@
 pub mod additive;
 pub mod affine;
-pub mod and;
 pub mod canonical;
 pub mod closures;
-pub mod cyclic;
 pub mod gcd;
 pub mod lcm;
 pub mod max;
 pub mod min;
 pub mod monoid_algebra;
 pub mod multiplicative;
-pub mod or;
 pub mod power;
-pub mod xor;
 
 /// A semigroup trait
 ///

@@ -1,8 +1,8 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
+use cplib::bitwise::and::and_convolve;
 use cplib::num::fp::Fp;
-use cplib::set_function::superset::and_convolve;
 
 const P: u32 = 998_244_353;
 

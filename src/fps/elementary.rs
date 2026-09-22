@@ -1,6 +1,6 @@
 use crate::algebra::RootOfUnity;
+use crate::cyclic::{dft, inverse_dft};
 use crate::fps::fps_convolve;
-use crate::periodic_function::{dft, inverse_dft};
 use crate::poly::calculus::{poly_derivative, poly_integral};
 
 /// The inverse of `f` in `R[[x]]/(x^n)`, as its `n` coefficients.

@@ -1,4 +1,42 @@
-use crate::algebra::{Ring, Semiring};
+use crate::algebra::{Commutative, Idempotent, Monoid, Ring, Semigroup, Semiring, Zero};
+
+/// The bitwise and on `T`.
+///
+/// # Definition
+/// Identifying `T` with `{0, 1}^w` by its binary digits, `w` the number of bits of `T`, it is the
+/// `w`-fold direct product of `({0, 1}, 1, ^)`: `op(a, b) = a & b`, and `id()` is `!0`.
+pub struct And<T>(std::marker::PhantomData<T>);
+impl<T> And<T> {
+    pub const fn new() -> Self {
+        Self(std::marker::PhantomData)
+    }
+}
+impl<T> Default for And<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<T> Clone for And<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl<T> Copy for And<T> {}
+
+impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T>> Semigroup for And<T> {
+    type Value = T;
+    fn op(&self, a: &T, b: &T) -> T {
+        a.clone() & b.clone()
+    }
+}
+impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T> + Zero> Monoid for And<T> {
+    fn id(&self) -> T {
+        !T::zero()
+    }
+}
+impl<T: Clone + std::ops::BitAnd<Output = T>> Commutative for And<T> {}
+impl<T: Clone + std::ops::BitAnd<Output = T>> Idempotent for And<T> {}
 
 /// The superset zeta transform of `f`, in place.
 ///
@@ -33,8 +71,7 @@ pub fn superset_zeta<R: Semiring>(ring: &R, f: &mut [R::Value]) {
 /// The superset Mobius transform of `f`, in place, inverting [`superset_zeta`].
 ///
 /// # Definition
-/// `(Z^{-1}f)(S) = Σ_{T⊇S} (-1)^{|T|-|S|} f(T)`, by Mobius inversion on the boolean lattice ordered
-/// by reverse inclusion, whose Mobius function is `μ(S, T) = (-1)^{|T|-|S|}`.
+/// `(Z^{-1}f)(S) = Σ_{T⊇S} (-1)^{|T|-|S|} f(T)`.
 ///
 /// # Complexity
 /// - Time: O(2^n n)
@@ -60,12 +97,11 @@ pub fn superset_mobius<R: Ring>(ring: &R, f: &mut [R::Value]) {
     }
 }
 
-/// The intersection convolution of `f` and `g`.
+/// The and convolution of `f` and `g`.
 ///
 /// # Definition
-/// `(fg)(S) = Σ_{T∩U=S} f(T) g(U)`, the product of the monoid algebra of the intersection
-/// semilattice on `[n]`. Since `T⊇S` and `U⊇S` iff `T∩U⊇S`, [`superset_zeta`] carries it to the
-/// pointwise product: `Z(fg) = Z(f) Z(g)`.
+/// `(fg)(S) = Σ_{T∩U=S} f(T) g(U)`, the product of the monoid algebra of the subsets of `[n]` under
+/// intersection.
 ///
 /// # Complexity
 /// - Time: O(2^n n)
