@@ -4,7 +4,7 @@ use crate::algebra::{Commutative, Idempotent, Monoid, Ring, Semigroup, Semiring,
 ///
 /// # Definition
 /// Identifying `T` with `{0, 1}^w` by its binary digits, `w` the number of bits of `T`, it is the
-/// `w`-fold direct product of `({0, 1}, 0, v)`: `op(a, b) = a | b`, and `id()` is `0`.
+/// `w`-fold direct product of `({0, 1}, 0, |)`: `op(a, b) = a | b`, and `id()` is `0`.
 pub struct Or<T>(std::marker::PhantomData<T>);
 impl<T> Or<T> {
     pub const fn new() -> Self {
@@ -41,7 +41,7 @@ impl<T: Clone + std::ops::BitOr<Output = T>> Idempotent for Or<T> {}
 /// The subset zeta transform of `f`, in place.
 ///
 /// # Definition
-/// `(Zf)(S) = Σ_{T⊆S} f(T)`, the zeta trnsform of the boolean lattice on `[n]` ordered by
+/// `(Zf)(S) = Σ_{T⊆S} f(T)`, the zeta transform of the boolean lattice on `[n]` ordered by
 /// inclusion.
 ///
 /// # Complexity

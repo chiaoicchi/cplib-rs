@@ -77,7 +77,7 @@ pub fn ranked_subset_zeta<R: Ring>(ring: &R, f: Vec<R::Value>) -> Vec<Vec<R::Val
     layers
 }
 
-/// The set function recoverd from its ranked zeta transform, inverting [`ranked_subset_zeta`].
+/// The set function recovered from its ranked zeta transform, inverting [`ranked_subset_zeta`].
 ///
 /// # Definition
 /// `f(S) = Σ_{T⊆S} (-1)^{|S|-|T|} F_{|S|}(T)`, for the set functions `F_0, ..., F_n` given as

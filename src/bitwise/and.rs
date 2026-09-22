@@ -1,10 +1,10 @@
 use crate::algebra::{Commutative, Idempotent, Monoid, Ring, Semigroup, Semiring, Zero};
 
-/// The bitwise and on `T`.
+/// The monoid of `T` under the bitwise and.
 ///
 /// # Definition
 /// Identifying `T` with `{0, 1}^w` by its binary digits, `w` the number of bits of `T`, it is the
-/// `w`-fold direct product of `({0, 1}, 1, ^)`: `op(a, b) = a & b`, and `id()` is `!0`.
+/// `w`-fold direct product of `({0, 1}, 1, &)`: `op(a, b) = a & b`, and `id()` is `!0`.
 pub struct And<T>(std::marker::PhantomData<T>);
 impl<T> And<T> {
     pub const fn new() -> Self {

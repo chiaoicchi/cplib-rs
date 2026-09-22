@@ -8,7 +8,7 @@ use crate::bitwise::set_power_series::{ranked_subset_mobius, ranked_subset_zeta,
 /// with `(exp f)(∅) = 1`. If `1, ..., n` are invertible in `R`, it is `Σ_{k=0,...,n} f^k / k!`.
 ///
 /// # Contract
-/// `f(∅) = 0`
+/// `f(∅) = 0`.
 ///
 /// # Complexity
 /// - Time: O(2^n n^2)
@@ -33,7 +33,7 @@ pub fn sps_exp<R: Ring<Value: Clone>>(ring: &R, f: &[R::Value]) -> Vec<R::Value>
     g
 }
 
-/// The logarithm of `g`, as a set power series, inverting [`sps_exp`].
+/// The logarithm of `f`, as a set power series, inverting [`sps_exp`].
 ///
 /// # Definition
 /// The unique `g` with `g(∅) = 0` and `exp g = f`, which exists as `exp` is a bijection from

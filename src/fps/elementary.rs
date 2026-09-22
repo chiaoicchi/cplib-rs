@@ -121,7 +121,7 @@ pub fn fps_exp<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
 ///
 /// # Contract
 /// If `k >= 1` and `kv < n`, `1, ..., n - v - 1` are invertible in `R`, where `v` is the least
-/// index with `f(v) != 0`.
+/// index with `f(v) != 0`, if any.
 ///
 /// # Complexity
 /// - Time: O(n log n + log k)

@@ -14,7 +14,7 @@ use crate::poly::subproduct_tree::SubproductTree;
 ///
 /// # Panics
 /// Panics if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
-/// least `max(n, k)`, with `k = 0` if `n = 0`, `k = m` if `m <= 32`, and `k = 2m - 1` otherwise.
+/// least `max(n, a)`, with `a = 0` if `n = 0`, `a = m` if `m <= 32`, and `a = 2m - 1` otherwise.
 pub fn multipoint_evaluate<R: RootOfUnity + Clone>(
     ring: &R,
     f: &[R::Value],

@@ -4,16 +4,16 @@ use crate::poly::evaluation::iota_evaluate;
 /// The value of the series `Σ_{i>=0} r^i f(i)`, for a polynomial `f` given by its values.
 ///
 /// # Definition
-/// For `m = ys.len()`, let `f` in `R[x]` be the polynomial of degree less than `m` with
-/// `f(i) = y(i)` for `i` in `[0, m)`. The generating series `A(x) = Σ_{i>=0} r^i f(i) x^i` is the
-/// rational function `P(rx) / (1 - rx)^m` with `deg P < m`. Returns `A(1)`, which is the sum of the
-/// series whenever that converges.
+/// For `m = ys.len()`, with `y(i)` the `i`-th entry of `ys`, let `f` in `R[x]` be the polynomial of
+/// degree less than `m` with `f(i) = y(i)` for `i` in `[0, m)`. The generating series
+/// `A(x) = Σ_{i>=0} r^i f(i) x^i` is the rational function `P(rx) / (1 - rx)^m` with `deg P < m`.
+/// Returns `A(1)`, which is the sum of the series whenever that converges.
 ///
 /// Equivalently, `A(1)` is the unique constant `C` such that `Σ_{i<k} r^i f(i) = C + r^k h(k)` for
 /// all `k >= 0`, for some polynomial `h` of degree less than `m`.
 ///
 /// # Contract
-/// `1, ..., m - 1` are invertible in `R`, `1 - r` is invertible in `R`, unless `m = 0`.
+/// `1, ..., m - 1` are invertible in `R`. `1 - r` is invertible in `R`, unless `m = 0`.
 ///
 /// # Complexity
 /// - Time: O(m)

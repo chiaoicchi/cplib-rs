@@ -146,7 +146,7 @@ impl<R: RootOfUnity> SubproductTree<R> {
     ///
     /// # Panics
     /// Panics if `n > 0` and `R` has no primitive `N`-th root of unity, where `N` is the least
-    /// power of two at least `m` if `m < 32`, and at least `2m - 1` otherwise.
+    /// power of two at least `m` if `m <= 32`, and at least `2m - 1` otherwise.
     pub fn evaluate(&self, f: &[R::Value]) -> Vec<R::Value> {
         let m = f.len();
         if self.n == 0 {
