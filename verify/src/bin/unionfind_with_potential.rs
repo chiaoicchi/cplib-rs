@@ -1,7 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::additive::Additive;
-use cplib::algebra::canonical::Canonical;
+use cplib::algebra::canonical::{Additive, Canonical};
 use cplib::collections::potential_dsu::PotentialDsu;
 use cplib::num::fp::fp;
 

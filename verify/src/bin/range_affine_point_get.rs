@@ -1,7 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::affine::Affine;
-use cplib::algebra::canonical::Canonical;
+use cplib::algebra::canonical::{Affine, Canonical};
 use cplib::collections::dual_segment_tree::DualSegmentTree;
 use cplib::num::fp::Fp;
 

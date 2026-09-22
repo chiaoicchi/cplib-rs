@@ -32,7 +32,7 @@ pub fn multiplicative<M: Monoid, P>(
 /// `table[m] = g(m)` for `1 <= m <= n`, so `table[1] = id()`. `table[0] = id()`.
 ///
 /// # Complexity
-/// - Time: O(n log log n)
+/// - Time: O(n)
 /// - Space: O(n)
 pub fn multiplicative_table<M: Monoid + Commutative>(
     monoid: &M,
@@ -47,7 +47,7 @@ pub fn multiplicative_table<M: Monoid + Commutative>(
             continue;
         }
         let p = lpf.lpf(i);
-        let (mut k, mut e, mut q) = (i / p, 0, p);
+        let (mut k, mut e, mut q) = (i / p, 1, p);
         while k % p == 0 {
             k /= p;
             e += 1;

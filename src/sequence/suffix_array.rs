@@ -1,4 +1,4 @@
-use crate::algebra::min::Min;
+use crate::algebra::min_max::Min;
 use crate::collections::sparse_table::SparseTable;
 
 /// A suffix array with its inverse and the LCP array.

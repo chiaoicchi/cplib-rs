@@ -5,7 +5,7 @@ use crate::poly::subproduct_tree::SubproductTree;
 ///
 /// # Definition
 /// For `n = xs.len()`, with `x(j)` and `y(j)` the `j`-th entries of `xs` and `ys`. Returns
-/// `f = Σ_j y(j) Π_{i!=j} (t - x(i)) / Π_{i!=j} (x(j) - x(i))`, of length `n`.
+/// `f = Σ_j y(j) Π_{i!=j} (t - x(i)) / Π_{i!=j} (x(j) - x(i))`, of length `n` in the variable `t`.
 ///
 /// # Contract
 /// The points `x(j)` are distinct.

@@ -1,5 +1,5 @@
 use crate::algebra::RootOfUnity;
-use crate::cyclic::{dft, inverse_dft};
+use crate::cyclic::{dif, dit, twiddles};
 use crate::fps::fps_convolve;
 use crate::poly::calculus::{poly_derivative, poly_integral};
 
@@ -24,28 +24,43 @@ pub fn fps_inv<R: RootOfUnity>(ring: &R, f: &[R::Value], n: usize) -> Vec<R::Val
     }
     let zero = ring.zero();
     let mut g = vec![ring.inv(&f[0])];
+    if n == 1 {
+        return g;
+    }
+    let size = n.next_power_of_two();
+    let omega = ring
+        .root_of_unity(size)
+        .unwrap_or_else(|| panic!("no primitive {size}-th root of unity"));
+    let inv_omega = ring.inv(&omega);
+    let table = twiddles(ring, omega, size);
+    let inv_table = twiddles(ring, inv_omega, size);
+    let half = ring.inv(&ring.add(&ring.one(), &ring.one()));
+    let mut inv_len = ring.one();
     let mut m = 1;
     while m < n {
-        let mut e: Vec<R::Value> = f.iter().take(m << 1).map(|x| ring.add(x, &zero)).collect();
-        e.resize_with(m << 1, || ring.zero());
+        let len = m << 1;
+        inv_len = ring.mul(&inv_len, &half);
+        let mut e: Vec<R::Value> = f.iter().take(len).map(|x| ring.add(x, &zero)).collect();
+        e.resize_with(len, || ring.zero());
         let mut gd: Vec<R::Value> = g.iter().map(|x| ring.add(x, &zero)).collect();
-        gd.resize_with(m << 1, || ring.zero());
-        dft(ring, &mut gd);
-        dft(ring, &mut e);
+        gd.resize_with(len, || ring.zero());
+        dif(ring, &mut gd, &table);
+        dif(ring, &mut e, &table);
         for (x, y) in e.iter_mut().zip(&gd) {
             *x = ring.mul(x, y);
         }
-        inverse_dft(ring, &mut e);
+        dit(ring, &mut e, &inv_table);
         for x in e.iter_mut().take(m) {
             *x = ring.zero();
         }
-        dft(ring, &mut e);
+        dif(ring, &mut e, &table);
         for (x, y) in e.iter_mut().zip(&gd) {
             *x = ring.mul(x, y);
         }
-        inverse_dft(ring, &mut e);
-        g.extend(e[m..].iter().map(|x| ring.neg(x)));
-        m <<= 1;
+        dit(ring, &mut e, &inv_table);
+        let scale = ring.neg(&ring.mul(&inv_len, &inv_len));
+        g.extend(e[m..].iter().map(|x| ring.mul(x, &scale)));
+        m = len;
     }
     g.truncate(n);
     g

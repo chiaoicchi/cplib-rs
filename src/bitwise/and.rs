@@ -24,7 +24,7 @@ impl<T> Clone for And<T> {
 }
 impl<T> Copy for And<T> {}
 
-impl<T: Clone + std::ops::BitAnd<Output = T> + std::ops::Not<Output = T>> Semigroup for And<T> {
+impl<T: Clone + std::ops::BitAnd<Output = T>> Semigroup for And<T> {
     type Value = T;
     fn op(&self, a: &T, b: &T) -> T {
         a.clone() & b.clone()

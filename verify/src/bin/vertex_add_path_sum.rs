@@ -1,8 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 use std::num::Wrapping;
 
-use cplib::algebra::additive::Additive;
-use cplib::algebra::canonical::Canonical;
+use cplib::algebra::canonical::{Additive, Canonical};
 use cplib::collections::fenwick_tree::FenwickTree;
 use cplib::collections::tree::{Segment, Tree};
 

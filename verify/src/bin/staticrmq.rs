@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::min::Min;
+use cplib::algebra::min_max::Min;
 use cplib::collections::sparse_table::SparseTable;
 
 fn main() {

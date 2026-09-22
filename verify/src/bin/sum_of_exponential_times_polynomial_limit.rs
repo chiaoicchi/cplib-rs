@@ -1,7 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::canonical::Canonical;
-use cplib::algebra::multiplicative::Multiplicative;
+use cplib::algebra::canonical::{Canonical, Multiplicative};
 use cplib::arithmetic::multiplicative::multiplicative_table;
 use cplib::num::fp::{Fp, fp};
 use cplib::poly::geometric::iota_geometric_series;

@@ -36,10 +36,10 @@ pub fn primes(n: usize) -> Vec<usize> {
         return Vec::new();
     }
     let half = (n - 1) >> 1;
-    let mut composite = vec![true; half + 1];
+    let mut composite = vec![false; half + 1];
     let mut ps = vec![2];
     for i in 1..=half {
-        if !composite[i] {
+        if composite[i] {
             continue;
         }
         let p = (i << 1) + 1;
