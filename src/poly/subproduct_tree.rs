@@ -29,7 +29,7 @@ pub struct SubproductTree<R: RootOfUnity> {
 }
 
 impl<R: RootOfUnity> SubproductTree<R> {
-    /// Constructs the subproduct tree of `xs`.
+    /// Constructs the subproduct tree of the points `x(j)`, the `j`-th entry of `xs`.
     ///
     /// # Complexity
     /// - Time: O(n log^2 n)
@@ -219,8 +219,9 @@ impl<R: RootOfUnity> SubproductTree<R> {
     /// The coefficients of the polynomial `f` of degree less than `n` with `f(x(j)) = y(j)`.
     ///
     /// # Definition
-    /// `f = Σ_j y(j) Π_{i!=j} (t - x(i)) / Π_{i!=j} (x(j) - x(i))`, of length `n`. It is the
-    /// inverse of [`evaluate`](Self::evaluate) on the polynomials of degree less than `n`.
+    /// With `y(j)` the `j`-th entry of `ys`, `f = Σ_j y(j) Π_{i!=j} (t - x(i)) / Π_{i!=j} (x(j) - x(i))`,
+    /// of length `n`. It is the inverse of [`evaluate`](Self::evaluate) on the polynomials of degree
+    /// less than `n`.
     ///
     /// # Contract
     /// The points `x(j)` are distinct.
