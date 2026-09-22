@@ -17,7 +17,7 @@ use crate::poly::poly_convolve;
 /// Panics if `n >= 2` and `g.len() < n`.
 /// Panics only if `R` has no primitive `N`-th root of unity, where `N` is the least power of two at
 /// least `2n`, apart from the above.
-pub fn semi_relaxed<R: RootOfUnity<Value: PartialEq + Clone> + Default>(
+pub fn semi_relaxed<R: RootOfUnity<Value: Clone>>(
     ring: &R,
     g: &[R::Value],
     n: usize,

@@ -16,8 +16,8 @@ use crate::poly::poly_convolve;
 ///   `d_i = size / 2^depth(i)`; leaf `j` is node `size + j`.
 /// - `root` is the coefficients of `g_1 = t^{size - n} Π_j (t - x(j))`, of length `size + 1`.
 /// - `nodes` is, for each depth from `1` to `log size` and each node `i` of that depth in order,
-///   the values of `g_i` at the `2 d_i`-th roots of unity, in the order [`dif`] produces.
-/// - `table` and `inv_table` are [`twiddles`] for the forward and the inverse transform.
+///   the values of `g_i` at the `2 d_i`-th roots of unity, in the order `dif` produces.
+/// - `table` and `inv_table` are `twiddles` for the forward and the inverse transform.
 pub struct SubproductTree<R: RootOfUnity> {
     ring: R,
     n: usize,

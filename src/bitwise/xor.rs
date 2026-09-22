@@ -40,7 +40,7 @@ impl<T: Clone + std::ops::BitXor<Output = T> + Zero> Group for Xor<T> {
         a.clone()
     }
 }
-impl<T: Clone + std::ops::BitOr<Output = T>> Commutative for Xor<T> {}
+impl<T: Clone + std::ops::BitXor<Output = T>> Commutative for Xor<T> {}
 
 /// The Walsh-Hadamard transform of `f`, in place.
 ///

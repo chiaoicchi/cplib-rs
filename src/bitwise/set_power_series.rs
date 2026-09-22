@@ -1,3 +1,8 @@
+//! Set power series on `[n]`, the ring `R[x_0, ..., x_{n-1}] / (x_0^2, ..., x_{n-1}^2)`.
+//!
+//! A set power series `Σ_S f(S) Π_{v∈S} x_v` is stored as the set function `f`, as in
+//! [`crate::bitwise`].
+
 pub mod elementary;
 
 use crate::algebra::Ring;
