@@ -136,8 +136,7 @@ const fn pow_mod(mut base: u64, mut exp: u64, p: u64) -> u64 {
 /// The least primitive root modulo `p`.
 ///
 /// # Definition
-/// The least generator `g` of the multiplicative group `(Z/pZ)^*`, as an integer in `[1, p)`. For
-/// `p = 2` it is `1`.
+/// The least generator `g` of the multiplicative group `(Z/pZ)^*`, as an integer in `[1, p)`.
 ///
 /// Equivalently, `g` is the least integer in `[1, p)` whose order modulo `p` is `p - 1`.
 ///

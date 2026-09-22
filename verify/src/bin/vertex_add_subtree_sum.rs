@@ -3,7 +3,7 @@ use std::num::Wrapping;
 
 use cplib::algebra::canonical::{Additive, Canonical};
 use cplib::collections::fenwick_tree::FenwickTree;
-use cplib::collections::tree::Tree;
+use cplib::graph::tree::Tree;
 
 fn main() {
     let mut input = Vec::new();

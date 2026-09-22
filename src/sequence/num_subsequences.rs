@@ -1,19 +1,18 @@
 use crate::algebra::One;
 
-/// Returns the number of distinct subsequences of `s`, represented in `N`.
+/// The number of distinct subsequences of `s`, including the empty one, in `N`.
 ///
 /// # Definition
-/// A subsequence of `s = (s_0, ..., s_{n-1})` is a sequence `(s_{i_1}, ..., s_{i_k})` with
-/// `i_1 < ... < i_k`. Two subsequences are identified if they are equal as sequences.
-/// The result is the image in `N` of the integer `#{t: t is a subsequence of s}`. Elements are
-/// assumed to be already indexed by `[0, σ)`.
+/// A subsequence of `s` is a sequence `(s[i_1], ..., s[i_k])` with `k >= 0` and
+/// `i_1 < ... < i_k`, and two subsequences are identified if they are equal as sequences.
+/// The result is the image in `N` of the number of subsequences of `s`.
 ///
 /// # Complexity
-/// - Time: O(n + σ)
-/// - Space: O(σ)
+/// - Time: O(n + sigma)
+/// - Space: O(sigma)
 ///
 /// # Panics
-/// Panics if `s_i >= sigma`.
+/// Panics if `s[i] >= sigma` for some `i`.
 pub fn num_subsequences<N: Clone + One + std::ops::Add<Output = N> + std::ops::Sub<Output = N>>(
     s: &[usize],
     sigma: usize,

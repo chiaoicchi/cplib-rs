@@ -6,6 +6,12 @@
 ///
 /// An offset `(di, dj)` is a pair of `usize` interpreted modulo `2^usize::BITS`, so that `!0`
 /// stands for `-1`, `!1` for `-2`, and so on.
+///
+/// # Invariants
+/// - `h * w` does not overflow `usize`, and `h` and `w` are at most `2^(usize::BITS - 1)`.
+///
+/// # Complexity
+/// - Space: O(1)
 #[derive(Clone, Copy)]
 pub struct GridShape {
     h: usize,
@@ -25,15 +31,14 @@ impl GridShape {
         (1, 1),
     ];
 
-    /// Constructs the shape of a grid with `h` rows and `w` columns.
+    /// The shape of a grid with `h` rows and `w` columns.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `h * w` overflows `usize`.
-    /// Panics if `h` or `w` is greater than `2^(usize::BITS - 1)`.
+    /// Panics if `h * w` overflows `usize`, or `h` or `w` is greater than `2^(usize::BITS - 1)`.
     pub fn new(h: usize, w: usize) -> Self {
         assert!(h.checked_mul(w).is_some(), "h * w overflows: h={h}, w={w}");
         let half = 1 << (usize::BITS - 1);
@@ -44,7 +49,7 @@ impl GridShape {
         Self { h, w }
     }
 
-    /// Returns the number of rows.
+    /// The number `h` of rows.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -53,7 +58,7 @@ impl GridShape {
         self.h
     }
 
-    /// Returns the number of columns.
+    /// The number `w` of columns.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -62,7 +67,7 @@ impl GridShape {
         self.w
     }
 
-    /// Returns the row-major index `i * w + j` of the cell `(i, j)`.
+    /// The row-major index `i * w + j` of the cell `(i, j)`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -80,7 +85,7 @@ impl GridShape {
         i * self.w + j
     }
 
-    /// Returns the cell `(u / w, u % w)` whose row-major index is `u`.
+    /// The cell `(u / w, u % w)` whose row-major index is `u`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -98,7 +103,7 @@ impl GridShape {
         (u / self.w, u % self.w)
     }
 
-    /// Returns the cell `(i + di, j + dj)`, or `None` if it is outside the grid.
+    /// The cell `(i + di, j + dj)`, or `None` if it is outside the grid.
     ///
     /// # Contract
     /// The offsets `di` and `dj`, as signed integers, have absolute value at most
@@ -125,11 +130,10 @@ impl GridShape {
         (ni < self.h && nj < self.w).then_some((ni, nj))
     }
 
-    /// Returns the 4-neighbors of the cell `(i, j)`.
+    /// The 4-neighbors of the cell `(i, j)`.
     ///
     /// # Definition
-    /// Yields the cells `(i', j')` of the grid with `|i - i'| + |j - j'| = 1`, in the
-    /// lexicographic order: `(i - 1, j)`, `(i, j - 1)`, `(i, j + 1)`, `(i + 1, j)`.
+    /// The cells `(i', j')` of the grid with `|i - i'| + |j - j'| = 1`, in the exicographic order.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -149,11 +153,10 @@ impl GridShape {
             .filter_map(move |d| self.shift((i, j), d))
     }
 
-    /// Returns the 8-neighbors of the cell `(i, j)`.
+    /// The 8-neighbors of the cell `(i, j)`.
     ///
     /// # Definition
-    /// Yields the cells `(i', j')` of the grid with `max(|i - i'|, |j - j'|) = 1`, in the
-    /// lexicographic order.
+    /// The cells `(i', j')` of the grid with `max(|i - i'|, |j - j'|) = 1`, in the lexicographic order.
     ///
     /// # Complexity
     /// - Time: O(1)

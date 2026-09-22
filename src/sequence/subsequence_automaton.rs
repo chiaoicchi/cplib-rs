@@ -1,18 +1,17 @@
 /// The subsequence automaton of `s`.
 ///
 /// # Definition
-/// For a sequence `s` of length `n` over `[0, σ)`, the subsequence automaton is the deterministic
+/// For a sequence `s` of length `n` over `[0, sigma)`, the subsequence automaton is the deterministic
 /// finite automaton with states `0, ..., n`, initial state `0`, all states accepting, and transition
-/// `δ(i, c) = min{j >= i: s_j = c} + 1` (undefined if no such `j`). It accepts exactly the
-/// subsequences of `s`, and running it on `t` embeds `t` into `s` leftmost.
+/// `δ(i, c) = min{j >= i: s[j] = c} + 1`, undefined if there is no such `j`.
 ///
 /// # Invariants
-/// `next[i * sigma + c]` is `δ(i, c) - 1`, i.e. the position of the next `c` at or after `i`,
-/// and `u32::MAX` if undefined for `i` in `[0, n]` and `c` in `[0, σ)`.
-/// `len` is `n` and `sigma` is `σ`.
+/// - `next[i * sigma + c]` is `δ(i, c) - 1`, that is the position of the next `c` at or after `i`,
+///   and `u32::MAX` if `δ(i, c)` is undefined, for `i` in `[0, n]` and `c` in `[0, sigma)`.
+/// - `len = n`.
 ///
 /// # Complexity
-/// - Space: O(nσ)
+/// - Space: O(n sigma)
 pub struct SubsequenceAutomaton {
     next: Box<[u32]>,
     len: usize,
@@ -20,15 +19,14 @@ pub struct SubsequenceAutomaton {
 }
 
 impl SubsequenceAutomaton {
-    /// Constructs the subsequence automaton of `s`.
+    /// The subsequence automaton of `s`.
     ///
     /// # Complexity
-    /// - Time: O(nσ)
-    /// - Space: O(nσ)
+    /// - Time: O(n sigma)
+    /// - Space: O(n sigma)
     ///
     /// # Panics
-    /// Panics if `s_i >= sigma`.
-    /// Panics if `n >= 2^32 - 1`.
+    /// Panics if `s[i] >= sigma` for some `i` or `n >= 2^32 - 1`.
     pub fn from_slice(s: &[usize], sigma: usize) -> Self {
         let n = s.len();
         assert!(n < u32::MAX as usize, "n must be less than 2^32 - 1: n={n}");
@@ -46,7 +44,8 @@ impl SubsequenceAutomaton {
         }
     }
 
-    /// Returns `min{j >= i: s_j = c}`, and `None` if no such `j` exists.
+    /// The position `min{j >= i: s[j] = c}` of the next `c` at or after `i`, or `None` if there is
+    /// none.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -66,15 +65,18 @@ impl SubsequenceAutomaton {
         (j != u32::MAX).then_some(j as usize)
     }
 
-    /// Returns `true` if `t` is a subsequence of `s`.
+    /// Whether `t` is a subsequence of `s`.
     ///
     /// # Complexity
     /// - Time: O(|t|)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `t_i >= sigma`.
+    /// Panics if `t[i] >= sigma` for some `i`.
     pub fn accepts(&self, t: &[usize]) -> bool {
+        if let Some(&c) = t.iter().find(|&&c| c >= self.sigma) {
+            panic!("element out of range: c={c}, sigma={}", self.sigma);
+        }
         let mut i = 0;
         for &c in t {
             match self.next(i, c) {
@@ -85,7 +87,7 @@ impl SubsequenceAutomaton {
         true
     }
 
-    /// Returns `n`, the length of `s`.
+    /// The length `n` of `s`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -94,7 +96,7 @@ impl SubsequenceAutomaton {
         self.len
     }
 
-    /// Returns `true` if `s` is empty.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -103,7 +105,7 @@ impl SubsequenceAutomaton {
         self.len() == 0
     }
 
-    /// Returns `σ`, the alphabet size.
+    /// The alphabet size `sigma`.
     ///
     /// # Complexity
     /// - Time: O(1)

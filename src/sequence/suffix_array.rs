@@ -9,13 +9,8 @@ use crate::collections::sparse_table::SparseTable;
 /// in lexicographic order, and `isa` is its inverse. `lcp[k]` is the length of the longest common
 /// prefix of `s[sa[k]..]` and `s[sa[k + 1]..]` for `k` in `[0, n - 1)`.
 ///
-/// For `i != j` with `isa[i] < isa[j]`, the longest common prefix of `s[i..]` and `s[j..]` has
-/// length `min(lcp[isa[i]..isa[j]])`, since the longest common prefix of two suffixes is the
-/// minimum over the suffixes between them in lexicographic order.
-///
 /// # Invariants
-/// - `isa[sa[k]] = k` for all `k`.
-/// - `lcp.len() = n - 1` if `n > 0` and `0` otherwise.
+/// - `isa[sa[k]] = k` for all `k` and `lcp.len() = max(n - 1, 0)`.
 /// - `rmq`, once built, is a sparse table over `lcp` under `min`.
 ///
 /// # Complexity
@@ -28,7 +23,7 @@ pub struct SuffixArray {
 }
 
 impl SuffixArray {
-    /// Constructs the suffix array of `s`.
+    /// The suffix array of `s`.
     ///
     /// # Complexity
     /// - Time: O(n log n)
@@ -110,7 +105,7 @@ impl SuffixArray {
         }
     }
 
-    /// Returns `sa`.
+    /// The suffix array `sa`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -119,7 +114,7 @@ impl SuffixArray {
         &self.sa
     }
 
-    /// Returns `isa`, the inverse of `sa`.
+    /// The inverse `isa` of `sa`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -128,7 +123,7 @@ impl SuffixArray {
         &self.isa
     }
 
-    /// Returns `lcp`.
+    /// The LCP array `lcp`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -137,7 +132,7 @@ impl SuffixArray {
         &self.lcp
     }
 
-    /// Returns the length of the longest common prefix of `s[i..]` and `s[j..]`.
+    /// The length of the longest common prefix of `s[i..]` and `s[j..]`.
     ///
     /// # Complexity
     /// - Time: O(1), plus O(n log n) on the first call
@@ -166,7 +161,7 @@ impl SuffixArray {
         rmq.fold(a..b).unwrap()
     }
 
-    /// Returns the length of the sequence.
+    /// The length `n` of `s`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -175,7 +170,7 @@ impl SuffixArray {
         self.sa.len()
     }
 
-    /// Returns `true` if the sequence is empty.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)

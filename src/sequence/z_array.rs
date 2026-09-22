@@ -1,4 +1,4 @@
-/// Returns the Z-array of `s`.
+/// The Z-array of `s`.
 ///
 /// # Definition
 /// For a sequence `s` of length `n`, `z[i]` is the length of the longest common prefix of
@@ -7,7 +7,7 @@
 /// # Complexity
 /// - Time: O(n)
 /// - Space: O(n)
-pub fn z_algorithm<T: PartialEq>(s: &[T]) -> Vec<usize> {
+pub fn z_array<T: PartialEq>(s: &[T]) -> Vec<usize> {
     let n = s.len();
     let mut z = vec![n; n];
     let (mut l, mut r) = (0, 1);

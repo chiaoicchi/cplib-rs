@@ -1,25 +1,16 @@
 /// A rooted tree with a heavy-light DFS order.
 ///
 /// # Definition
-/// Let `T` be a tree on `[0, n)` rooted at `root`. The heavy child of a vertex is a child of
-/// maximum subtree size, and an edge to a heavy child is heavy; other edges are light. The maximal
-/// paths of heavy edges are the heavy paths, and the shallowest vertex of a heavy path is its head.
-/// `order` is the preorder of the DFS that visits the heavy child first, and `index` is its
-/// inverse.
-///
-/// A path from `u` to `v` is returned as a sequence of `Segment`s of `order`, in the order they are
-/// traversed from `u` to `v`: `Up(r)` is traversed in decreasing order of `order` (towards the
-/// root), `Down(r)` in increasing order. `edge_path` omits `lca(u, v)`, so that, if the value of
-/// the edge `(parent[c], c)` is stored at position `index[c]`, the segments cover exactly the edges
-/// of the path.
-///
-/// # Contract
-/// `adjacency` is the adjacency list of an undirected tree on `[0, n)`, and `root < n`.
+/// `T` is a tree on `[0, n)` rooted at `root`. The heavy child of a vertex is a child of maximum
+/// subtree size, and an edge to a heavy child is heavy. The maximal paths of heavy edges are the
+/// heavy paths, and the shallowest vertex of a heavy path is its head. `order` is the preorder of
+/// the DFS that visits the heavy child first, and `index` is its inverse.
 ///
 /// # Invariants
 /// - `order` is the heavy-child-first preorder from `root`, and `index[order[i]] = i`.
-/// - `parent[root] = root`, `depth[root] = 0`, and `head[v]` is the head of the heavy path of `v`.
-/// - `out[v] = index[v] + size[v]`, so the subtree of `v` is `order[index[v]..out[v]]`.
+/// - `parent[v]` and `depth[v]` are the parent and the depth of `v`, with `parent[root] = root`.
+/// - `head[v]` is the head of the heavy path of `v`.
+/// - `out[v] = index[v] + size[v]`, so that the subtree of `v` is `order[index[v]..out[v]]`.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -32,25 +23,27 @@ pub struct Tree {
     order: Box<[usize]>,
 }
 
-/// A segment of a path in a Tree, as an interval of the DFS order.
+/// A segment of a path in a Tree, as an interval of `order`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Segment {
-    /// Traversed in decreasing order, i.e. towards the root.
+    /// Traversed in decreasing order, that is towards the root.
     Up(std::ops::Range<usize>),
-    /// Traversed in increasing order, i.e. away from the root.
+    /// Traversed in increasing order, that is away from the root.
     Down(std::ops::Range<usize>),
 }
 
 impl Tree {
-    /// Builds the tree rooted at `root`.
+    /// The tree given by `adjacency`, rooted at `root`.
+    ///
+    /// # Contract
+    /// `adjacency` is the adjacency list of an undirected graph on `[0, n)`.
     ///
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
     ///
     /// # Panics
-    /// Panics if `root >= n`.
-    /// Panics if `adjacency` is not a tree.
+    /// Panics if `root >= n` or the graph is not a tree.
     pub fn from_adjacency(adjacency: &[Vec<usize>], root: usize) -> Self {
         let n = adjacency.len();
         assert!(root < n, "root out of bounds: root={root}, n={n}");
@@ -123,7 +116,7 @@ impl Tree {
         }
     }
 
-    /// Returns the parent of `v`, which is `root` itself for `v = root`.
+    /// The parent of `v`, which is `root` for `v = root`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -140,7 +133,7 @@ impl Tree {
         self.parent[v]
     }
 
-    /// Returns the depth of `v`, the number of edges from `root`.
+    /// The depth of `v`, the number of edges from `root`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -157,7 +150,7 @@ impl Tree {
         self.depth[v]
     }
 
-    /// Returns the position of `v` in `order`.
+    /// The position `index[v]` of `v` in `order`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -174,7 +167,7 @@ impl Tree {
         self.index[v]
     }
 
-    /// Returns the vertex at position `i` of `order`, the inverse of `index`.
+    /// The vertex `order[i]`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -191,7 +184,7 @@ impl Tree {
         self.order[i]
     }
 
-    /// Returns the interval of `order` occupied by the subtree of `v`.
+    /// The interval of `order` formed by the subtree of `v`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -208,7 +201,7 @@ impl Tree {
         self.index[v]..self.out[v]
     }
 
-    /// Returns `true` if `u` is an ancestor of `v`, including `u = v`.
+    /// Whether `u` is an ancestor of `v`, including `u = v`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -230,7 +223,7 @@ impl Tree {
         self.subtree(u).contains(&self.index[v])
     }
 
-    /// Returns the `k`-th ancestor of `v`, and `None` if `k > depth[v]`.
+    /// The `k`-th ancestor of `v`, or `None` if `k > depth(v)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -258,7 +251,7 @@ impl Tree {
         }
     }
 
-    /// Returns the lowest common ancestor of `u` and `v`.
+    /// The lowest common ancestor of `u` and `v`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -287,7 +280,7 @@ impl Tree {
         if self.depth[u] < self.depth[v] { u } else { v }
     }
 
-    /// Returns the number of edges on the path from `u` to `v`.
+    /// The number of edges on the path from `u` to `v`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -309,7 +302,7 @@ impl Tree {
         self.depth[u] + self.depth[v] - (self.depth[self.lca(u, v)] << 1)
     }
 
-    /// Returns the vertex `k` edges from `u` on the path to `v`, and `None` if `k > dist(u, v)`.
+    /// The vertex `k` edges from `u` on the path to `v`, or `None` if `k > dist(u, v)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -340,7 +333,8 @@ impl Tree {
         }
     }
 
-    /// Returns the segments covering the vertices of the path from `u` to `v`.
+    /// The segments of `order` covering the vertices of the path from `u` to `v`, in the order
+    /// they are traversed from `u` to `v`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -382,7 +376,8 @@ impl Tree {
         up
     }
 
-    /// Returns the segments covering the vertices of the path from `u` to `v` except `lca(u, v)`.
+    /// The segments of `order` covering the vertices of the path from `u` to `v` except
+    /// `lca(u, v)`, in the order they are traversed from `u` to `v`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -424,7 +419,7 @@ impl Tree {
         up
     }
 
-    /// Returns the number of vertices.
+    /// The number `n` of vertices.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -433,7 +428,7 @@ impl Tree {
         self.order.len()
     }
 
-    /// Returns `true` if the tree has no vertices.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)

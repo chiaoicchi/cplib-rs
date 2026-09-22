@@ -1,15 +1,15 @@
 use crate::algebra::{Idempotent, Semigroup};
 use crate::range::to_half_open;
 
-/// A sparse table, a static structure for range folds of an idempotent semigroup.
+/// A fixed sequence `a` of an idempotent semigroup, with the folds of its intervals.
 ///
 /// # Definition
-/// Let `a` be the sequence of elements of an idempotent semigroup `(S, op)`. For a half-open
-/// interval `[l, r)` with `l < r`, `fold[l, r) = a[l] op ... op a[r - 1]`.
+/// `n` is the length of `a`. For `l < r`, `fold[l, r) = a[l] a[l + 1] ... a[r - 1]`, the product
+/// under `op` in this order.
 ///
 /// # Invariants
-/// `table[k][i] = fold[i, i + 2^k)` for all `k` in `[0, floor(log_2 n)]` and `i` in
-/// `[0, n - 2^k]`; in particular `table[0] = a`.
+/// - `table[k][i] = fold[i, i + 2^k)` for `k` in `[0, floor(log2 n)]` and `i` in `[0, n - 2^k]`; in
+///   particular `table[0] = a`. `table` is empty for `n = 0`.
 ///
 /// # Complexity
 /// - Space: O(n log n)
@@ -19,7 +19,7 @@ pub struct SparseTable<S: Semigroup + Idempotent> {
 }
 
 impl<S: Semigroup + Idempotent> SparseTable<S> {
-    /// Constructs a sparse table from a vector `v` of elements.
+    /// The sparse table of the sequence `v`.
     ///
     /// # Complexity
     /// - Time: O(n log n)
@@ -44,7 +44,7 @@ impl<S: Semigroup + Idempotent> SparseTable<S> {
         }
     }
 
-    /// Returns the element at index `i`, or `None` if `i` is out of bounds.
+    /// The element `a[i]`, or `None` if `i >= n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -53,21 +53,16 @@ impl<S: Semigroup + Idempotent> SparseTable<S> {
         self.table.first()?.get(i)
     }
 
-    /// Returns the fold of the elements in `range`, or `None` if `range` is empty.
+    /// The fold `fold[l, r)` of `range = [l, r)`, or `None` if `l = r`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `range` is out of bounds or `l > r`.
+    /// Panics if `l > r` or `r > n`.
     pub fn fold(&self, range: impl std::ops::RangeBounds<usize>) -> Option<S::Value> {
         let (l, r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         if l == r {
             return None;
         }
@@ -76,7 +71,7 @@ impl<S: Semigroup + Idempotent> SparseTable<S> {
         Some(self.semigroup.op(&row[l], &row[r - (1 << k)]))
     }
 
-    /// Returns the number of elements.
+    /// The length `n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -85,7 +80,7 @@ impl<S: Semigroup + Idempotent> SparseTable<S> {
         self.table.first().map_or(0, |row| row.len())
     }
 
-    /// Returns `true` if the sparse table has no elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -97,10 +92,8 @@ impl<S: Semigroup + Idempotent> SparseTable<S> {
 
 impl<S: Semigroup + Idempotent> std::ops::Index<usize> for SparseTable<S> {
     type Output = S::Value;
-    /// Returns a reference to the element at index `i`.
-    ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     fn index(&self, i: usize) -> &S::Value {
         assert!(
             i < self.len(),

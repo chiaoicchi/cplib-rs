@@ -1,11 +1,10 @@
 /// A coordinate compression of a finite subset `X` of a totally ordered set `T`.
 ///
 /// # Definition
-/// Let `X` be a finite subset of `T` with `|X| = k`. There is a unique order isomorphism
-/// `φ: X -> [0, k)`, given by `φ(x) = #{y in X: y < x}`.
+/// `k = |X|`, and `φ: X -> [0, k)` is the order isomorphism, `φ(x) = #{y in X: y < x}`.
 ///
 /// # Invariants
-/// `value` is strictly increasing and enumerates `X`, so `value[φ(x)] = x` for `x` in `X`.
+/// - `value` is `X` in increasing order, so that `value[φ(x)] = x` for `x` in `X`.
 ///
 /// # Complexity
 /// - Space: O(k)
@@ -14,10 +13,10 @@ pub struct Compression<T> {
 }
 
 impl<T: Ord> Compression<T> {
-    /// Constructs a compression of the set of elements of `v`.
+    /// The compression of the set `X` of the elements of `v`.
     ///
     /// # Complexity
-    /// - Time: O(n log n)
+    /// - Time: O(n log n), where `n = v.len()`
     /// - Space: O(n)
     pub fn from_vec(mut v: Vec<T>) -> Self {
         v.sort_unstable();
@@ -25,7 +24,7 @@ impl<T: Ord> Compression<T> {
         Self { value: v.into() }
     }
 
-    /// Returns `φ(x)` if `x` is in `X`, and `None` otherwise.
+    /// `φ(x)`, or `None` if `x` is not in `X`.
     ///
     /// # Complexity
     /// - Time: O(log k)
@@ -34,7 +33,7 @@ impl<T: Ord> Compression<T> {
         self.value.binary_search(x).ok()
     }
 
-    /// Returns `#{y in X: y < x}`, the extension of `φ` to `T`.
+    /// `#{y in X: y < x}`.
     ///
     /// # Complexity
     /// - Time: O(log k)
@@ -43,7 +42,7 @@ impl<T: Ord> Compression<T> {
         self.value.partition_point(|y| y < x)
     }
 
-    /// Returns `k = |X|`.
+    /// The size `k`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -52,7 +51,7 @@ impl<T: Ord> Compression<T> {
         self.value.len()
     }
 
-    /// Returns `true` if `X` is empty.
+    /// Whether `k = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -64,10 +63,10 @@ impl<T: Ord> Compression<T> {
 
 impl<T> std::ops::Index<usize> for Compression<T> {
     type Output = T;
-    /// Returns `φ^{-1}(i)`, the `i`-th smallest element of `X`.
+    /// The element `φ^{-1}(i)`.
     ///
     /// # Panics
-    /// Panics if `i >= self.len()`.
+    /// Panics if `i >= k`.
     fn index(&self, i: usize) -> &T {
         assert!(
             i < self.value.len(),

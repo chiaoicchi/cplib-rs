@@ -4,30 +4,25 @@ use crate::graph::topological_sort::topological_sort;
 /// A flow network with costs and a minimum cost flow algorithm (successive shortest paths).
 ///
 /// # Definition
-/// A flow network whose edges carry a capacity in `Cap` and a cost per unit of flow in `Cost`. The
-/// cost of a flow is the sum over the edges of the flow times the cost. For an amount `x`, the
-/// minimum cost of a flow of value `x` from `s` to `t` is a convex piecewise linear function
-/// `g(x)`; the structure stores a flow, initially zero, and `slope` increases it along `g`, whose
-/// breakpoints it returns.
+/// A flow network is a directed graph on `[0, n)` with `m` edges, whose edge `i` carries a capacity
+/// `c(i)` in `Cap` and a cost `w(i)` per unit in `Cost`, which may be negative. The structure
+/// stores a value `f(i)` in `[0, c(i)]` on each edge, initially `0`, and the cost of `f` is
+/// `Σ_i f(i) w(i)`. A flow from `s` to `t` is such an `f` with the total inflow equal to the total
+/// outflow at every vertex other than `s` and `t`, and its value is the net outflow of `s`. `g(x)`
+/// is the minimum cost of a flow of value `x` from `s` to `t`.
 ///
-/// The residual graph has, for each edge with capacity `c`, flow `f`, and cost `w`, a forward edge
-/// of residual capacity `c - f` and cost `w`, and a reverse edge of residual capacity `f` and cost
-/// `-w`. A flow is of minimum cost among the flows of its value if and only if the residual graph
-/// has no cycle of negative cost; pushing along a shortest path of the residual graph keeps this
-/// property, so pushing along shortest paths in turn traces `g`.
-///
-/// Costs may be negative, but the graph must have no cycle of negative cost. Shortest paths are
-/// computed by Dijkstra's algorithm on the reduced costs `w + h(u) - h(v)`, where the potential `h`
-/// keeps them non-negative; it is recomputed when needed.
+/// The residual graph has, for each edge `i` from `u` to `v`, a forward edge `u -> v` of residual
+/// capacity `c(i) - f(i)` and cost `w(i)`, and a reverse edge `v -> u` of residual capacity `f(i)`
+/// and cost `-w(i)`. Only the edges of positive residual capacity are in it.
 ///
 /// # Invariants
 /// - Edge `i` is stored as the pair of internal edges `2i` (forward) and `2i + 1` (reverse), with
-///   `to[2i + 1]` its tail and `to[2i]` its head; `cost[2i + 1] = -cost[2i]`.
-/// - `cap[e]` is the residual capacity of internal edge `e`; `cap[2i] + cap[2i + 1]` is the
-///   capacity of edge `i`, and `cap[2i + 1]` is its flow.
+///   `to[2i + 1]` its tail and `to[2i]` its head, and `cost[2i] = -cost[2i + 1] = w(i)`.
+/// - `cap[e]` is the residual capacity of internal edge `e`, so that `cap[2i] + cap[2i + 1] = c(i)`
+///   and `cap[2i + 1] = f(i)`.
 /// - `adjacency[v]` lists the internal edges leaving `v`.
-/// - After `slope`, `cost[e] + potential[from] - potential[to] >= 0` for every internal edge `e`
-///   with `cap[e] > 0`.
+/// - `cost[e] + potential[to[e^1]] - potential[to[e]] >= 0` for every internal edge `e` with
+///   `cap[e] > 0`, except the edges added since the last push.
 ///
 /// # Complexity
 /// - Space: O(n + m)
@@ -51,7 +46,7 @@ impl<
         + std::ops::Mul<Output = Cost>,
 > MinCostFlow<Cap, Cost>
 {
-    /// Constructs a network on `[0, n)` with no edges.
+    /// The network on `[0, n)` with no edges.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -66,15 +61,15 @@ impl<
         }
     }
 
-    /// Constructs a network on `[0, n)` with the given edges, so that edge `i` is `edges[i]`.
-    /// Equivalent to `new(n)` followed by `add_edge` for each element in order.
+    /// The network on `[0, n)` whose edge `i` is `edges[i]`, as by `new(n)` followrd by `add_edge`
+    /// for each edge in order.
     ///
     /// # Complexity
     /// - Time: O(n + m)
     /// - Space: O(n + m)
     ///
     /// # Panics
-    /// Panics if some `from`, `to` is not less than `n`, or some capacity is negative.
+    /// Panics if some edge has `from >= n`, `to >= n` or `cap < Cap::zero()`.
     pub fn from_edges(n: usize, edges: &[(usize, usize, Cap, Cost)]) -> Self {
         let mut network = Self::new(n);
         for &(from, to, cap, cost) in edges {
@@ -86,8 +81,8 @@ impl<
     /// Adds an edge from `from` to `to` with capacity `cap` and cost `cost`, and returns its index.
     ///
     /// # Complexity
-    /// - Time: O(1) amortized
-    /// - Space: O(1)
+    /// - Time: amortized O(1)
+    /// - Space: amortized O(1)
     ///
     /// # Panics
     /// Panics if `from >= n`, `to >= n` or `cap < zero`.
@@ -108,12 +103,19 @@ impl<
         e / 2
     }
 
-    /// Increases the stored flow from `s` to `t` to a maximum at minimum cost, and returns the
-    /// increase of the value and of the cost.
+    /// Pushes along shortest paths from `s` to `t` in the residual graph until `t` is unreachable,
+    /// and returns the total amount and its cost, as by `flow_limit(s, t, Cap::max_value())`.
+    ///
+    /// # Definition
+    /// The push keeps the conservation at every vertex other than `s` and `t`, and raises the net
+    /// outflow of `s` by the returned amount. If `f` was a minimum cost flow from `s` to `t` of
+    /// value `v`, it becomes one of the maximum value `v'`, and the returned cost is
+    /// `g(v') - g(v)`.
     ///
     /// # Complexity
-    /// - Time: O(F (n + m) log n), where `F` is the number of augmentations, plus the
-    ///   recomputation of the potential if needed.
+    /// - Time: O((F + 1)(n + m) log n), where `F` is the number of pushed along, plus O(nm) if an
+    ///   edge of the residual graph has a negative reduced cost, as at the first call with a
+    ///   negative cost
     /// - Space: O(n)
     ///
     /// # Panics
@@ -122,11 +124,17 @@ impl<
         self.flow_limit(s, t, Cap::max_value())
     }
 
-    /// Increases the stored flow from `s` to `t` by at most `limit` at minimum cost, as much as
-    /// possible, and returns the increase of the value and of the cost.
+    /// Pushes along shortest paths from `s` to `t` in the residual graph, as much as possible up to
+    /// `limit`, and returns the total amount and its cost.
+    ///
+    /// # Definition
+    /// The push keeps the conservation at every vertex other than `s` and `t`, and raises the net
+    /// outflow of `s` by the returned amount `x`. If `f` was a minimum cost flow from `s` to `t` of
+    /// value `v`, it becomes one of value `v + x`, and the returned cost is `g(v + x)`.
     ///
     /// # Complexity
-    /// - Time: O(F (n + m) log n), plus the recomputation of the potential if needed
+    /// - Time: O((F + 1)(n + m) log n), where `F` is the number of paths pushed along, plus O(nm)
+    ///   if an edge of the residual graph has a negative cost
     /// - Space: O(n)
     ///
     /// # Panics
@@ -154,12 +162,12 @@ impl<
         (value, total)
     }
 
-    /// Increases the stored flow from `s` to `t` by exactly `amount` at minimum cost, and returns
-    /// the increase of the cost, or `None` if `amount` cannot be pushed; in that case the flow is
-    /// still increased as much as possible.
+    /// Pushes `amount` as by `flow_limit(s, t, amount)`, and returns its cost, or `None` if less
+    /// than `amount` is pushed.
     ///
     /// # Complexity
-    /// - Time: O(F (n + m) log n), plus the recomputation of the potential if needed.
+    /// - Time: O((F + 1)(n + m) log n), where `F` is the number of paths pushed along, plus O(nm)
+    ///   if an edge of the residual graph has a negative reduced cost
     /// - Space: O(n)
     ///
     /// # Panics
@@ -169,11 +177,12 @@ impl<
         (value == amount).then_some(cost)
     }
 
-    /// Increases the stored flow from `s` to `t` to a maximum at minimum cost, and returns the
-    /// breakpoints of `g` from `(0, 0)` to the end, relative to the flow before the call.
+    /// Pushes as by `flow(s, t)` and returns the breakpoints of the cost against the amount, as by
+    /// `slope_limit(s, t, Cap::max_value())`.
     ///
     /// # Complexity
-    /// - Time: O(F (n + m) log n), plus the recomputation of the potential if needed
+    /// - Time: O((F + 1)(n + m) log n), where `F` is the number of paths pushed along, plus O(nm)
+    ///   if an edge of the residual graph has a negative reduced cost
     /// - Space: O(n + F)
     ///
     /// # Panics
@@ -182,12 +191,17 @@ impl<
         self.slope_limit(s, t, Cap::max_value())
     }
 
-    /// Increases the stored flow from `s` to `t` by at most `limit` at minimum cost, as much as
-    /// possible, and returns the breakpoints of `g` from `(0, 0)` to the end, relative to the flow
-    /// before the call. Consecutive segments of equal slope are merged.
+    /// Pushes as by `flow_limit(s, t, limit)`, and returns the breakpoints of the cost against the
+    /// amount.
+    ///
+    /// # Definition
+    /// The breakpoints are the points `(x, y)`, from `(0, 0)` to the returned amount, where `y` is
+    /// the cost of pushing `x` and the slope changes. If `f` was a minimum cost flow from `s` to `t`
+    /// of value `v`, then `y = g(v + x) - g(v)`.
     ///
     /// # Complexity
-    /// - Time: O(F (n + m) log n), where `F` is the number of augmentations
+    /// - Time: O((F + 1)(n + m) log n), where `F` is the number of paths pushed along, plus O(nm)
+    ///   if an edge of the residual graph has a negative reduced cost
     /// - Space: O(n + F)
     ///
     /// # Panics
@@ -222,12 +236,13 @@ impl<
         breakpoints
     }
 
-    /// Recomputes the potential if some edge of positive residual capacity has negative reduced
-    /// cost, so that all reduced costs are non-negative afterwards.
+    /// Recomputes the potential if an edge of the residual graph has a negative reduced
+    /// cost, so that every reduced cost is non-negative.
     ///
     /// # Complexity
-    /// - Time: O(n + m) when residual graph is acyclic, O(nm) otherwise.
-    /// - Space: O(n)
+    /// - Time: O(m), plus O(n + m) for the recomputation if the residual graph is acyclic and
+    ///   O(nm) otherwise
+    /// - Space: O(n + m)
     fn restore_potential(&mut self) {
         let n = self.adjacency.len();
         let live = (0..self.to.len()).filter(|&e| self.cap[e] > Cap::zero());
@@ -274,9 +289,12 @@ impl<
     /// Pushes along one shortest path from `s` to `t` in the residual graph, at most `limit`, and
     /// returns the amount and the cost per unit; `None` if `t` is unreachable.
     ///
+    /// # Contract
+    /// Every reduced cost of the residual graph is non-negative for `potential`.
+    ///
     /// # Complexity
     /// - Time: O((n + m) log n)
-    /// - Space: O(n)
+    /// - Space: O(n + m)
     fn augment(
         &mut self,
         s: usize,
@@ -338,7 +356,7 @@ impl<
         Some((d, slope))
     }
 
-    /// Returns `(from, to, cap, flow, cost)` of edge `i`.
+    /// The edge `i`, as `(from, to, c(i), f(i), w(i))`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -362,7 +380,7 @@ impl<
         )
     }
 
-    /// Returns `n`, the number of vertices.
+    /// The number `n` of vertices.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -371,7 +389,7 @@ impl<
         self.adjacency.len()
     }
 
-    /// Returns `m`, the number of edges.
+    /// The number `m` of edges.
     ///
     /// # Complexity
     /// - Time: O(1)

@@ -3,8 +3,7 @@
 //! For a matrix `A`, `j*(i)` is the least `j` attaining `min_j A[i][j]`. `A` is monotone if `j*` is
 //! non-decreasing. `A` is totally monotone if `A[i][j] > A[i][j']` implies `A[i'][j] > A[i'][j']`,
 //! and Monge if `A[i][j] + A[i'][j'] <= A[i][j'] + A[i'][j]`, both for all `i < i'` and `j < j'` at
-//! which the entries are defined. Monge implies totally monotone, which implies monotone. Unlike
-//! monotonicity, the other two are inherited by submatrices.
+//! which the entries are defined.
 
 use crate::divide_and_conquer::cdq;
 
@@ -18,7 +17,7 @@ use crate::divide_and_conquer::cdq;
 ///
 /// # Complexity
 /// - Time: O(n + m log n)
-/// - Space: O(log n)
+/// - Space: O(n)
 ///
 /// # Panics
 /// Panics if `m == 0` and `n > 0`.

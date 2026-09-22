@@ -3,21 +3,19 @@ use crate::algebra::{Bounded, Zero};
 /// A flow network with a maximum flow algorithm (Dinic).
 ///
 /// # Definition
-/// A flow network is a directed graph on `[0, n)` whose edges carry capacities in `Cap`. A flow
-/// from `s` to `t` assigns to each edge a value in `[0, capacity]` such that, at every vertex other
-/// than `s` and `t`, the total inflow equals the total outflow; its value is the total outflow of
-/// `s`. The structure stores a flow, initially zero, and `flow` increases it to a maximum.
+/// A flow network is a directed graph on `[0, n)` with `m` edges, whose edge `i` carries a capacity
+/// `c(i)` in `Cap`. The structure stores a value `f(i)` in `[0, c(i)]` on each edge, initially `0`.
+/// A flow from `s` to `t` is such an `f` with the total inflow equal to the total outflow at every
+/// vertex other than `s` and `t`, and its value is the net outflows of `s`.
 ///
-/// The residual graph has, for each edge `i` from `u` to `v` with capacity `c` and flow `f`, a
-/// forward edge `u -> v` of residual capacity `c - f` and a reverse edge `v -> u` of residual
-/// capacity `f`. Pushing along a path of the residual graph increases the flow; the flow is maximum
-/// if and only if `t` is not reachable from `s` in the residual graph.
+/// The residual graph has, for each edge `i` from `u` to `v`, a forward edge `u -> v` of residual
+/// capacity `c(i) - f(i)` and a reverse edge `v -> u` of residual capacity `f(i)`.
 ///
 /// # Invariants
 /// - Edge `i` is stored as the pair of internal edges `2i` (forward) and `2i + 1` (reverse), with
 ///   `to[2i + 1]` its tail and `to[2i]` its head.
-/// - `cap[e]` is the residual capacity of internal edge `e`; `cap[2i] + cap[2i + 1]` is the
-///   capacity of edge `i`, and `cap[2i + 1]` is its flow.
+/// - `cap[e]` is the residual capacity of internal edge `e`, so that `cap[2i] + cap[2i + 1] = c(i)`
+///   and `cap[2i + 1] = f(i)`.
 /// - `adjacency[v]` lists the internal edges leaving `v`.
 ///
 /// # Complexity
@@ -28,10 +26,8 @@ pub struct MaxFlow<Cap> {
     adjacency: Vec<Vec<usize>>,
 }
 
-impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::Sub<Output = Cap>>
-    MaxFlow<Cap>
-{
-    /// Constructs a network on `[0, n)` with no edges.
+impl<Cap> MaxFlow<Cap> {
+    /// The network on `[0, n)` with no edges.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -44,15 +40,37 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         }
     }
 
-    /// Constructs a network on `[0, n)` with the given edges, so that edge `i` is `edges[i]`.
-    /// Equivalent to `new(n)` followed by `add_edge` for each element in order.
+    /// The number `n` of vertices.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    pub fn num_vertices(&self) -> usize {
+        self.adjacency.len()
+    }
+
+    /// The number `m` of edges.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    pub fn num_edges(&self) -> usize {
+        self.to.len() >> 1
+    }
+}
+
+impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::Sub<Output = Cap>>
+    MaxFlow<Cap>
+{
+    /// The network on `[0, n)` whose edge `i` is `edges[i]`, as by `new(n)` followed for each edge
+    /// in order.
     ///
     /// # Complexity
     /// - Time: O(n + m)
     /// - Space: O(n + m)
     ///
     /// # Panics
-    /// Panics if some `from`, `to` is not less than `n`, or some capacity is negative.
+    /// Panics if some edge has `from >= n`, `to >= n` or `cap < Cap::zero()`.
     pub fn from_edges(n: usize, edges: &[(usize, usize, Cap)]) -> Self {
         let mut network = Self::new(n);
         for &(from, to, cap) in edges {
@@ -64,8 +82,8 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
     /// Adds an edge from `from` to `to` with capacity `cap`, and returns its index.
     ///
     /// # Complexity
-    /// - Time: O(1) amortized
-    /// - Space: O(1)
+    /// - Time: amortized O(1)
+    /// - Space: amortized O(1)
     ///
     /// # Panics
     /// Panics if `from >= n`, `to >= n`, or `cap < zero`.
@@ -84,11 +102,16 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         e / 2
     }
 
-    /// Increases the stored flow from `s` to `t` to a maximum, and returns the increase.
-    /// Equivalent to `flow_limit(s, t, Cap::max_value())`.
+    /// Pushes along paths from `s` to `t` in the residual graph until `t` in unreachable, and
+    /// returns the total amount, as by `flow_limit(s, t, Cap::max_value())`.
+    ///
+    /// # Definition
+    /// The push keeps the conservation at every vertex other than `s` and `t`, and raises the net
+    /// outflow of `s` by the returned amount. If `f` was a flow from `s` to `t`, it becomes a
+    /// maximum one.
     ///
     /// # Complexity
-    /// - Time: O(n^2 m); O(m sqrt(n)) when all capacities are `one`.
+    /// - Time: O(n^2 m), and O(m min(√m, n^{2/3})) if every capacity is at most `1`
     /// - Space: O(n)
     ///
     /// # Panics
@@ -97,8 +120,12 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         self.flow_limit(s, t, Cap::max_value())
     }
 
-    /// Increases the stored flow from `s` to `t` by at most `limit`, as much as possible, and
-    /// returns the increase.
+    /// Pushes along paths from `s` to `t` in the residual graph, as much as possible up to `limit`,
+    /// and returns the total amount.
+    ///
+    /// # Definition
+    /// The push keeps the conservation at every vertex other than `s` and `t`, and raises the net
+    /// outflow of `s` by the returned amount, which is `limit` or the most that can be pushed.
     ///
     /// # Complexity
     /// - Time: O(n^2 m)
@@ -114,11 +141,13 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         let mut total = Cap::zero();
         let mut dist = vec![!0usize; n];
         let mut iter = vec![0; n];
+        let mut queue = Vec::with_capacity(n);
         let mut path = Vec::new();
         while total < limit {
             dist.fill(!0);
             dist[s] = 0;
-            let mut queue = vec![s];
+            queue.clear();
+            queue.push(s);
             let mut head = 0;
             while head < queue.len() && dist[t] == !0 {
                 let v = queue[head];
@@ -146,12 +175,12 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         total
     }
 
-    /// Pushes along one `s`-`t` path of the level graph, from `iter`, and returns the amount;
-    /// returns `zero` if no such path remains.
+    /// Pushes along one path from `s` to `t` of the level graph given by `dist`, found from `iter`,
+    /// at most `limit`, and returns the amount, or `Cap::zero()` if no such path remains.
     ///
     /// # Complexity
-    /// - Time: O(n + k), where `k` is the number of edges discarded from `iter`; amortized over a
-    ///   phase, the discarded edges total `O(m)`.
+    /// - Time: O(n + k), where `k` is the number of edges discarded from `iter`, which total `O(m)`
+    ///   over a phase
     /// - Space: O(1)
     fn augment(
         &mut self,
@@ -200,7 +229,7 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         d
     }
 
-    /// Returns `(from, to, cap, flow)` of edge `i`.
+    /// The edge `i`, as `(from, to, c(i), f(i))`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -220,11 +249,7 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
         )
     }
 
-    /// Returns which vertices are reachable from `s` in the residual graph.
-    ///
-    /// Immediately after `flow(s, t)`, this is the `s` side of a minimum `s` - `t` cut: the edges
-    /// from the reachable side to the other side are saturated, and their capacities sum to the
-    /// value of the flow.
+    /// Whether each vertex is reachable from `s` in the residual graph.
     ///
     /// # Complexity
     /// - Time: O(n + m)
@@ -248,23 +273,5 @@ impl<Cap: Copy + Ord + Zero + Bounded + std::ops::Add<Output = Cap> + std::ops::
             }
         }
         reached
-    }
-
-    /// Returns `n`, the number of vertices.
-    ///
-    /// # Complexity
-    /// - Time: O(1)
-    /// - Space: O(1)
-    pub fn num_vertices(&self) -> usize {
-        self.adjacency.len()
-    }
-
-    /// Returns `m`, the number of edges.
-    ///
-    /// # Complexity
-    /// - Time: O(1)
-    /// - Space: O(1)
-    pub fn num_edges(&self) -> usize {
-        self.to.len() >> 1
     }
 }

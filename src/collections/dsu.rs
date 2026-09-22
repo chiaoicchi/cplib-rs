@@ -1,13 +1,12 @@
-/// A disjoint set union data structure.
+/// A partition of `[0, n)` into disjoint sets, with unions of its sets.
+///
+/// # Definition
+/// `S(x)` is the set containing `x`.
 ///
 /// # Invariants
-/// The sets form a partition of `{0, 1, ..., n - 1}`, represented by a rooted forest
-/// on `{0, 1, ..., n - 1}` stored in the internal array `value`.
-/// - If `value[i] < 0`, then `i` is a root and `-value[i]` is the size of its set.
-/// - If `value[i] >= 0`, then `value[i]` is the parent of `i`.
-///
-/// Two elements belong to the same set if and only if they belong to the same tree, and the root of
-/// the tree is the representative of the set.
+/// - `value` is a rooted forest on `[0, n)` whose trees are the sets: `value[i]` is the parent of
+///   `i` if `value[i] >= 0`, and otherwise `i` is a root and `-value[i]` is the size of its tree.
+/// - `count` is the number of sets.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -17,14 +16,14 @@ pub struct Dsu {
 }
 
 impl Dsu {
-    /// Constructs a disjoint set union with `n` elements, each in its own set.
+    /// The partition of `[0, n)` into singletons.
     ///
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
     ///
     /// # Panics
-    /// Panics if `n` is greater than or equal to `2^31`.
+    /// Panics if `n >= 2^31`.
     pub fn new(n: usize) -> Self {
         assert!(n < 1 << 31, "n must be less than 2^31: n={n}");
         Self {
@@ -33,14 +32,15 @@ impl Dsu {
         }
     }
 
-    /// Returns the representative of the set containing `x`.
+    /// The representative of `S(x)`, an element of `S(x)` shared by all its elements, which stays
+    /// the same until `S(x)` is united with another set.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n)), where `α` is the inverse Ackermann function
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
+    /// Panics if `x >= n`.
     pub fn root(&mut self, mut x: usize) -> usize {
         assert!(
             x < self.len(),
@@ -57,15 +57,14 @@ impl Dsu {
         x
     }
 
-    /// Unites the sets containing `x` and `y`, and returns `true` if they were different sets.
+    /// Unites `S(x)` and `S(y)`, and returns whether they were different.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
-    /// Panics if `y` is out of bounds.
+    /// Panics if `x >= n` or `y >= n`.
     pub fn unite(&mut self, x: usize, y: usize) -> bool {
         let mut rx = self.root(x);
         let mut ry = self.root(y);
@@ -81,32 +80,31 @@ impl Dsu {
         true
     }
 
-    /// Returns `true` if `x` and `y` belong to the same set.
+    /// Whether `S(x) = S(y)`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
-    /// Panics if `y` is out of bounds.
+    /// Panics if `x >= n` or `y >= n`.
     pub fn is_same(&mut self, x: usize, y: usize) -> bool {
         self.root(x) == self.root(y)
     }
 
-    /// Returns the size of the set containing `x`.
+    /// The size `|S(x)|`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
+    /// Panics if `x >= n`.
     pub fn set_size(&mut self, x: usize) -> usize {
         -self.value[self.root(x)] as usize
     }
 
-    /// Returns the number of disjoint sets.
+    /// The numbers of sets.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -115,7 +113,7 @@ impl Dsu {
         self.count
     }
 
-    /// Returns the number of elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)

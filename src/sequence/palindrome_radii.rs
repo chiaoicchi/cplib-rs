@@ -1,18 +1,13 @@
-/// Returns the palindrome radii of `s`.
+/// The palindrome radii of `s`.
 ///
 /// # Definition
 /// For a sequence `s` of length `n`, `r[i]` is the largest `r` such that `s[i - r + 1..i + r]` is
-/// a palindrome, i.e. the radius of the longest palindrome centered at `i`, counting the center.
-///
-/// Even-length palindromes are found by interleaving `s` with a sentinel `$` not in `s`: for
-/// `t = $ s[0] $ s[1] $ ... $ s[n - 1] $` of length `2n + 1`, `r_t[k] - 1` is the length of the
-/// longest palindrome of `s` centered at `s[k / 2]` if `k` is odd, and between `s[k / 2 - 1]` and
-/// `s[k / 2]` if `k` is even.
+/// a palindrome, that is the radius of the longest palindrome centered at `i`, counting the center.
 ///
 /// # Complexity
 /// - Time: O(n)
 /// - Space: O(n)
-pub fn manacher<T: PartialEq>(s: &[T]) -> Vec<usize> {
+pub fn palindrome_radii<T: PartialEq>(s: &[T]) -> Vec<usize> {
     let n = s.len();
     let mut r = vec![1; n];
     let (mut c, mut k) = (0, 1);

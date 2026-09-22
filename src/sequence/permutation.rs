@@ -3,11 +3,10 @@
 /// # Definition
 /// List the distinct rearrangements of the multiset `a` in lexicographic order. If `a` is not the
 /// last one, `a` becomes its successor and `true` is returned; otherwise `a` becomes the first one,
-/// that is `a` sorted in non-decreasing order, and `false` is returned. Repeated calls therefore
-/// cycle through every rearrangement, and `a` is left as it started after a full cycle.
+/// that is `a` sorted in non-decreasing order, and `false` is returned.
 ///
 /// # Complexity
-/// - Time: O(n), amortized O(1) over a full cycle
+/// - Time: O(n), amortized O(1) over a full cycle if the elements are pairwise distinct
 /// - Space: O(1)
 pub fn next_permutation<T: Ord>(a: &mut [T]) -> bool {
     next_permutation_by(a, T::cmp)
@@ -16,13 +15,17 @@ pub fn next_permutation<T: Ord>(a: &mut [T]) -> bool {
 /// Rewrites `a` as the next rearrangement in the lexicographic order induced by `compare`.
 ///
 /// # Definition
-/// As `next_permutation`, with `compare` in place of the order of `T`.
+/// As `next_permutation`, for the sequence of the classes of the elements of `a` under the
+/// equivalence `compare(x, y) = Equal`, ordered by `compare`. The elements of a class may be
+/// reordered among themselves.
 ///
 /// # Contract
-/// `compare` is a total order: it is reflexive, antisymmetric, transitive, and total.
+/// `compare` is a total order: `compare(y, x) = compare(x, y).reverse()`, and
+/// `compare(x, z) != Greater` whenever `compare(x, y) != Greater` and `compare(y, z) != Greater`.
 ///
 /// # Complexity
-/// - Time: O(n) calls of `compare`, amortized O(1) over a full cycle
+/// - Time: O(n) calls of `compare`, amortized O(1) over a full cycle if the elements are pairwise
+///   inequivalent
 /// - Space: O(1)
 pub fn next_permutation_by<T>(
     a: &mut [T],
@@ -47,10 +50,10 @@ pub fn next_permutation_by<T>(
 /// Rewrites `a` as the next rearrangement in the lexicographic order of the keys `f`.
 ///
 /// # Definition
-/// As `next_permutation`, with the order `f(x) <= f(y)` in place of the order of `T`.
+/// As `next_permutation_by` with `compare(x, y) = f(x).cmp(&f(y))`.
 ///
 /// # Complexity
-/// - Time: O(n) calls of `f`, amortized O(1) over a full cycle
+/// - Time: O(n) calls of `f`, amortized O(1) over a full cycle if the keys are pairwise distinct
 /// - Space: O(1)
 pub fn next_permutation_by_key<T, K: Ord>(a: &mut [T], mut f: impl FnMut(&T) -> K) -> bool {
     next_permutation_by(a, |x, y| f(x).cmp(&f(y)))
@@ -64,7 +67,7 @@ pub fn next_permutation_by_key<T, K: Ord>(a: &mut [T], mut f: impl FnMut(&T) -> 
 /// one, that is `a` sorted in non-increasing order, and `false` is returned.
 ///
 /// # Complexity
-/// - Time: O(n), amortized O(1) over a full cycle
+/// - Time: O(n), amortized O(1) over a full cycle if the elements are pairwise distinct
 /// - Space: O(1)
 pub fn prev_permutation<T: Ord>(a: &mut [T]) -> bool {
     prev_permutation_by(a, T::cmp)
@@ -73,14 +76,16 @@ pub fn prev_permutation<T: Ord>(a: &mut [T]) -> bool {
 /// Rewrites `a` as the previous rearrangement in the lexicographic order induced by `compare`.
 ///
 /// # Definition
-/// As `prev_permutation`, with `compare` in place of the order of `T`. Equivalently, it is
-/// `next_permutation_by` for the opposite order.
+/// As `prev_permutation`, for the sequence of the classes of the elements of `a` under the
+/// equivalence `compare(x, y) = Equal`, ordered by `compare`. The elements of a class may be
+/// reordered among themselves. Equivalently, it is `next_permutation_by` for the opposite order.
 ///
 /// # Contract
-/// `compare` is a total order.
+/// `compare` is a total preorder, as in `next_permutation_by`.
 ///
 /// # Complexity
-/// - Time: O(n) calls of `compare`, amortized O(1) over a full cycle
+/// - Time: O(n) calls of `compare`, amortized O(1) over a full cycle if the elements are pairwise
+///   inequivalent
 /// - Space: O(1)
 pub fn prev_permutation_by<T>(
     a: &mut [T],
@@ -92,10 +97,10 @@ pub fn prev_permutation_by<T>(
 /// Rewrites `a` as the previous rearrangement in the lexicographic order of the keys `f`.
 ///
 /// # Definition
-/// As `prev_permutation`, with the order `f(x) <= f(y)` in place of the order of `T`.
+/// As `prev_permutation_by` with `compare(x, y) = f(x).cmp(&f(y))`.
 ///
 /// # Complexity
-/// - Time: O(n) calls of `f`, amortized O(1) over a full cycle
+/// - Time: O(n) calls of `f`, amortized O(1) over a full cycle if the keys are pairwise distinct
 /// - Space: O(1)
 pub fn prev_permutation_by_key<T, K: Ord>(a: &mut [T], mut f: impl FnMut(&T) -> K) -> bool {
     prev_permutation_by(a, |x, y| f(x).cmp(&f(y)))

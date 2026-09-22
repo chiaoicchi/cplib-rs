@@ -1,10 +1,8 @@
-/// Returns the border array of `s`.
+/// The border array of `s`.
 ///
 /// # Definition
 /// For a sequence `s` of length `n`, `b[i]` is the length of the longest border of `s[0..i)`,
-/// i.e. the longest proper prefix of `s[0..i)` that is also its suffix, for `i` in `[0, n]`.
-/// The borders of `s[0..i)` are exactly `b[i]`, `b[b[i]]`, ..., down to `0`, and the smallest
-/// period of `s[0..i)` is `i - b[i]`.
+/// that is the longest proper prefix of `s[0..i)` that is also its suffix, and `b[0] = 0`.
 ///
 /// # Complexity
 /// - Time: O(n)
