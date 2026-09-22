@@ -2,14 +2,12 @@ use crate::algebra::{Monoid, Semigroup};
 use crate::num::mersenne::Mersenne;
 use crate::range::to_half_open;
 
-/// A polynomial hash of a sequence together with its length.
+/// A polynomial hash of a sequence with its length and base.
 ///
 /// # Definition
 /// For a base `b` in `Z/MZ` with `M = 2^K - 1`, the hash of a sequence `t` of length `m` is
-/// `H(t) = t[0] b^(m-1) + t[1] b^(m-2) + ... + t[m-1]` in `Z/MZ`. Two hashes are equal iff
-/// their lengths, values and base are equal. For `t != t'` of length at most `n`, `H(t) = H(t')`
-/// with probability at most `n / M` over a uniformly random `b`, since `H(t) - H(t')` is a
-/// nonzero polynomial in `base` of degree less than `n`.
+/// `H(t) = t[0] b^(m-1) + t[1] b^(m-2) + ... + t[m-1]`, with each `t[i]` read in `Z/MZ`. Two hashes
+/// are equal iff their values, lengths and bases are.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct SequenceHash<const K: u32> {
     value: Mersenne<K>,
@@ -18,7 +16,7 @@ pub struct SequenceHash<const K: u32> {
 }
 
 impl<const K: u32> SequenceHash<K> {
-    /// Returns the hash value.
+    /// The value `H(t)`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -27,7 +25,7 @@ impl<const K: u32> SequenceHash<K> {
         self.value
     }
 
-    /// Returns the length of the hashed sequence.
+    /// The length `m` of `t`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -36,7 +34,7 @@ impl<const K: u32> SequenceHash<K> {
         self.len
     }
 
-    /// Returns `true` if the hashed sequence is empty.
+    /// Whether `m = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -46,38 +44,36 @@ impl<const K: u32> SequenceHash<K> {
     }
 }
 
-/// The monoid of sequence hashes under concatenation.
+/// The hash `H(t u)` of the concatenation, for `x = H(t)` and `y = H(u)`.
+///
+/// # Complexity
+/// - Time: O(log y.len())
+/// - Space: O(1)
+///
+/// # Panics
+/// Panics if the bases of `x` and `y` differ.
+pub fn sequence_concat<const K: u32>(x: SequenceHash<K>, y: SequenceHash<K>) -> SequenceHash<K> {
+    assert!(x.base == y.base, "bases differ: x={}, y={}", x.base, y.base);
+    SequenceHash {
+        value: x.value * x.base.pow(y.len as u64) + y.value,
+        base: x.base,
+        len: x.len + y.len,
+    }
+}
+
+/// The monoid of sequence hashes with the base `self.0` under [`sequence_concat`].
 ///
 /// # Definition
-/// `H(t u) = H(t) b^|u| + H(u)`, with the empty sequence as the identity.
+/// `op(x, y) = concat(x, y)`, and `id()` is the hash of the empty sequence with the base `self.0`.
+///
+/// # Contract
+/// The values have the base `self.0`.
 #[derive(Clone, Copy)]
 pub struct Concat<const K: u32>(pub Mersenne<K>);
 impl<const K: u32> Semigroup for Concat<K> {
     type Value = SequenceHash<K>;
-    /// # Complexity
-    /// - Time: O(log b.len())
-    /// - Space: O(1)
-    ///
-    /// # Panics
-    /// Panics if `a.base` and `b.base` are not same.
     fn op(&self, a: &SequenceHash<K>, b: &SequenceHash<K>) -> SequenceHash<K> {
-        assert!(
-            self.0 == a.base,
-            "bases differ: expected={}, a={}",
-            self.0,
-            a.base
-        );
-        assert!(
-            self.0 == b.base,
-            "bases differ: expected={}, b={}",
-            self.0,
-            b.base
-        );
-        SequenceHash {
-            value: a.value * self.0.pow(b.len() as u64) + b.value,
-            base: self.0,
-            len: a.len + b.len,
-        }
+        sequence_concat(*a, *b)
     }
 }
 impl<const K: u32> Monoid for Concat<K> {
@@ -90,19 +86,14 @@ impl<const K: u32> Monoid for Concat<K> {
     }
 }
 
-/// The prefix hashes of a sequence, giving the hash of any contiguous subsequence in O(1).
+/// The hashes of the contiguous subsequences of a sequence.
 ///
 /// # Definition
-/// For a sequence `s` of length `n` and a base `b`, `prefix[i] = H(s[0..i))` for `i` in `[0, n]`
-/// and `power[i] = b^i`. Then `H(s[l..r)) = prefix[r] - prefix[l] b^(r-l)`.
-///
-/// # Contract
-/// - `base` is chosen uniformly at random from `Z/MZ` at run time; the collision bound of
-///   `SequenceHash` holds only for a random base, and a fixed base admits adversarial inputs.
-/// - Hashes are comparable only if they were computed with the same base.
+/// For a sequence `s` of length `n` and a base `b`, gives `H(s[l..r))` for `0 <= l <= r <= n`, with
+/// each `s[i]` read in `Z/MZ` through `u64`.
 ///
 /// # Invariants
-/// `prefix.len() = power.len() = n + 1`.
+/// - `prefix[i] = H(s[0..i))` and `power[i] = b^i` for `i` in `[0, n]`, and `base = b`.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -113,7 +104,7 @@ pub struct RollingHash<const K: u32> {
 }
 
 impl<const K: u32> RollingHash<K> {
-    /// Constructs the prefix hashes of `s` with base `base`.
+    /// The rolling hash of `s` with the base `base`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -135,21 +126,16 @@ impl<const K: u32> RollingHash<K> {
         }
     }
 
-    /// Returns the hash of `s[range]`.
+    /// The hash `H(s[l..r))` of `range = [l, r)`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `range` is out of bounds or `l > r`.
+    /// Panics if `l > r` or `r > n`.
     pub fn hash(&self, range: impl std::ops::RangeBounds<usize>) -> SequenceHash<K> {
         let (l, r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         SequenceHash {
             value: self.prefix[r] - self.prefix[l] * self.power[r - l],
             base: self.base,
@@ -157,7 +143,7 @@ impl<const K: u32> RollingHash<K> {
         }
     }
 
-    /// Returns the length of `s`.
+    /// The length `n` of `s`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -166,7 +152,7 @@ impl<const K: u32> RollingHash<K> {
         self.prefix.len() - 1
     }
 
-    /// Returns `true` if `s` is empty.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)

@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::sequence::manacher::manacher;
+use cplib::sequence::palindrome_radii::palindrome_radii;
 
 fn main() {
     let mut input = Vec::new();
@@ -9,7 +9,7 @@ fn main() {
     let mut stdout = BufWriter::new(stdout().lock());
 
     let s: &[u8] = iter.next().unwrap();
-    let r = manacher(
+    let r = palindrome_radii(
         &s.iter()
             .flat_map(|&c| [b'A', c])
             .chain(b"A".iter().copied())

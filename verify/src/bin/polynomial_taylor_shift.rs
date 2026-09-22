@@ -2,7 +2,7 @@ use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
 use cplib::num::fp::Fp;
-use cplib::poly::Poly;
+use cplib::poly::taylor_shift::poly_taylor_shift;
 
 const P: u32 = 998_244_353;
 
@@ -25,14 +25,12 @@ fn main() {
 
     let n = parse!(usize);
     let c = Fp::<P>::new(parse!(u32));
-    let a: Poly<Canonical<_>> = Poly::from_vec(
-        (0..n)
-            .map(|_| Fp::<P>::new(parse!(u32)))
-            .collect::<Vec<_>>(),
-    );
+    let a: Vec<Fp<P>> = (0..n)
+        .map(|_| Fp::<P>::new(parse!(u32)))
+        .collect::<Vec<_>>();
 
-    let ans = a.taylor_shift(&c);
-    for ans in ans.coefficients(n) {
+    let ans = poly_taylor_shift(&Canonical::new(), &a, &c);
+    for ans in ans {
         write!(stdout, "{ans} ").ok();
     }
     writeln!(stdout).ok();

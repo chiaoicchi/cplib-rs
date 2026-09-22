@@ -1,22 +1,27 @@
 use crate::algebra::{Action, Monoid};
 use crate::range::to_half_open;
 
-/// A lazy segment tree data structure.
+/// A sequence `a` of a monoid `M`, with the action of a monoid `N` applied on its intervals and
+/// the folds of its intervals.
+///
+/// # Definition
+/// `n` is the length of `a`. `fold[l, r) = a[l] a[l + 1] ... a[r - 1]`, the product under `op` of
+/// `M` in this order, which is `id()` for `l = r`. Applying `f` to `a[i]` replaces it by
+/// `act(f, a[i])`.
 ///
 /// # Contract
-/// `act` must be an action of the monoid `(N::Value, map_id, map_op)` on the monoid
-/// `(M::Value, id, op)`, i.e.
-/// `act(map_id(), x) == x` for all `x`.
-/// `act(map_op(f, g), x) == act(g, act(f, x))` for all `f`, `g`, `x`.
-/// `act(f, op(x, y)) == op(act(f, x), act(f, y))` for all `f`, `x`, `y`.
+/// `act` is an action of `N` on `M` that distributes over `op` of `M`:
+/// - `act(map_monoid.id(), x) = x`
+/// - `act(map_monoid.op(f, g), x) = act(g, act(f, x))`
+/// - `act(f, value_monoid.op(x, y)) = value_monoid.op(act(f, x), act(f, y))`.
+///
+/// for all `f`, `g`, `x` and `y`.
 ///
 /// # Invariants
-/// The values are stored in the internal array `value` as a 1-indexed binary tree in
-/// `value[1..2n)`, and the maps in `map[1..n)`; `value[0]` and `map[0]` are unused.
-/// - `value[i] = op(value[2i], value[2i + 1])` for all `i` in `[1, n)`, where the map has already
-///   been applied to `value[i]` but not to its descendants.
-/// - `map[i]` is a map that has not yet been applied to the descendants of `i`.
-/// - The map at a node is newer than the maps at its descendants.
+/// - `value[k] = act(map[k], op(value[2k, value[2k + 1]))` for `k` in `[1, n)`.
+/// - `a[i] = act(map[p_d], ... act(map[p_1], value[p_0]) ...)`, where `p_0 = n + i`,
+///   `p_{t+1} = p_t / 2` and `p_d = 1`.
+/// - `value[0]` and `map[0]` are unused.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -29,7 +34,7 @@ pub struct LazySegmentTree<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> 
 }
 
 impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, F> {
-    /// Constructs a lazy segment tree with `n` elements, all initialized to `value_monoid.id()`.
+    /// The sequence of `n` copies of `id()`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -44,7 +49,7 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         }
     }
 
-    /// Constructs a lazy segment tree from a vector `v` of elements.
+    /// The lazy segment tree of the sequence `v`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -64,14 +69,14 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         }
     }
 
-    /// Sets the element at index `i` to `x`.
+    /// Sets `a[i]` to `x`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn set(&mut self, mut i: usize, x: M::Value) {
         assert!(
             i < self.len(),
@@ -84,14 +89,14 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.pull(i);
     }
 
-    /// Sets the element at index `i` to `op(a[i], x)`, where `a[i]` is the current element.
+    /// Sets `a[i]` to `op(a[i], x)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn op_assign(&mut self, mut i: usize, x: &M::Value) {
         assert!(
             i < self.len(),
@@ -104,14 +109,14 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.pull(i);
     }
 
-    /// Sets the element at index `i` to `act(f, a[i])`, where `a[i]` is the current element.
+    /// Applies `f` to `a[i]`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn apply(&mut self, mut i: usize, f: &N::Value) {
         assert!(
             i < self.len(),
@@ -124,22 +129,16 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.pull(i);
     }
 
-    /// Applies the map `f` to the elements in `range`.
+    /// Applies `f` to `a[i]` for every `i` in `range = [l, r)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if the start of `range` is greater than the end, or the end is greater than
-    /// `self.len()`.
+    /// Panics if `l > r` or `r > n`.
     pub fn range_apply(&mut self, range: impl std::ops::RangeBounds<usize>, f: &N::Value) {
         let (mut l, mut r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         if l == r {
             return;
         }
@@ -178,39 +177,25 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.pull(r - 1);
     }
 
-    /// Returns a reference to the element at index `i`, or `None` if `i` is out of bounds.
+    /// The element `a[i]`, or `None` if `i >= n`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
-    pub fn get(&mut self, mut i: usize) -> Option<&M::Value> {
-        if self.len() <= i {
-            return None;
-        }
-        i += self.len();
-        self.propagate(i);
-        self.value.get(i)
+    pub fn get(&self, i: usize) -> Option<M::Value> {
+        (i < self.len()).then(|| self.fold(i..=i))
     }
 
-    /// Folds the elements in `range`.
-    ///
-    /// Returns `op(...op(op(a[l], a[l + 1]), a[l + 2])..., a[r - 1])` where `range` is `l..r`,
-    /// or `id()` if `range` is empty.
+    /// The fold `fold[l, r)` of `range = [l, r)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if the start of `range` is greater than the end, or the end is greater than
-    /// `self.len()`.
+    /// Panics if `l > r` or `r > n`.
     pub fn fold(&self, range: impl std::ops::RangeBounds<usize>) -> M::Value {
         let (mut l, mut r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         if l == r {
             return self.value_monoid.id();
         }
@@ -254,23 +239,17 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         x
     }
 
-    /// Returns an `r` in `[l, n]` at which `pred` switches from `true` to `false`.
+    /// An `r` in `[l, n]` at which `pred(fold[l, r))` turns from `true` to `false`.
     ///
     /// # Definition
-    /// Returns some `r` in `[l, n]` such that
-    /// - `pred(fold(l..r))` is `true`
-    /// - `r = n` or `pred(fold(l..r + 1))` is `false`
-    ///
-    /// If `pred(fold(l..r))` is monotone in `r` (one `false`, it stays `false`), this is the
-    /// maximum `r` such that `pred(fold(l..r))` is `true`.
+    /// `pred(fold[l, r))` is `true`, and `r = n` or `pred(fold[l, r + 1))` is `false`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `l > self.len()`.
-    /// Panics if `pred(id())` is `false`.
+    /// Panics if `l > n` or `pred(id())` is `false`.
     pub fn max_right(&mut self, l: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
         let n = self.len();
         assert!(l <= n, "index out of bounds: l={l}, len={n}");
@@ -306,23 +285,18 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         n
     }
 
-    /// Returns an `l` in `[0, r]` at which `pred` switches from `true` to `false`.
+    /// An `l` in `[0, r]` at which `pred(fold[l, r))` turns from `true` to `false` as `l`
+    /// decreases.
     ///
     /// # Definition
-    /// Returns some `l` in `[0, r]` such that
-    /// - `pred(fold(l..r))` is `true`
-    /// - `l = 0` or `pred(fold(l - 1..r))` is `false`
-    ///
-    /// If `pred(fold(l..r))` is monotone in `l` (once `false` as `l` decreases, it stays `false`),
-    /// this is the minimum `l` such that `pred(fold(l..r))` is `true`.
+    /// `pred(fold[l, r))` is `true`, and `l = 0` or `pred(fold[l - 1, r))` is `false`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `r > self.len()`.
-    /// Panics if `pred(id())` is `false`.
+    /// Panics if `r > n` or `pred(id())` is `false`.
     pub fn min_left(&mut self, r: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
         let n = self.len();
         assert!(r <= n, "index out of bounds: r={r}, len={n}");
@@ -358,7 +332,7 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         0
     }
 
-    /// Returns the number of elements.
+    /// The length of `n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -367,7 +341,7 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.map.len()
     }
 
-    /// Returns `true` if the lazy segment tree contains no elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -376,16 +350,23 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         self.len() == 0
     }
 
-    /// Pushes the maps on the path from the root to the leaf `i` down to their children,
-    /// so that every node on the path except the leaf holds `id()` afterwards.
+    /// Pushes the maps on the path from the root to the node `i` down to their children, so that
+    /// the proper ancestors of `i` hold `id()`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
     fn propagate(&mut self, i: usize) {
         for t in (1..usize::BITS - i.leading_zeros()).rev() {
             self.push(i >> t);
         }
     }
 
-    /// Pushes the map of the internal node `k` down to its two children, so that `k` holds `id()`
-    /// afterwards.
+    /// Pushes the map of the internal node `k` down to its two children, so that `k` holds `id()`.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
     fn push(&mut self, k: usize) {
         let id = self.map_monoid.id();
         let f = std::mem::replace(&mut self.map[k], id);
@@ -399,7 +380,14 @@ impl<M: Monoid, N: Monoid, F: Action<M::Value, N::Value>> LazySegmentTree<M, N, 
         }
     }
 
-    /// Recomputes the values of the ancestors of the leaf `i` from their children.
+    /// Recomputes the values of the proper ancestors of the node `i` from their children.
+    ///
+    /// # Contract
+    /// The proper ancestors of `i` hold `id()` in `map`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
     fn pull(&mut self, mut i: usize) {
         while 1 < i {
             i >>= 1;

@@ -1,14 +1,15 @@
 use crate::algebra::Monoid;
 use crate::range::to_half_open;
 
-/// A segment tree data structure.
+/// A sequence `a` of a monoid, with point updates and the folds of its intervals.
+///
+/// # Definition
+/// `n` is the length of `a`. `fold[l, r) = a[l] a[l + 1] ... a[r - 1]`, the product under `op` in
+/// this order, which is `id()` for `l = r`.
 ///
 /// # Invariants
-/// The elements are stored in the internal array `value` as a 1-indexed binary tree in `value[1..2n)`; `value[0]` is unused.
-/// - `value[n + i] = a[i]` for all `i` in `[0, n)` (leaves)
-/// - `value[i] = op(value[2i], value[2i + 1])` for all `i` in `[1, n)` (internal nodes)
-///
-/// where `a` denotes the logical sequence of elements.
+/// - `value[n + i] = a[i]` for `i` in `[0, n)`, and `value[i] = op(value[2i], value[2i + 1])` for
+///   `i` in `[1, n)`. `value[0]` is unused.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -18,7 +19,7 @@ pub struct SegmentTree<M: Monoid> {
 }
 
 impl<M: Monoid> SegmentTree<M> {
-    /// Constructs a segment tree with `n` elements, all initialized to `id()`.
+    /// The sequence of `n` copies of `id()`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -30,7 +31,7 @@ impl<M: Monoid> SegmentTree<M> {
         }
     }
 
-    /// Constructs a segment tree from a vector `v` of elements.
+    /// The segment tree of the sequence `v`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -47,14 +48,14 @@ impl<M: Monoid> SegmentTree<M> {
         }
     }
 
-    /// Sets the element at index `i` to `x`.
+    /// Sets `a[i]` to `x`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn set(&mut self, mut i: usize, x: M::Value) {
         assert!(
             i < self.len(),
@@ -71,14 +72,14 @@ impl<M: Monoid> SegmentTree<M> {
         }
     }
 
-    /// Sets the element at index `i` to `op(a[i], x)`, where `a[i]` is the current element.
+    /// Sets `a[i]` to `op(a[i], x)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn op_assign(&mut self, i: usize, x: &M::Value) {
         assert!(
             i < self.len(),
@@ -88,7 +89,7 @@ impl<M: Monoid> SegmentTree<M> {
         self.set(i, self.monoid.op(self.get(i).unwrap(), x));
     }
 
-    /// Returns a reference to the element at index `i`, or `None` if `i` is out of bounds.
+    /// The element `a[i]`, or `None` if `i >= n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -97,25 +98,16 @@ impl<M: Monoid> SegmentTree<M> {
         self.value.get(self.len().checked_add(i)?)
     }
 
-    /// Folds the elements in `range`.
-    ///
-    /// Returns `op(...op(op(a[l], a[l + 1]), a[l + 2])..., a[r - 1])` where `range` is `l..r`,
-    /// or `id()` if `range` is empty.
+    /// The fold `fold[l, r)` of `range = [l, r)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if the start of `range` is greater than the end, or the end is greater
-    /// than `self.len()`.
+    /// Panics if `l > r` or `r > n`.
     pub fn fold(&self, range: impl std::ops::RangeBounds<usize>) -> M::Value {
         let (mut l, mut r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         l += self.len();
         r += self.len();
         if l == r {
@@ -143,23 +135,17 @@ impl<M: Monoid> SegmentTree<M> {
         self.monoid.op(&left, &right)
     }
 
-    /// Returns an `r` in `[l, n]` at which `pred` switches from `true` to `false`.
+    /// An `r` in `[l, n]` at which `pred(fold[l, r))` turns from `true` to `false`.
     ///
     /// # Definition
-    /// Returns some `r` in `[l, n]` such that
-    /// - `pred(fold(l..r))` is `true`
-    /// - `r = n` or `pred(fold(l..r + 1))` is `false`
-    ///
-    /// If `pred(fold(l..r))` is monotone in `r` (once `false`, it stays `false`), this is the
-    /// maximum `r` such that `pred(fold(l..r))` is `true`.
+    /// `pred(fold[l, r))` is `true`, and `r = n` or `pred(fold[l, r + 1))` is `false`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `l > self.len()`.
-    /// Panics if `pred(id())` is false.
+    /// Panics if `l > n` or `pred(id())` is `false`.
     pub fn max_right(&self, l: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
         let n = self.len();
         assert!(l <= n, "index out of bounds: l={l}, len={n}");
@@ -189,23 +175,18 @@ impl<M: Monoid> SegmentTree<M> {
         n
     }
 
-    /// Returns an `l` in `[0, r]` at which `pred` switches from `true` to `false`.
+    /// An `l` in `[0, r]` at which `pred(fold[l, r))` turns from `true` to `false` as `l`
+    /// decreases.
     ///
     /// # Definition
-    /// Returns some `l` in `[0, r]` such that
-    /// - `pred(fold(l..r))` is `true`
-    /// - `l = 0` or `pred(fold(l - 1..r))` is `false`.
-    ///
-    /// If `pred(fold(l..r))` is monotone in `l` (once `false` as `l` decreases, it stays `false`),
-    /// this is the minimum `l` such that `pred(fold(l..r))` is `true`.
+    /// `pred(fold[l, r))` is `true`, and `l = 0` or `pred(fold[l - 1, r))` is `false`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `r > self.len()`.
-    /// Panics if `pred(id())` is `false`.
+    /// Panics if `r > n` or `pred(id())` is `false`.
     pub fn min_left(&self, r: usize, mut pred: impl FnMut(&M::Value) -> bool) -> usize {
         let n = self.len();
         assert!(r <= n, "index out of bounds: r={r}, len={n}");
@@ -235,7 +216,7 @@ impl<M: Monoid> SegmentTree<M> {
         0
     }
 
-    /// Returns the number of elements.
+    /// The length `n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -244,7 +225,7 @@ impl<M: Monoid> SegmentTree<M> {
         self.value.len() >> 1
     }
 
-    /// Returns `true` if the segment tree contains no elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -256,10 +237,8 @@ impl<M: Monoid> SegmentTree<M> {
 
 impl<M: Monoid> std::ops::Index<usize> for SegmentTree<M> {
     type Output = M::Value;
-    /// Returns a reference to the element at index `i`.
-    ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     fn index(&self, i: usize) -> &M::Value {
         &self.value[self.len() + i]
     }

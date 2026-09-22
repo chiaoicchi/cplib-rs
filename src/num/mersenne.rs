@@ -1,18 +1,17 @@
-use crate::algebra::{Inv, One, Zero};
-use crate::num::prime::is_prime;
+use crate::algebra::canonical::Canonical;
+use crate::algebra::{Commutative, Inv, One, Zero};
+use crate::arithmetic::prime::is_mersenne_exponent;
 
-/// An element of the prime field `Z/(2^K - 1)Z` for a Mersenne prime `2^K - 1`.
+/// An element of the prime field `Z/MZ` for a Mersenne prime `M = 2^K - 1`, whose products are
+/// reduced without division.
 ///
 /// # Definition
-/// `Z/(2^K - 1)Z` is the quotient ring of the integers modulo the Mersenne number `2^K - 1`,
-/// with addition and multiplication induced from `Z`. When `2^K - 1` is prime it is a field,
-/// and `2^K = 1 (mod 2^K - 1)` lets a product `x < 2^(2K)` be reduced without division, as
-/// `x = a 2^K + b = a + b (mod 2^K - 1)`.
+/// `(Z/MZ, 0, 1, +, *)` is the prime field of order `M`. Identifying `[0, M)` with the residues,
+/// the operations are `(a + b) % M` and `(a * b) % M`. `M` is prime and `K <= 63`, that is `K` is
+/// one of `2, 3, 5, 7, 13, 17, 19, 31, 61`; any other `K` is rejected at compile time.
 ///
 /// # Invariants
-/// - `2^K - 1` is prime and `K <= 63`, so that the product of two residues fits in `u128`.
-///   A `K` violating this is rejected at compile time.
-/// - An element is represented by its canonical residue in `[0, 2^K - 1)`.
+/// - `self.0` is in `[0, M)`.
 ///
 /// # Complexity
 /// - Space: O(1)
@@ -20,33 +19,32 @@ use crate::num::prime::is_prime;
 pub struct Mersenne<const K: u32>(u64);
 
 impl<const K: u32> Mersenne<K> {
-    /// The modulus `2^K - 1`, checked at compile time to be prime with `K <= 63`.
+    /// The modulus `M`, rejected at compile time unless it is prime and `K <= 63`.
     const MODULUS: u64 = {
         assert!(K <= 63, "K must be at most 63");
-        assert!(is_mersenne_prime(K), "2^K - 1 must be prime");
+        assert!(is_mersenne_exponent(K), "2^K - 1 must be prime");
         (1 << K) - 1
     };
 
-    /// Creates an element in Mersenne from a value `n` reduced modulo `2^K-1`.
+    /// The residue class of `n`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     pub fn new(n: u64) -> Self {
-        Self(Self::reduce(n as u128))
+        Self(n % Self::MODULUS)
     }
 
-    /// Reduces `x < 2^{2K}` modulo `2^K - 1`, using `2^K = 1 (mod 2^K - 1)`:
-    /// `x = a 2^K + b = a + b (mod 2^K - 1)`.
+    /// The residue of `x` modulo `M`, in `[0, M)`.
+    ///
+    /// # Contract
+    /// `x <= (M - 1)^2`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     fn reduce(x: u128) -> u64 {
-        let m = Self::MODULUS as u128;
-        let y = (x >> K) + (x & m);
-        let y = (y >> K) + (y & m);
-        let y = y as u64;
+        let y = (x >> K) as u64 + (x as u64 & Self::MODULUS);
         if y >= Self::MODULUS {
             y - Self::MODULUS
         } else {
@@ -54,16 +52,19 @@ impl<const K: u32> Mersenne<K> {
         }
     }
 
-    /// Returns the inner value in `[0, 2^K - 1)`.
+    /// The residue of `self` in `[0, M)`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
-    pub fn value(self) -> u64 {
+    pub fn val(self) -> u64 {
         self.0
     }
 
-    /// Raises `self` to the power of `exp`.
+    /// The power `self^exp`.
+    ///
+    /// # Definition
+    /// `self^0 = 1` and `self^e = self^{e-1} self` for `e >= 1`.
     ///
     /// # Complexity
     /// - Time: O(log exp)
@@ -80,8 +81,7 @@ impl<const K: u32> Mersenne<K> {
         x
     }
 
-    /// Returns the multiplicative inverse of `self`,
-    /// i.e. the element `x` with `self * x = x * self = 1`.
+    /// The inverse `self^{-1}`.
     ///
     /// # Complexity
     /// - Time: O(K)
@@ -271,6 +271,8 @@ impl<const K: u32> Inv for Mersenne<K> {
     }
 }
 
+impl<const K: u32> Commutative for Canonical<Mersenne<K>> {}
+
 impl<const K: u32> std::fmt::Debug for Mersenne<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -280,22 +282,4 @@ impl<const K: u32> std::fmt::Display for Mersenne<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
-}
-
-/// Returns `true` if `2^K - 1` is prime.
-const fn is_mersenne_prime(k: u32) -> bool {
-    if k == 2 {
-        return true;
-    }
-    if k < 2 || !is_prime(k) {
-        return false;
-    }
-    let m = (1u128 << k) - 1;
-    let mut s = 4;
-    let mut i = 0;
-    while i < k - 2 {
-        s = (s * s + m - 2) % m;
-        i += 1;
-    }
-    s == 0
 }

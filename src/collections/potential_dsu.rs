@@ -1,24 +1,19 @@
 use crate::algebra::Group;
 
-/// A potential disjoint set union data structure.
+/// A partition of `[0, n)` into disjoint sets with potentials in a group, with unions of its sets
+/// by constraints on the potentials.
 ///
 /// # Definition
-/// A potential on a set `S` is a map `φ: S -> G`.
-/// The potential to `y` from `x` is `op(inv(φ(x)), φ(y))`; it is unchanged when `φ` is replaced by
-/// `g.φ` for any `g` in `G`, so a potential is determined only up to left translation.
-/// This structure maintains, on each set of the partition, a potential determined up to left
-/// translation by the constraints given to [`unite`](Self::unite).
+/// `S(x)` is the set containing `x`. A potential on a set `S` is a map `φ: S -> G`, and the
+/// potential to `y` from `x` is `op(inv(φ(x)), φ(y))`. Each set carries a potential determined, up
+/// to [`unite`](Self::unite).
 ///
 /// # Invariants
-/// The sets form a partition of `{0, 1, ..., n - 1}`, represented by a rooted forest
-/// on `{0, 1, ..., n - 1}` stored in the internal array `value`, as in
-/// [`Dsu`](crate::collections::dsu::Dsu).
-/// - If `value[i] < 0`, then `i` is a root and `-value[i]` is the size of its set.
-/// - If `value[i] >= 0`, then `value[i]` is the parent of `i`, and `potential[i]` is the potential
-///   to `i` from `value[i]`.
-///
-/// Hence the potential to `i` from the root of its tree is the product of `potential` along the
-/// path from the root to `i`, with the root side on the left.
+/// - `value` is a rooted forest on `[0, n)` whose trees are the sets: `value[i]` is the parent of
+///   `i` if `value[i] >= 0`, and otherwise `i` is a root and `-value[i]` is the size of its tree.
+/// - `potential[i]` is the potential to `i` from its parent if `i` is not a root, and unused
+///   otherwise.
+/// - `count` is the number of sets.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -30,14 +25,14 @@ pub struct PotentialDsu<G: Group> {
 }
 
 impl<G: Group> PotentialDsu<G> {
-    /// Constructs a potential disjoint set union with `n` elements, each in its own set.
+    /// The partition of `[0, n)` into singletons.
     ///
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
     ///
     /// # Panics
-    /// Panics if `n` is greater than or equal to `2^31`.
+    /// Panics if `n >= 2^31`.
     pub fn new(group: G, n: usize) -> Self {
         assert!(n < 1 << 31, "n must be less than 2^31: n={n}");
         Self {
@@ -48,14 +43,15 @@ impl<G: Group> PotentialDsu<G> {
         }
     }
 
-    /// Returns the representative `r` of the set containing `x` and the potential to `x` from `r`.
+    /// The representative `r` of `S(x)`, as in [`Dsu::root`](crate::collections::dsu::Dsu::root),
+    /// and the potential to `x` from `r`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n)), where `α` is the inverse Ackermann function
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
+    /// Panics if `x >= n`.
     pub fn root(&mut self, mut x: usize) -> (usize, G::Value) {
         assert!(
             x < self.len(),
@@ -75,18 +71,19 @@ impl<G: Group> PotentialDsu<G> {
         (x, p)
     }
 
-    /// Imposes the constraint that the potential to `y` from `x` is `p`.
+    /// Imposes that the potential to `y` from `x` is `p`, and returns whether this is consistent
+    /// with the constraints so far.
     ///
-    /// If `x` and `y` are in different sets, unites them and returns `true`.
-    /// Otherwise leaves the partition unchanged and returns whether the constraint is consistent
-    /// with the existing ones, i.e. whether `potential(x, y) == Some(p)`.
+    /// # Definition
+    /// If `S(x) != S(y)`, unites the two sets and returns `true`. Otherwise changes nothing and
+    /// returns whether the potential to `y` from `x` is `p`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` or `y` is out of bounds.
+    /// Panics if `x >= n` or `y >= n`.
     pub fn unite(&mut self, x: usize, y: usize, p: &G::Value) -> bool
     where
         G::Value: PartialEq,
@@ -110,14 +107,14 @@ impl<G: Group> PotentialDsu<G> {
         true
     }
 
-    /// Returns the potential to `y` from `x`, or `None` if they are in different sets.
+    /// The potential to `y` from `x`, or `None` if `S(x) != S(y)`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` or `y` is out of bounds.
+    /// Panics if `x >= n` or `y >= n`.
     pub fn potential(&mut self, x: usize, y: usize) -> Option<G::Value> {
         let (rx, potx) = self.root(x);
         let (ry, poty) = self.root(y);
@@ -128,19 +125,19 @@ impl<G: Group> PotentialDsu<G> {
         }
     }
 
-    /// Returns the size of the set containing `x`.
+    /// The size `|S(x)|`.
     ///
     /// # Complexity
     /// - Time: amortized O(α(n))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `x` is out of bounds.
+    /// Panics if `x >= n`.
     pub fn set_size(&mut self, x: usize) -> usize {
         -self.value[self.root(x).0] as usize
     }
 
-    /// Returns the number of disjoint sets.
+    /// The number of sets.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -149,7 +146,7 @@ impl<G: Group> PotentialDsu<G> {
         self.count
     }
 
-    /// Returns the number of elements.
+    /// The number `n` of elements.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -158,7 +155,7 @@ impl<G: Group> PotentialDsu<G> {
         self.value.len()
     }
 
-    /// Returns `true` if the potential disjoint set union contains no elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)

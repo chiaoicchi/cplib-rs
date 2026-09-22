@@ -1,21 +1,18 @@
 use crate::algebra::{Action, Monoid};
 use crate::range::to_half_open;
 
-/// A dual segment tree data structure.
+/// A sequence `a` of `T`, with the action of a monoid applied on its intervals.
+///
+/// # Definition
+/// `n` is the length of `a`. Applying `f` to `a[i]` replaces it by `act(f, a[i])`.
 ///
 /// # Contract
-/// `act` must be an action of the monoid `(M::Value, id, op)` on `T`, i.e.
-/// `act(id(), x) == x` and `act(op(f, g), x) == act(g, act(f, x))` for all `f`, `g`, `x`.
+/// `act` is an action of the monoid on `T`: `act(id(), x) = x` and
+/// `act(op(f, g), x) = act(g, act(f, x))` for all `f`, `g` and `x`.
 ///
 /// # Invariants
-/// The maps are stored in the internal array `map` as a 1-indexed binary tree in `map[1..2n)`;
-/// `map[0]` is unused. The element `a[i]` is stored as `value[i]` together with the maps on the
-/// path from the leaf `n + i` up to the root, which have not been applied to it yet.
-/// - `a[i] = act(map[1], ..., act(map[(n + i) / 2], act(map[n + i], value[i])) ...)`,
-///   i.e. the maps are applied from the leaf to the root.
-/// - The map at a node is newer than the maps at its descendants.
-///
-/// where `a` denotes the logical sequence of elements.
+/// - `a[i] = act(map[p_d], ... act(map[p_1], act(map[p_0], value[i])) ...)`, where `p_0 = n + i`,
+///   `p_{t+1} = p_t / 2` and `p_d = 1`. `map[0]` is unused.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -27,7 +24,7 @@ pub struct DualSegmentTree<T, M: Monoid, F: Action<T, M::Value>> {
 }
 
 impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
-    /// Constructs a dual segment tree from a vector `v` of elements.
+    /// The dual segment tree of the sequence `v`.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -42,14 +39,14 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         }
     }
 
-    /// Sets the element at index `i` to `act(f, a[i])`, where `a[i]` is the current element.
+    /// Applies `f` to `a[i]`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `i` is out of bounds.
+    /// Panics if `i >= n`.
     pub fn apply(&mut self, i: usize, f: &M::Value) {
         assert!(
             i < self.len(),
@@ -59,22 +56,16 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         self.range_apply(i..=i, f);
     }
 
-    /// Applies the map `f` to the elements in `range`.
+    /// Applies `f` to `a[i]` for every `i` in `range = [l, r)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if the start of `range` is greater than the end, or the end is greater than
-    /// `self.len()`.
+    /// Panics if `l > r` or `r > n`.
     pub fn range_apply(&mut self, range: impl std::ops::RangeBounds<usize>, f: &M::Value) {
         let (mut l, mut r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         l += self.len();
         r += self.len();
         if l == r {
@@ -103,7 +94,7 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         }
     }
 
-    /// Returns the number of elements.
+    /// The length `n`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -112,7 +103,7 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         self.value.len()
     }
 
-    /// Returns `true` if the dual segment tree contains no elements.
+    /// Whether `n = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -121,8 +112,8 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
         self.len() == 0
     }
 
-    /// Pushes the maps on the path from the root to the leaf `i` down to their children,
-    /// so that every node on the path except the leaf holds `id()` afterwards.
+    /// Pushes the maps on the path from the root to the node `i` down to their children, so that
+    /// the nodes on the path other than `i` hold `id()`.
     fn propagate(&mut self, i: usize) {
         for t in (1..usize::BITS - i.leading_zeros()).rev() {
             let k = i >> t;
@@ -135,7 +126,7 @@ impl<T, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
 }
 
 impl<T: Clone, M: Monoid, F: Action<T, M::Value>> DualSegmentTree<T, M, F> {
-    /// Returns the element at index `i`, or `None` if `i` is out of bounds.
+    /// The element `a[i]`, or `None` if `i >= n`.
     ///
     /// # Complexity
     /// - Time: O(log n)

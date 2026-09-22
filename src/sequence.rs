@@ -1,9 +1,9 @@
 pub mod border_array;
-pub mod manacher;
 pub mod num_subsequences;
 pub mod occurrence;
+pub mod palindrome_radii;
 pub mod permutation;
 pub mod rolling_hash;
 pub mod subsequence_automaton;
 pub mod suffix_array;
-pub mod z_algorithm;
+pub mod z_array;

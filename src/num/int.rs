@@ -1,6 +1,7 @@
-use crate::algebra::{Bounded, One, Zero};
+use crate::algebra::canonical::Canonical;
+use crate::algebra::{Bounded, Commutative, One, Zero};
 
-macro_rules! impl_zero_one {
+macro_rules! impl_int {
     ($($t:ty),* $(,)?) => {$(
         impl Zero for $t {
             fn zero() -> Self {
@@ -12,9 +13,18 @@ macro_rules! impl_zero_one {
                 1
             }
         }
+        impl Bounded for $t {
+            fn min_value() -> Self {
+                <$t>::MIN
+            }
+            fn max_value() -> Self {
+                <$t>::MAX
+            }
+        }
+        impl Commutative for Canonical<$t> {}
     )*};
 }
-impl_zero_one!(
+impl_int!(
     i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize
 );
 
@@ -28,23 +38,6 @@ impl<T: One> One for std::num::Wrapping<T> {
         Self(T::one())
     }
 }
-
-macro_rules! impl_bounded {
-    ($($t:ty),* $(,)?) => {$(
-        impl Bounded for $t {
-            fn min_value() -> Self {
-                <$t>::MIN
-            }
-            fn max_value() -> Self {
-                <$t>::MAX
-            }
-        }
-    )*};
-}
-impl_bounded!(
-    i8, i16, i32, i64, i128, isize, u8, u16, u32, u64, u128, usize
-);
-
 impl<T: Bounded> Bounded for std::num::Wrapping<T> {
     fn min_value() -> Self {
         Self(T::min_value())
@@ -53,3 +46,4 @@ impl<T: Bounded> Bounded for std::num::Wrapping<T> {
         Self(T::max_value())
     }
 }
+impl<T> Commutative for Canonical<std::num::Wrapping<T>> {}

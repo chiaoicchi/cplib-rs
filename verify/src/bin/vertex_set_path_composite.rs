@@ -1,10 +1,9 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::affine::Affine;
-use cplib::algebra::canonical::Canonical;
+use cplib::algebra::canonical::{Affine, Canonical};
 use cplib::algebra::{Monoid, Semigroup};
 use cplib::collections::segment_tree::SegmentTree;
-use cplib::collections::tree::{Segment, Tree};
+use cplib::graph::tree::{Segment, Tree};
 use cplib::num::fp::{Fp, fp};
 
 const P: u32 = 998_244_353;

@@ -4,28 +4,24 @@ use crate::graph::max_flow::MaxFlow;
 /// Minimization of a submodular quadratic function of binary variables, by a minimum cut.
 ///
 /// # Definition
-/// For variables `x_0, ..., x_{n-1}` in `{0, 1}`, the function is a sum of terms of two kinds:
-/// a unary term `f_i(x_i)` given by its two values, and a binary term `f_{ij}(x_i, x_j)` given by
-/// its four values, which must be submodular: `f(0, 0) + f(1, 1) <= f(0, 1) + f(1, 0)`. `solve`
-/// returns the minimum of the sum and a minimizer.
+/// The function of `x_0, ..., x_{n-1}` in `{0, 1}` is a sum of unary terms `f_i(x_i)`, given by
+/// their two values, and binary terms `f_{ij}(x_i, x_j)`, given by their four values, which are
+/// submodular: `f(0, 0) + f(1, 1) <= f(0, 1) + f(1, 0)`. `k` is the number of terms.
 ///
-/// Every such function is a constant plus a sum of non-negative terms of the forms `[x_i = 1] c`,
-/// `[x_i = 0] c`, and `[x_i = 0, x_j = 1] c`, which are the capacities of the edges `s -> i`,
-/// `i -> t`, and `i -> j` of a cut problem; the minimum is the constant plus the minimum cut, and
-/// `x_i = 1` exactly when `i` lies on the sink side.
+/// `T::max_value()` is `+∞`, and forbids the assignments at which it is taken. A unary term may be
+/// `+∞` at opne of its values, and a binary term at `f(0, 1)` or `f(0, 1)`.
 ///
-/// `T::max_value()` denotes `+∞` and forbids an assignment. A unary term may be infinite at one of
-/// its values, and a binary term at `f(0, 1)` or `f(1, 0)`. The minimum is `+∞` if no assignment is
-/// feasible. Finite costs must have a sum that does not overflow `T`.
-///
-/// To maximize, negate every cost.
+/// # Contract
+/// `4 Σ |v| < T::max_value()`, the sum over the finite values `v` of the terms.
 ///
 /// # Invariants
-/// - `base` is the accumulated constant, possibly `+∞`.
-/// - `edges` holds `(u, v, c)` with `c > 0`, where `u`, `v` are variables or `s = n`, `t = n + 1`.
+/// - The function is `base` plus the value of the cut: the sum of `c` over the `(u, v, c)` in
+///   `edges` with `u` on the source side and `v` on the sink side, where `s = n` is on the source
+///   side, `t = n + 1` on the sink side, and `i` on the sink side iff `x_i = 1`.
+/// - `c > 0` for every `(u, v, c)` in `edges`.
 ///
 /// # Complexity
-/// - Space: O(n + k), where `k` is the number of terms added
+/// - Space: O(n + k)
 pub struct BinaryOptimization<T> {
     n: usize,
     base: T,
@@ -35,7 +31,7 @@ pub struct BinaryOptimization<T> {
 impl<T: Copy + Ord + Zero + Bounded + std::ops::Add<Output = T> + std::ops::Sub<Output = T>>
     BinaryOptimization<T>
 {
-    /// Constructs the zero function of `n` variables.
+    /// The zero function of `n` variables.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -48,14 +44,14 @@ impl<T: Copy + Ord + Zero + Bounded + std::ops::Add<Output = T> + std::ops::Sub<
         }
     }
 
-    /// Adds the unary term with value `x0` at `x_i = 0` and `x1` at `x_i = 1`.
+    /// Adds the unary term of `x_i` with the value `x0` at `0` and `x1` and `1`.
     ///
     /// # Complexity
-    /// - Time: O(1) amortized
-    /// - Space: O(1)
+    /// - Time: amortized O(1)
+    /// - Space: amortized O(1)
     ///
     /// # Panics
-    /// Panics if `i >= n` or both values are `+∞`.
+    /// Panics if `i >= n` or `x0 = x1 = T::max_value()`.
     pub fn add_unary(&mut self, i: usize, x0: T, x1: T) {
         assert!(i < self.n, "index out of bounds: i={i}, n={}", self.n);
         assert!(
@@ -71,15 +67,15 @@ impl<T: Copy + Ord + Zero + Bounded + std::ops::Add<Output = T> + std::ops::Sub<
         }
     }
 
-    /// Adds the binary term with value `x_ab` at `(x_i, x_j) = (a, b)`.
+    /// Adds the binary term of `(x_i, x_j)` with the value `x_ab` at `(a, b)`.
     ///
     /// # Complexity
-    /// - Time: O(1) amortized
-    /// - Space: O(1)
+    /// - Time: amortized O(1)
+    /// - Space: amortized O(1)
     ///
     /// # Panics
-    /// Panics if `i >= n`, `j >= n`, `i == j`, `x00` or `x11` is `+∞`, or the term
-    /// is not submodular.
+    /// Panics if `i >= n`, `j >= n`, `i == j`, `x00` or `x11` is `T::max_value()`, or
+    /// `x00 + x11 > x01 + x10`.
     pub fn add_binary(&mut self, i: usize, j: usize, x00: T, x01: T, x10: T, x11: T) {
         assert!(i < self.n, "index out of bounds: i={i}, n={}", self.n);
         assert!(j < self.n, "index out of bounds: j={j}, n={}", self.n);
@@ -102,7 +98,7 @@ impl<T: Copy + Ord + Zero + Bounded + std::ops::Add<Output = T> + std::ops::Sub<
         }
     }
 
-    /// Returns the minimum value and a minimizer.
+    /// The minimum of the function, and a minimizer, with `true` for `x_i = 1`.
     ///
     /// # Complexity
     /// - Time: O(n^2 k)
@@ -121,6 +117,11 @@ impl<T: Copy + Ord + Zero + Bounded + std::ops::Add<Output = T> + std::ops::Sub<
         )
     }
 
+    /// Adds the edge `u -> v` of capacity `c` if `c > 0`.
+    ///
+    /// # Complexity
+    /// - Time: amortized O(1)
+    /// - Space: amortized O(1)
     fn add_edge(&mut self, u: usize, v: usize, c: T) {
         if c > T::zero() {
             self.edges.push((u, v, c));

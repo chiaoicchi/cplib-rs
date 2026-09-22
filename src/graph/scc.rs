@@ -1,32 +1,30 @@
 /// The strongly connected components of a directed graph, in topological order.
 ///
 /// # Definition
-/// Two vertices `u`, `v` of a directed graph `G` on `[0, n)` are strongly connected if each is
-/// reachable from the other. This is an equivalence relation, and its classes are the strongly
-/// connected components. Contracting each component to a vertex gives the condensation of `G`,
-/// which is a directed acyclic graph. Components are numbered `0, ..., c - 1` in a topological
-/// order of the condensation: if there is an edge from `u` to `v` then
+/// `G` is the directed graph on `[0, n)` with an edge `u -> v` for each `v` in `adjacency[u]`, and
+/// `m` is its number of edges. `u` and `v` are strongly connected if each is reachable from the
+/// other, and the classes of this equivalence relation are the components; `c` is their number.
+/// Contracting each component to a vertex gives the condensation of `G`. The components are
+/// numbered `0, ..., c - 1` in a topological order of the condensation: for every edge `u -> v`,
 /// `component(u) <= component(v)`.
 ///
-/// # Contract
-/// `adjacency[u]` is the list of `v` for the edges `u -> v` of `G`, with `v < n`.
-///
 /// # Invariants
-/// - `component[v] < c` for all `v`, and every value in `[0, c)` is taken.
-/// - `groups[k]` is the list of vertices `v` with `component[v] == k`, in increasing order.
-/// - For every edge `u -> v`, `component[u] <= component[v]`.
-/// - `condensation[k]` lists distinct `l` with `l > k`.
+/// - `component[v]` is the number of the component of `v`.
+/// - `members[start[k]..start[k + 1]]` is the component `k` in increasing order.
+/// - `condensation[k]` is the `l != k` with an edge from the component `k` to the component `l`,
+///   without duplicates.
 ///
 /// # Complexity
 /// - Space: O(n + m)
 pub struct Scc {
     component: Box<[usize]>,
-    groups: Box<[Vec<usize>]>,
+    start: Box<[usize]>,
+    members: Box<[usize]>,
     condensation: Box<[Vec<usize>]>,
 }
 
 impl Scc {
-    /// Constructs the strongly connected components of `adjacency`.
+    /// The strongly connected components of `G`.
     ///
     /// # Complexity
     /// - Time: O(n + m)
@@ -87,14 +85,23 @@ impl Scc {
         for c in &mut component {
             *c = count - 1 - *c;
         }
-        let mut groups = vec![Vec::new(); count];
+        let mut start = vec![0; count + 1];
+        for &k in &component {
+            start[k + 1] += 1;
+        }
+        for k in 0..count {
+            start[k + 1] += start[k];
+        }
+        let mut members = vec![0; n];
+        let mut next = start.clone();
         for v in 0..n {
-            groups[component[v]].push(v);
+            members[next[component[v]]] = v;
+            next[component[v]] += 1;
         }
         let mut condensation = vec![Vec::new(); count];
         let mut mark = vec![!0; count];
-        for (k, group) in groups.iter().enumerate() {
-            for &u in group {
+        for k in 0..count {
+            for &u in &members[start[k]..start[k + 1]] {
                 for &v in &adjacency[u] {
                     let l = component[v];
                     if l != k && mark[l] != k {
@@ -106,12 +113,13 @@ impl Scc {
         }
         Self {
             component: component.into(),
-            groups: groups.into(),
+            start: start.into(),
+            members: members.into(),
             condensation: condensation.into(),
         }
     }
 
-    /// Returns the component of `v`.
+    /// The number `component(v)` of the component of `v`.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -128,7 +136,7 @@ impl Scc {
         self.component[v]
     }
 
-    /// Returns the vertices of component `k`, in increasing order.
+    /// The component `k`, as its vertices in increasing order.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -138,16 +146,18 @@ impl Scc {
     /// Panics if `k >= c`.
     pub fn group(&self, k: usize) -> &[usize] {
         assert!(
-            k < self.groups.len(),
+            k < self.len(),
             "component out of bounds: k={k}, len={}",
-            self.groups.len()
+            self.len()
         );
-        &self.groups[k]
+        &self.members[self.start[k]..self.start[k + 1]]
     }
 
-    /// Returns the condensation of `adjacency` as a simple directed acyclic graph on `[0, c)`:
-    /// `dag[k]` lists the `l` such that some edge goes from component `k` to component `l`,
-    /// without duplicates, in the order first encountered Self-loops are omitted.
+    /// The condensation of `G`, as a simple directed acyclic graph on `[0, c)`.
+    ///
+    /// # Definition
+    /// The `k`-th list has the `l != k` with an edge from the component `k` to the component `l`,
+    /// without duplicates, in an unspecified order.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -156,16 +166,16 @@ impl Scc {
         &self.condensation
     }
 
-    /// Returns `c`, the number of components.
+    /// The number `c` of components.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     pub fn len(&self) -> usize {
-        self.groups.len()
+        self.start.len() - 1
     }
 
-    /// Returns `true` if the graph has no vertices.
+    /// Whether `n = 0`, that is `c = 0`.
     ///
     /// # Complexity
     /// - Time: O(1)
