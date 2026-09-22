@@ -28,7 +28,7 @@ pub fn iota_geometric_series<R: Field>(ring: &R, ys: &[R::Value], r: &R::Value) 
 
     let mut k = ring.zero();
     let mut fact = ring.one();
-    for _ in 1..=m {
+    for _ in 1..m {
         k = ring.add(&k, &one);
         fact = ring.mul(&fact, &k);
     }
@@ -127,7 +127,7 @@ pub fn iota_geometric_sum<R: Field<Value: PartialEq>>(
         if m_image == zero {
             let q = n / m as u64;
             let mut q_image = ring.zero();
-            for i in (0..u64::BITS - m.leading_zeros()).rev() {
+            for i in (0..u64::BITS - q.leading_zeros()).rev() {
                 q_image = ring.add(&q_image, &q_image);
                 if q >> i & 1 == 1 {
                     q_image = ring.add(&q_image, &one);
