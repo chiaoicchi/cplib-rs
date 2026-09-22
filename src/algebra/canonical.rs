@@ -4,7 +4,7 @@ use crate::algebra::{
     Action, Commutative, Group, Inv, Monoid, One, Ring, Semigroup, Semiring, SkewField, Zero,
 };
 
-/// The structures of `T` given by its own operators.
+/// The structure of `T` given by its own operators.
 ///
 /// # Definition
 /// `zero()`, `one()`, `add`, `mul`, `neg` and `inv` are `T::zero()`, `T::one()`, `+`, `*`, unary
@@ -102,6 +102,9 @@ impl<R: Ring> Group for Additive<R> {
 impl<R: Semiring> Commutative for Additive<R> {}
 
 /// The monoid of a semiring `R` under its multiplication.
+///
+/// # Definition
+/// `op = mul` and `id() = one()`.
 #[derive(Clone, Copy, Default)]
 pub struct Multiplicative<R>(pub R);
 impl<R: Semiring> Semigroup for Multiplicative<R> {

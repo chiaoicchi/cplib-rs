@@ -54,10 +54,10 @@ impl<T: Clone, F: Fn(&T, &T) -> T, G: Fn(&T) -> T> Group for FnGroup<T, F, G> {
     }
 }
 
-/// An action built from closures.
+/// An action given by closures.
 ///
 /// # Definition
-/// `act(f, x) = (self.act)(f, x)`
+/// `act(f, x) = (self.act)(f, x)`.
 pub struct FnAction<F> {
     pub act: F,
 }

@@ -43,7 +43,7 @@ pub trait Action<T, U> {
 /// - `(Value, zero, add)` is a commutative monoid, and `(Value, one, mul)` is a monoid.
 /// - `mul` distributes over `add`: `mul(add(a, b), c) = add(mul(a, c), mul(b, c))` and
 ///   `mul(a, add(b, c)) = add(mul(a, b), mul(a, c))` for all `a`, `b`, `c`.
-/// - `zero()` is abosorbing: `mul(zero(), a) = mul(a, zero()) = zero()` for all `a`.
+/// - `zero()` is absorbing: `mul(zero(), a) = mul(a, zero()) = zero()` for all `a`.
 pub trait Semiring {
     type Value;
     fn zero(&self) -> Self::Value;
@@ -55,7 +55,7 @@ pub trait Semiring {
 /// A ring on `Value`.
 ///
 /// # Contract
-/// `neg(a)` is the additive inverse of `a`: add(a, neg(a)) = zero()` for all `a`.
+/// `neg(a)` is the additive inverse of `a`: `add(a, neg(a)) = zero()` for all `a`.
 pub trait Ring: Semiring {
     fn neg(&self, a: &Self::Value) -> Self::Value;
 }
@@ -64,7 +64,8 @@ pub trait Ring: Semiring {
 ///
 /// # Contract
 /// `zero() != one()`, and `inv(a)` is the multiplicative inverse of every `a != zero()`:
-/// `mul(a, inv(a)) = one()`. `inv(zero())` is not defined; implementations may panic.
+/// `mul(a, inv(a)) = mul(inv(a), a) = one()`. `inv(zero())` is not defined; implementations
+/// may panic.
 pub trait SkewField: Ring {
     fn inv(&self, a: &Self::Value) -> Self::Value;
 }
@@ -77,7 +78,7 @@ impl<R: SkewField + Commutative> Field for R {}
 ///
 /// # Contract
 /// `root_of_unity(n)` is `Some(ω)` for a primitive `n`-th root of unity `ω` if the field has one,
-/// and`None` otherwise.
+/// and `None` otherwise.
 pub trait RootOfUnity: Field {
     fn root_of_unity(&self, n: usize) -> Option<Self::Value>;
 }

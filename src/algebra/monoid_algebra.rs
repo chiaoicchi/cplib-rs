@@ -15,12 +15,13 @@ pub type Convolve<R> =
     fn(&R, Vec<<R as Semiring>::Value>, Vec<<R as Semiring>::Value>) -> Vec<<R as Semiring>::Value>;
 
 /// The monoid algebra `R[M]` of a monoid `M`, or its quotient `R[M]/R[I]` by the span of an ideal
-/// `I` of `M`, as a samiring.
+/// `I` of `M`, as a semiring.
 ///
 /// # Definition
 /// `R[M]` is the free `R`-module on `M`, with the product `e_x e_y = e_{xy}` extended bilinearly
 /// and the identity `e_id`. The elements of `M`, or of `M \ I`, are indexed by `[0, order)` if
 /// `order` is `Some`, and by `N` if it is `None`. An element `Σ_x f(x) e_x` is stored as a vector
+/// with `f(x)` at index `x`: of length `order` if `order` is `Some`, and of any length with
 /// `f(x) = 0` beyond it, if `order` is `None`.
 pub struct MonoidAlgebra<R, F> {
     ring: R,
@@ -103,7 +104,7 @@ impl<R: Ring> MonoidAlgebra<R, Convolve<R>> {
     /// The arithmetic functions on `[0, n)` under [`lcm_convolve`].
     ///
     /// # Panics
-    /// Panics if `n <= 1`
+    /// Panics if `n <= 1`.
     pub fn lcm(ring: R, n: usize) -> Self {
         Self::new(ring, lcm_convolve, 1, Some(n))
     }
