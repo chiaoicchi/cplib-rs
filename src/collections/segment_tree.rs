@@ -9,7 +9,7 @@ use crate::range::to_half_open;
 ///
 /// # Invariants
 /// - `value[n + i] = a[i]` for `i` in `[0, n)`, and `value[i] = op(value[2i], value[2i + 1])` for
-///   `i` in `[1, n)`. `value[0] is unused.
+///   `i` in `[1, n)`. `value[0]` is unused.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -72,7 +72,7 @@ impl<M: Monoid> SegmentTree<M> {
         }
     }
 
-    /// Sets `a[i]` to op(a[i], x)`.
+    /// Sets `a[i]` to `op(a[i], x)`.
     ///
     /// # Complexity
     /// - Time: O(log n)
@@ -108,11 +108,6 @@ impl<M: Monoid> SegmentTree<M> {
     /// Panics if `l > r` or `r > n`.
     pub fn fold(&self, range: impl std::ops::RangeBounds<usize>) -> M::Value {
         let (mut l, mut r) = to_half_open(self.len(), range);
-        assert!(
-            l <= r,
-            "left bound must be less than or equal to right bound: l={l}, r={r}"
-        );
-        assert!(r <= self.len(), "range out of bounds: range=[{l}, {r})");
         l += self.len();
         r += self.len();
         if l == r {

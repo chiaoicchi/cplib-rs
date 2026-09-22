@@ -32,7 +32,7 @@ pub fn previous_occurrence(s: &[usize], sigma: usize) -> Vec<Option<usize>> {
 /// - Space: O(n + sigma)
 ///
 /// # Panics
-/// Panics if `s_i >= sigma` for some `i`.
+/// Panics if `s[i] >= sigma` for some `i`.
 pub fn next_occurrence(s: &[usize], sigma: usize) -> Vec<Option<usize>> {
     let mut q = vec![None; s.len()];
     let mut last = vec![None; sigma];

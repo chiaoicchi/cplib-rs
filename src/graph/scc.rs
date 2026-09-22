@@ -10,7 +10,7 @@
 ///
 /// # Invariants
 /// - `component[v]` is the number of the component of `v`.
-/// - `members[start[k]..start[k + 1]]` is the component `k` in incrasing order.
+/// - `members[start[k]..start[k + 1]]` is the component `k` in increasing order.
 /// - `condensation[k]` is the `l != k` with an edge from the component `k` to the component `l`,
 ///   without duplicates.
 ///
