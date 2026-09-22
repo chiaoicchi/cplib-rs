@@ -1,17 +1,20 @@
+//! Monotone and Monge matrices.
+//!
+//! For a matrix `A`, `j*(i)` is the least `j` attaining `min_j A[i][j]`. `A` is monotone if `j*` is
+//! non-decreasing. `A` is totally monotone if `A[i][j] > A[i][j']` implies `A[i'][j] > A[i'][j']`,
+//! and Monge if `A[i][j] + A[i'][j'] <= A[i][j'] + A[i'][j]`, both for all `i < i'` and `j < j'` at
+//! which the entries are defined. Monge implies totally monotone, which implies monotone. Unlike
+//! monotonicity, the other two are inherited by submatrices.
+
 use crate::divide_and_conquer::cdq;
 
-/// The row minima of a monotone matrix.
+/// The leftmost minimum of each row of a monotone matrix, as its column.
 ///
 /// # Definition
-/// For an `n x m` matrix `A` given by `f(i, j) = A[i][j]`, returns `j*(i)` for every row `i`,
-/// where `j*(i)` is the least `j` attaining `min_j A[i][j]`. `A` is monotone if `j*` is
-/// non-decreasing in `i`.
+/// For the `n x m` matrix `A[i][j] = f(i, j)`, returns `j*(0), ..., j*(n - 1)`.
 ///
 /// # Contract
-/// `f` is monotone. Total monotonicity suffices: `A[i][j] > A[i][j']` implies
-/// `A[i'][j] > A[i'][j']` for `i < i'`, `j < j'`; so does the Monge property
-/// `A[i][j] + A[i'][j'] <= A[i][j'] + A[i'][j]`. Unlike monotonicity, these two are inherited by
-/// submatrices.
+/// `A` is monotone.
 ///
 /// # Complexity
 /// - Time: O(n + m log n)
@@ -57,17 +60,15 @@ pub fn monotone_minima<T: PartialOrd>(
     argmin
 }
 
-/// `dp[0] = zero` and `dp[i] = min_{j < i} (dp[j] + cost(j, i))` for a Monge `cost`.
+/// The shortest distances from `0` in the DAG on `[0, n)` with the edges `j -> i` for `j < i` of a
+/// Monge cost.
 ///
 /// # Definition
-/// The matrix `A[i][j] = dp[j] + cost(j, i)`, `j < i` is Monge whenever `cost` is, since the
-/// column term `dp[j]` cancels in the quadrangle inequality; hence it is totally monotone, and so
-/// is every submatrix.
+/// `dp[0] = zero` and `dp[i] = min_{j<i} (dp[j] + cost(j, i))` for `1 <= i < n`. Returns
+/// `dp[0], ..., dp[n - 1]`, which is empty for `n = 0`.
 ///
 /// # Contract
-/// `cost` is Monge: `cost(j, i) + cost(j', i') <= cost(j, i') + cost(j', i)` for
-/// `j < j' < i < i'`. Total monotonicity of `cost` alone does not suffice, as the column term
-/// `dp[j]` need not preserve it.
+/// The matrix `C[i][j] = cost(j, i)`, defined for `j < i`, is Monge.
 ///
 /// # Complexity
 /// - Time: O(n log^2 n)
