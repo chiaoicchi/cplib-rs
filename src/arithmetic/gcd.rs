@@ -31,6 +31,7 @@ pub fn gcd<T: Clone + PartialEq + Zero + std::ops::Rem<Output = T>>(a: T, b: T) 
 /// `%` is the Euclidean remainder on `T`, and the values are non-negative.
 pub struct Gcd<T>(std::marker::PhantomData<T>);
 impl<T> Gcd<T> {
+    /// The monoid of `T` under [`gcd`].
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }

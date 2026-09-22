@@ -6,6 +6,7 @@ use crate::algebra::{Bounded, Commutative, Idempotent, Monoid, Semigroup};
 /// `op(a, b) = min(a, b)`, and `id()` is `T::max_value()`.
 pub struct Min<T>(std::marker::PhantomData<T>);
 impl<T> Min<T> {
+    /// The monoid of `T` under `min`.
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }
@@ -42,6 +43,7 @@ impl<T: Clone + Ord> Idempotent for Min<T> {}
 /// `op(a, b) = max(a, b)`, and `id()` is `T::min_value()`.
 pub struct Max<T>(std::marker::PhantomData<T>);
 impl<T> Max<T> {
+    /// The monoid of `T` under `max`.
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }

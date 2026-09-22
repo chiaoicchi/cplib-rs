@@ -7,6 +7,7 @@ use crate::algebra::{Commutative, Idempotent, Monoid, Ring, Semigroup, Semiring,
 /// `w`-fold direct product of `({0, 1}, 0, |)`: `op(a, b) = a | b`, and `id()` is `0`.
 pub struct Or<T>(std::marker::PhantomData<T>);
 impl<T> Or<T> {
+    /// The monoid of `T` under the bitwise or.
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }

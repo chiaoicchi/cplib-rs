@@ -40,6 +40,7 @@ pub fn lcm<
 /// `%` is the Euclidean remainder on `T`, the values are non-negative, and every `lcm` fits in `T`.
 pub struct Lcm<T>(std::marker::PhantomData<T>);
 impl<T> Lcm<T> {
+    /// The monoid of `T` under [`lcm`].
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }

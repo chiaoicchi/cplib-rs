@@ -7,6 +7,7 @@ use crate::algebra::{Commutative, Field, Group, Monoid, Ring, Semigroup, Zero};
 /// `w`-fold direct product of `F_2 = ({0, 1}, 0, +)`: `op(a, b) = a ^ b`, and `id()` is `0`.
 pub struct Xor<T>(std::marker::PhantomData<T>);
 impl<T> Xor<T> {
+    /// The monoid of `T` under the bitwise xor.
     pub const fn new() -> Self {
         Self(std::marker::PhantomData)
     }
