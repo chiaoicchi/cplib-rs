@@ -1,9 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::algebra::canonical::Canonical;
 use cplib::algebra::closures::FnGroup;
 use cplib::collections::potential_dsu::PotentialDsu;
-use cplib::linear::matrix::Matrix;
 use cplib::num::fp::{Fp, fp};
 const P: u32 = 998_244_353;
 
@@ -29,14 +27,16 @@ fn main() {
 
     let mut potential_dsu = PotentialDsu::new(
         FnGroup {
-            id: Matrix::one(),
-            op: |a: &Matrix<Canonical<Fp<P>>, 2, 2>,
-                 b: &Matrix<Canonical<Fp<P>>, 2, 2>|
-             -> Matrix<Canonical<Fp<P>>, 2, 2> { a * b },
-            inv: |a: &Matrix<Canonical<Fp<P>>, 2, 2>| -> Matrix<Canonical<Fp<P>>, 2, 2> {
-                let x = [[a[1][1], -a[0][1]], [-a[1][0], a[0][0]]];
-                Matrix::from_array(x)
+            id: [fp!(1), fp!(0), fp!(0), fp!(1)],
+            op: |a: &[Fp<P>; 4], b: &[Fp<P>; 4]| -> [Fp<P>; 4] {
+                [
+                    a[0] * b[0] + a[1] * b[2],
+                    a[0] * b[1] + a[1] * b[3],
+                    a[2] * b[0] + a[3] * b[2],
+                    a[2] * b[1] + a[3] * b[3],
+                ]
             },
+            inv: |a: &[Fp<P>; 4]| -> [Fp<P>; 4] { [a[3], -a[1], -a[2], a[0]] },
         },
         n,
     );
@@ -47,15 +47,17 @@ fn main() {
         let v = parse!(usize);
         if t == 0 {
             let x = [
-                [fp!(parse!(u32)), fp!(parse!(u32))],
-                [fp!(parse!(u32)), fp!(parse!(u32))],
+                fp!(parse!(u32)),
+                fp!(parse!(u32)),
+                fp!(parse!(u32)),
+                fp!(parse!(u32)),
             ];
-            let b = potential_dsu.unite(v, u, &Matrix::from_array(x));
+            let b = potential_dsu.unite(v, u, &x);
             writeln!(stdout, "{}", if b { 1 } else { 0 }).ok();
         } else {
             let p = potential_dsu.potential(v, u);
             if let Some(p) = p {
-                writeln!(stdout, "{} {} {} {}", p[0][0], p[0][1], p[1][0], p[1][1]).ok();
+                writeln!(stdout, "{} {} {} {}", p[0], p[1], p[2], p[3]).ok();
             } else {
                 writeln!(stdout, "-1").ok();
             }
