@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::linear::DynMatrix;
+use cplib::linear::matrix_mul;
 use cplib::num::fp::Fp;
 
 const P: u32 = 998_244_353;
@@ -26,20 +26,13 @@ fn main() {
     let n = parse!(usize);
     let m = parse!(usize);
     let k = parse!(usize);
-    let a: Vec<Vec<Fp<P>>> = (0..n)
-        .map(|_| (0..m).map(|_| Fp::new(parse!(u32))).collect())
-        .collect();
-    let b: Vec<Vec<Fp<P>>> = (0..m)
-        .map(|_| (0..k).map(|_| Fp::new(parse!(u32))).collect())
-        .collect();
+    let a: Vec<Fp<P>> = (0..n * m).map(|_| Fp::new(parse!(u32))).collect();
+    let b: Vec<Fp<P>> = (0..m * k).map(|_| Fp::new(parse!(u32))).collect();
 
-    let mat_a = DynMatrix::from_vec(Canonical::new(), a);
-    let mat_b = DynMatrix::from_vec(Canonical::new(), b);
-
-    let ans = mat_a * mat_b;
-    for vi in ans.iter() {
-        for vij in vi.iter() {
-            write!(stdout, "{vij} ").ok();
+    let ans = matrix_mul(&Canonical::new(), n, m, k, &a, &b);
+    for row in ans.chunks(k) {
+        for x in row {
+            write!(stdout, "{x} ").ok();
         }
         writeln!(stdout).ok();
     }
