@@ -1,7 +1,7 @@
 use crate::algebra::{Field, Ring, RootOfUnity, Semiring};
-use crate::arithmetic_function::dirichlet::dirichlet_convolve;
-use crate::arithmetic_function::divisor::lcm_convolve;
-use crate::arithmetic_function::multiple::gcd_convolve;
+use crate::arithmetic::dirichlet::dirichlet_convolve;
+use crate::arithmetic::gcd::gcd_convolve;
+use crate::arithmetic::lcm::lcm_convolve;
 use crate::bitwise::and::and_convolve;
 use crate::bitwise::or::or_convolve;
 use crate::bitwise::xor::xor_convolve;

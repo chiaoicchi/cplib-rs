@@ -2,8 +2,6 @@ pub mod additive;
 pub mod affine;
 pub mod canonical;
 pub mod closures;
-pub mod gcd;
-pub mod lcm;
 pub mod max;
 pub mod min;
 pub mod monoid_algebra;

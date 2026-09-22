@@ -1,15 +1,12 @@
-/// The least prime factor of every integer in `[0, n]`, by the linear sieve.
+/// The least prime factors of the integers in `[0, n]`.
 ///
 /// # Definition
-/// For `m >= 2`, `lpf(m)` is the least prime dividing `m`; it exists by unique factorization, and
-/// `lpf(m) = m` exactly when `m` is prime. Dividing `lpf(m)` out repeatedly strictly decreases
-/// `m`, so the table determines the factorization of every `m` in `[1, n]` in `Ω(m)` divisions,
-/// where `Ω(m)` is the number of prime factors of `m` with multiplicity and `ω(m)` the number of
-/// distinct ones.
+/// For `m >= 2`, `lpf(m)` is the least prime dividing `m`. In the complexities below, `Ω(m)` and
+/// `ω(m)` are the numbers of prime factors of `m` with and without multiplicity, and `d(m)` is the
+/// number of divisors of `m`.
 ///
 /// # Invariants
-/// - `value[m]` is the least prime dividing `m` for `2 <= m <= n`; `value[0] = 0` and
-///   `value[1] = 1`, neither of which is a prime factor.
+/// - `value[m] = lpf(m)` for `2 <= m <= n`, `value[0] = 0` and `value[1] = 1` if `n >= 1`.
 ///
 /// # Complexity
 /// - Space: O(n)
@@ -18,18 +15,18 @@ pub struct Lpf {
 }
 
 impl Lpf {
-    /// Constructs the table for `[0, n]`.
+    /// The least prime factors of the integers in `[0, n]`.
     ///
     /// # Complexity
     /// - Time: O(n)
     /// - Space: O(n)
     ///
     /// # Panics
-    /// Panics if `n` is greater than or equal to `2^32`.
+    /// Panics if `n >= 2^32`.
     pub fn new(n: usize) -> Self {
         assert!(n < 1 << 32, "n must be less than 2^32: n={n}");
         let mut value = vec![0; n + 1];
-        if n > 1 {
+        if n > 0 {
             value[1] = 1;
         }
         let mut ps = Vec::new();
@@ -50,7 +47,7 @@ impl Lpf {
         }
     }
 
-    /// The largest `m` the table answers for.
+    /// The bound `n` of the table.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -77,17 +74,17 @@ impl Lpf {
         self.value[m] as usize
     }
 
-    /// Returns `true` if `m` is prime.
+    /// Whether `m` is prime.
     ///
     /// # Definition
-    /// `m` is prime iff `lpf(m) = m`; `0` and `1` are not prime.
+    /// `m` is prime if `m >= 2` and its only positive divisors are `1` and `m`.
     ///
     /// # Complexity
     /// - Time: O(1)
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m > bound()`.
+    /// Panics if `m > n`.
     pub fn is_prime(&self, m: usize) -> bool {
         assert!(
             m <= self.bound(),
@@ -97,20 +94,18 @@ impl Lpf {
         m >= 2 && self.value[m] as usize == m
     }
 
-    /// The prime factorization of `m`, in increasing order of the prime.
+    /// The prime factorization of `m`, as an iterator.
     ///
     /// # Definition
-    /// Yields the pairs `(p, e)` with `p` prime, `e >= 1` and `m = Π p^e`, in increasing order of
-    /// `p`; `m = 1` yields nothing. The primes come out in order because dividing out the least
-    /// prime factor leaves a cofactor all of whose prime factors are at least as large. No pair is
-    /// stored, so an iteration allocates nothing.
+    /// The pairs `(p, e)` with `p` prime, `e >= 1` and `m = Π p^e`, in increasing order of `p`. For
+    /// `m = 1` it is empty.
     ///
     /// # Complexity
-    /// - Time: O(Ω(m)) in total, O(1) amortized per item
+    /// - Time: O(Ω(m)) in total
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn prime_factors(&self, mut m: usize) -> impl Iterator<Item = (usize, u32)> + '_ {
         assert!(m > 0, "m must be greater than 0: m={m}");
         assert!(
@@ -132,43 +127,44 @@ impl Lpf {
         })
     }
 
-    /// The prime factorization of `m`, collected.
+    /// The prime factorization of `m`, as a vector.
     ///
     /// # Definition
-    /// See [`Lpf::prime_factors`].
+    /// The pairs of [`Lpf::prime_factors`], in the same order.
     ///
     /// # Complexity
     /// - Time: O(Ω(m))
     /// - Space: O(ω(m))
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn factorize(&self, m: usize) -> Vec<(usize, u32)> {
         self.prime_factors(m).collect()
     }
 
-    /// The primes in `[2, bound()]` in increasing order.
+    /// The primes in `[2, n]` in increasing order.
+    ///
+    /// # Definition
+    /// The `p` in `[2, n]` whose only positive divisors are `1` and `p`.
     ///
     /// # Complexity
-    /// - Time: O(n)
+    /// - Time: O(n) in total
     /// - Space: O(1)
     pub fn primes(&self) -> impl Iterator<Item = usize> + '_ {
         (2..=self.bound()).filter(|i| self.value[*i] == *i as u32)
     }
 
-    /// The divisors of `m`, in no particular order.
+    /// The divisors of `m`.
     ///
     /// # Definition
-    /// A divisor of `m = Π p^e` is `Π p^f` with `0 <= f <= e`, so the divisors are obtained by
-    /// multiplying the list by each `p^f` in turn; there are `d(m) = Π (e + 1)` of them. They come
-    /// out in the order that construction produces, which is not increasing.
+    /// Every positive divisor of `m` exactly once, in an unspecified order.
     ///
     /// # Complexity
     /// - Time: O(Ω(m) + d(m))
     /// - Space: O(d(m))
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn divisors(&self, m: usize) -> Vec<usize> {
         let mut ds = vec![1];
         for (p, e) in self.prime_factors(m) {
@@ -184,18 +180,17 @@ impl Lpf {
         ds
     }
 
-    /// Returns `true` if `m` is squarefree.
+    /// Whether `m` is squarefree.
     ///
     /// # Definition
-    /// `m` is squarefree if no `p^2` divides it, that is if every exponent of its factorization is
-    /// `1`; equivalently `m = radical(m)`, equivalently `μ(m) != 0`. `1` is squarefree.
+    /// `m` is squarefree if `p^2` divides `m` for no prime `p`. `1` is squarefree.
     ///
     /// # Complexity
     /// - Time: O(Ω(m))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn is_squarefree(&self, m: usize) -> bool {
         self.prime_factors(m).all(|x| x.1 == 1)
     }
@@ -203,21 +198,19 @@ impl Lpf {
     /// The radical of `m`.
     ///
     /// # Definition
-    /// `rad(m) = Π_{p | m} p`, the product of the distinct primes dividing `m`; `rad(1) = 1`. It is
-    /// the largest squarefree divisor of `m`, and `rad(a) = rad(b)` iff `a` and `b` have the same
-    /// prime divisors.
+    /// `rad(m) = Π_{p | m} p`, the product of the distinct primes dividing `m`. `rad(1) = 1`.
     ///
     /// # Complexity
     /// - Time: O(Ω(m))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn radical(&self, m: usize) -> usize {
         self.prime_factors(m).map(|(p, _)| p).product()
     }
 
-    /// The number of distinct primes dividing `m`.
+    /// The number `ω(m)` of distinct primes dividing `m`.
     ///
     /// # Definition
     /// `ω(m)`, the number of pairs of the factorization; `ω(1) = 0`.
@@ -227,23 +220,22 @@ impl Lpf {
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn omega(&self, m: usize) -> u32 {
         self.prime_factors(m).count() as u32
     }
 
-    /// The number of primes dividing `m` with multiplicity.
+    /// The number `Ω(m)` of primes dividing `m`, counted with multiplicity.
     ///
     /// # Definition
-    /// `Ω(m) = Σ e` over the factorization; `Ω(1) = 0`. It is the length of a maximal chain of
-    /// proper divisors of `m`, and `(-1)^Ω` is the Liouville function.
+    /// `Ω(m) = Σ e` for `m = Π p^e`. `Ω(1) = 0`.
     ///
     /// # Complexity
     /// - Time: O(Ω(m))
     /// - Space: O(1)
     ///
     /// # Panics
-    /// Panics if `m = 0` or `m > bound()`.
+    /// Panics if `m = 0` or `m > n`.
     pub fn big_omega(&self, m: usize) -> u32 {
         self.prime_factors(m).map(|(_, e)| e).sum()
     }

@@ -5,7 +5,7 @@
 
 pub mod elementary;
 
-use crate::algebra::Ring;
+use crate::algebra::{Ring, Semiring};
 use crate::bitwise::or::{subset_mobius, subset_zeta};
 
 /// The product of `f` and `g` as set power series, the subset convolution.
@@ -58,7 +58,7 @@ pub fn sps_convolve<R: Ring>(ring: &R, f: Vec<R::Value>, g: Vec<R::Value>) -> Ve
 ///
 /// # Panics
 /// Panics if `f.len()` is not a power of two.
-pub fn ranked_subset_zeta<R: Ring>(ring: &R, f: Vec<R::Value>) -> Vec<Vec<R::Value>> {
+pub fn ranked_subset_zeta<R: Semiring>(ring: &R, f: Vec<R::Value>) -> Vec<Vec<R::Value>> {
     assert!(
         f.len().is_power_of_two(),
         "length must be a power of two: len={}",

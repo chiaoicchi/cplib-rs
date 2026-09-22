@@ -1,4 +1,7 @@
-/// Returns `true` if `n` is prime.
+/// Whether `n` is prime.
+///
+/// # Definition
+/// `n` is prime if `n >= 2` and its only positive divisors are `1` and `n`.
 ///
 /// # Complexity
 /// - Time: O(√n)
@@ -20,33 +23,41 @@ pub const fn is_prime(n: u32) -> bool {
     }
 }
 
-/// The primes up to `n` by the sieve of Eratosthenes.
+/// The primes in `[2, n]`, in increasing order.
+///
+/// # Definition
+/// The `p` in `[2, n]` whose only positive divisors are `1` and `p`.
 ///
 /// # Complexity
 /// - Time: O(n log log n)
 /// - Space: O(n)
 pub fn primes(n: usize) -> Vec<usize> {
-    let mut is_prime = vec![true; n + 1];
-    let mut ps = Vec::new();
-    for p in 2..=n {
-        if !is_prime[p] {
+    if n < 2 {
+        return Vec::new();
+    }
+    let half = (n - 1) >> 1;
+    let mut composite = vec![true; half + 1];
+    let mut ps = vec![2];
+    for i in 1..=half {
+        if !composite[i] {
             continue;
         }
+        let p = (i << 1) + 1;
         ps.push(p);
-        let mut m = p * p;
-        while m <= n {
-            is_prime[m] = false;
-            m += p;
+        let mut j = (p * p - 1) >> 1;
+        while j <= half {
+            composite[j] = true;
+            j += p;
         }
     }
     ps
 }
 
-/// The prime factorization of `n` by trial division.
+/// The prime factorization of `n`.
 ///
 /// # Definition
-/// Returns the pairs `(p, e)` with `p` prime, `e >= 1` and `n = Π p^e`, in increasing order
-/// of `p`. By unique factorization this representation is unique; `n = 1` gives the empty product.
+/// The pairs `(p, e)` with `p` prime, `e >= 1` and `n = Π p^e`, in increasing order of `p`. For
+/// `n = 1` it is empty.
 ///
 /// # Complexity
 /// - Time: O(√n)

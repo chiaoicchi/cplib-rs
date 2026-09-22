@@ -1,5 +1,5 @@
 use crate::algebra::{Inv, One, Zero};
-use crate::num::prime::is_prime;
+use crate::arithmetic::prime::is_prime;
 
 /// An element of the prime field `Z/(2^K - 1)Z` for a Mersenne prime `2^K - 1`.
 ///

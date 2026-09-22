@@ -3,9 +3,9 @@ use crate::algebra::Semiring;
 /// The Dirichlet convolution of `f` and `g`.
 ///
 /// # Definition
-/// `(fg)(d) = Σ_{xy=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with
-/// `xy = 0` or `xy >= n`: the product of the monoid algebra `R[(N, x)/I]`, where `I = {0} ∪ [n, ∞)`
-/// is an ideal of `(N, x)` and `0` its class.
+/// `(fg)(d) = Σ_{xy=d} f(x) g(y)` for `1 <= d < n`, and `(fg)(0)` collects the terms with `xy = 0`
+/// or `xy >= n`: the product of the monoid algebra `R[(N, *)/I]`, where `I = {0} ∪ [n, ∞)` is an
+/// ideal of `(N, *)` and `0` its class.
 ///
 /// # Complexity
 /// - Time: O(n log n)

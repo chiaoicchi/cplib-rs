@@ -1,7 +1,7 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
 use cplib::algebra::canonical::Canonical;
-use cplib::arithmetic_function::divisor::lcm_convolve;
+use cplib::arithmetic::lcm::lcm_convolve;
 use cplib::num::fp::{Fp, fp};
 
 const P: u32 = 998_244_353;

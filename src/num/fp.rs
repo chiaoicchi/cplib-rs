@@ -1,6 +1,6 @@
 use crate::algebra::canonical::Canonical;
 use crate::algebra::{Inv, One, RootOfUnity, Zero};
-use crate::num::prime::is_prime;
+use crate::arithmetic::prime::is_prime;
 
 /// An element of the prime field `Fp = Z/pZ`.
 ///
