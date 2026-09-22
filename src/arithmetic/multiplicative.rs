@@ -26,7 +26,7 @@ pub fn multiplicative<M: Monoid, P>(
         .fold(monoid.id(), |acc, (p, e)| monoid.op(&acc, &f(p, *e)))
 }
 
-/// The table of `g` on `[1, n]`.
+/// The table of `g` on `[0, n]`.
 ///
 /// # Definition
 /// `table[m] = g(m)` for `1 <= m <= n`, so `table[1] = id()`. `table[0] = id()`.
@@ -34,6 +34,9 @@ pub fn multiplicative<M: Monoid, P>(
 /// # Complexity
 /// - Time: O(n)
 /// - Space: O(n)
+///
+/// # Panics
+/// Panics if `n >= 2^32`.
 pub fn multiplicative_table<M: Monoid + Commutative>(
     monoid: &M,
     n: usize,
