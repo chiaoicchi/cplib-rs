@@ -1,4 +1,5 @@
-use crate::algebra::{Bounded, One, Zero};
+use crate::algebra::canonical::Canonical;
+use crate::algebra::{Bounded, Commutative, One, Zero};
 
 macro_rules! impl_zero_one {
     ($($t:ty),* $(,)?) => {$(
@@ -12,6 +13,7 @@ macro_rules! impl_zero_one {
                 1
             }
         }
+        impl Commutative for Canonical<$t> {}
     )*};
 }
 impl_zero_one!(

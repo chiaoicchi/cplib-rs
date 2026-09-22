@@ -1,5 +1,5 @@
 use crate::algebra::canonical::Canonical;
-use crate::algebra::{Inv, One, RootOfUnity, Zero};
+use crate::algebra::{Commutative, Inv, One, RootOfUnity, Zero};
 use crate::arithmetic::prime::is_prime;
 
 /// An element of the prime field `Fp = Z/pZ`.
@@ -295,6 +295,7 @@ impl<const P: u32> Inv for Fp<P> {
         Self::inv(*self)
     }
 }
+impl<const P: u32> Commutative for Canonical<Fp<P>> {}
 impl<const P: u32> RootOfUnity for Canonical<Fp<P>> {
     /// # Definition
     /// `(Z/pZ)^*` is cyclic of order `p - 1`, so a primitive `n`-th root of unity exists iff

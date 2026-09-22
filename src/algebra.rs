@@ -1,61 +1,49 @@
-pub mod additive;
-pub mod affine;
 pub mod canonical;
 pub mod closures;
-pub mod max;
-pub mod min;
+pub mod min_max;
 pub mod monoid_algebra;
-pub mod multiplicative;
 pub mod power;
 
-/// A semigroup trait
+/// A semigroup on `Value`.
 ///
-/// # Definition
-/// A tuple `(Value, op)` is called a semigroup if it satisfies:
-/// - (associativity) `op(op(a, b), c) = op(a, op(b, c))` for all `a`, `b`, `c`.
+/// # Contract
+/// `op` is associative: `op(op(a, b), c) = op(a, op(b, c))` for all `a`, `b`, `c`.
 pub trait Semigroup {
     type Value;
     fn op(&self, a: &Self::Value, b: &Self::Value) -> Self::Value;
 }
 
-/// A monoid trait
+/// A monoid on `Value`.
 ///
-/// # Definition
-/// A triple `(Value, id, op)` is called a monoid if it satisfies:
-/// - (associativity) `op(op(a, b), c) = op(a, op(b, c))` for all `a`, `b`, `c`.
-/// - (identity) `op(id(), a) = op(a, id()) = a` for all `a`.
+/// # Contract
+/// `id()` is the identity: `op(id(), a) = op(a, id()) = a` for all `a`.
 pub trait Monoid: Semigroup {
     fn id(&self) -> Self::Value;
 }
 
-/// A group trait
+/// A group on `Value`.
 ///
-/// # Definition
-/// A 4-tuple `(Value, id, op, inv)` is called a group if it satisfies:
-/// - (monoid) `(Value, id, op)` forms a monoid.
-/// - (inverse) `op(a, inv(a)) = op(inv(a), a) = id()` for all `a`.
+/// # Contract
+/// `inv(a)` is the inverse of `a`: `op(a, inv(a)) = op(inv(a), a) = id()` for all `a`.
 pub trait Group: Monoid {
     fn inv(&self, a: &Self::Value) -> Self::Value;
 }
 
-/// An action trait
+/// A map `act: U x T -> T`, applying the operator `f` in `U` to `x` in `T`.
 ///
-/// # Definition
-/// A map `act: U x T -> T` is called an external law of composition on `T`,
-/// where the elements of `U` are called operators.
+/// # Contract
+/// None here. The structures that use an action state the laws they require.
 pub trait Action<T, U> {
     fn act(&self, f: &U, x: &T) -> T;
 }
 
-/// A semiring trait
+/// A semiring on `Value`.
 ///
-/// # Definition
-/// A 5-tuple `(Value, zero, one, add, mul)` is called a semiring if it satisfies:
-/// - (additive monoid) `(Value, zero, add)` forms a commutative monoid.
-/// - (multiplicative monoid) `(Value, one, mul)` forms a monoid.
-/// - (distributivity) `mul(add(a, b), c) = add(mul(a, c), mul(b, c))` and
+/// # Contract
+/// - `(Value, zero, add)` is a commutative monoid, and `(Value, one, mul)` is a monoid.
+/// - `mul` distributes over `add`: `mul(add(a, b), c) = add(mul(a, c), mul(b, c))` and
 ///   `mul(a, add(b, c)) = add(mul(a, b), mul(a, c))` for all `a`, `b`, `c`.
-/// - (annihilation) `mul(zero(), a) = mul(a, zero()) = zero()` for all `a`.
+/// - `zero()` is abosorbing: `mul(zero(), a) = mul(a, zero()) = zero()` for all `a`.
 pub trait Semiring {
     type Value;
     fn zero(&self) -> Self::Value;
@@ -64,52 +52,47 @@ pub trait Semiring {
     fn mul(&self, a: &Self::Value, b: &Self::Value) -> Self::Value;
 }
 
-/// A ring trait
+/// A ring on `Value`.
 ///
-/// # Definition
-/// A 6-tuple `(Value, zero, one, add, neg, mul)` is called a ring if it satisfies:
-/// - (additive group) `(Value, zero, add, neg)` forms a commutative group.
-/// - (multiplicative monoid) `(Value, one, mul)` forms a monoid.
-/// - (distributivity) `mul(add(a, b), c) = add(mul(a, c), mul(b, c))` and
-///   `mul(a, add(b, c)) = add(mul(a, b), mul(a, c))` for all `a`, `b`, `c`.
+/// # Contract
+/// `neg(a)` is the additive inverse of `a`: add(a, neg(a)) = zero()` for all `a`.
 pub trait Ring: Semiring {
     fn neg(&self, a: &Self::Value) -> Self::Value;
 }
 
-/// A field trait
-///
-/// # Definition
-/// A 7-tuple `(Value, zero, one, add, neg, mul, inv)` is called a field if it satisfies:
-/// - (additive group) `(Value, zero, add, neg)` forms a commutative group.
-/// - (multiplicative group) `(Value\{zero}, one, mul, inv)` forms a commutative group.
-/// - (distributivity) `mul(add(a, b), c) = add(mul(a, c), mul(b, c))` and
-///   `mul(a, add(b, c)) = add(mul(a, b), mul(a, c))` for all `a`, `b`, `c`.
+/// A skew field on `Value`.
 ///
 /// # Contract
-/// `inv(zero())` is not defined; implementations may panic.
-pub trait Field: Ring {
+/// `zero() != one()`, and `inv(a)` is the multiplicative inverse of every `a != zero()`:
+/// `mul(a, inv(a)) = one()`. `inv(zero())` is not defined; implementations may panic.
+pub trait SkewField: Ring {
     fn inv(&self, a: &Self::Value) -> Self::Value;
 }
 
-/// A field with a chosen system of roots of unity.
+/// A field on `Value`, a skew field whose `mul` is commutative.
+pub trait Field: SkewField + Commutative {}
+impl<R: SkewField + Commutative> Field for R {}
+
+/// A field with a choice of primitive roots of unity.
 ///
 /// # Contract
-/// `root_of_unity(n)` is `Some(w)` iff the field contains a primitive `n`-th root of unity, and
-/// then `w` has order exactly `n`.
+/// `root_of_unity(n)` is `Some(ω)` for a primitive `n`-th root of unity `ω` if the field has one,
+/// and`None` otherwise.
 pub trait RootOfUnity: Field {
     fn root_of_unity(&self, n: usize) -> Option<Self::Value>;
 }
 
-/// A marker trait for commutative operations.
+/// A marker for commutativity.
 ///
-/// # Definition
-/// An operation `op` is called commutative if `op(a, b) = op(b, a)` for all `a`, `b`.
+/// # Contract
+/// For a semigroup, `op(a, b) = op(b, a)` for all `a`, `b`. For a semiring, whose `add` is always
+/// commutative, `mul(a, b) = mul(b, a)` for all `a`, `b`.
 pub trait Commutative {}
 
-/// A marker trait for idempotent operations.
+/// A marker for idempotency.
 ///
-/// # Definition
-/// An operation `op` is called idempotent if `op(a, a) = a` for all `a`.
+/// # Contract
+/// For a semigroup, `op(a, a) = a` for all `a`.
 pub trait Idempotent {}
 
 /// A type with a distinguished element `zero`.

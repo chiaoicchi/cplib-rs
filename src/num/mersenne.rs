@@ -1,4 +1,5 @@
-use crate::algebra::{Inv, One, Zero};
+use crate::algebra::canonical::Canonical;
+use crate::algebra::{Commutative, Inv, One, Zero};
 use crate::arithmetic::prime::is_prime;
 
 /// An element of the prime field `Z/(2^K - 1)Z` for a Mersenne prime `2^K - 1`.
@@ -270,6 +271,8 @@ impl<const K: u32> Inv for Mersenne<K> {
         Self::inv(*self)
     }
 }
+
+impl<const K: u32> Commutative for Canonical<Mersenne<K>> {}
 
 impl<const K: u32> std::fmt::Debug for Mersenne<K> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
