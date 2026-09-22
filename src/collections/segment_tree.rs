@@ -9,7 +9,7 @@ use crate::range::to_half_open;
 ///
 /// # Invariants
 /// - `value[n + i] = a[i]` for `i` in `[0, n)`, and `value[i] = op(value[2i], value[2i + 1])` for
-/// `i` in `[1, n)`. `value[0] is unused.
+///   `i` in `[1, n)`. `value[0] is unused.
 ///
 /// # Complexity
 /// - Space: O(n)
