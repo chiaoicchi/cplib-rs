@@ -142,7 +142,7 @@ const fn pow_mod(mut base: u64, mut exp: u64, p: u64) -> u64 {
 /// Equivalently, `g` is the least integer in `[1, p)` whose order modulo `p` is `p - 1`.
 ///
 /// # Complexity
-/// - Time: O(√p + g k log p), where `k` is the result and `k` is the number of prime factors of
+/// - Time: O(√p + g k log p), where `k` is the number of prime factors of
 ///   `p - 1`
 /// - Space: O(1)
 ///

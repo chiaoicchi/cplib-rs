@@ -61,7 +61,7 @@ impl<const K: u32> Mersenne<K> {
         self.0
     }
 
-    /// The power of `self^exp`.
+    /// The power `self^exp`.
     ///
     /// # Definition
     /// `self^0 = 1` and `self^e = self^{e-1} self` for `e >= 1`.
