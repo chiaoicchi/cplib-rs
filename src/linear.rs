@@ -1,10 +1,10 @@
 use crate::algebra::{Ring, Semiring};
 
-/// The ring `M_n(R)` of `n x n` matrics over `R`.
+/// The ring `M_n(R)` of `n x n` matrices over `R`.
 ///
 /// # Definition
 /// The `n x n` matrices over `R`, stored as in [`matrix_mul`], with the entrywise addition, the
-/// product of [`matrix_mul`], the zero matrix and the identity matrix `(δ)ij)`.
+/// product of [`matrix_mul`], the zero matrix and the identity matrix `(δ_ij)`.
 ///
 /// # Contract
 /// The values have length `n^2`.
@@ -16,6 +16,18 @@ pub struct Matrix<R> {
     ring: R,
     n: usize,
 }
+impl<R> Matrix<R> {
+    /// The ring of `n x n` matrices over `ring`.
+    pub fn new(ring: R, n: usize) -> Self {
+        Self { ring, n }
+    }
+
+    /// The size `n`.
+    pub fn size(&self) -> usize {
+        self.n
+    }
+}
+
 impl<R: Semiring> Semiring for Matrix<R> {
     type Value = Vec<R::Value>;
     fn zero(&self) -> Self::Value {
