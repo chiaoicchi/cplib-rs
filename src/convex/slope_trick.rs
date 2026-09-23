@@ -5,9 +5,9 @@
 ///
 /// # Invariants
 /// - `n` is the number of breakpoints with multiplicity. `left` holds `l - shift_left` for the
-///   breakpoints `l` at which the slope decreases goint left, and `right` holds `r - shift_right`
+///   breakpoints `l` at which the slope decreases going left, and `right` holds `r - shift_right`
 ///   for the breakpoints `r` at which it increases going right, so that
-///   `f(x) = min + Σ_l max(0, l - x) + Σ_r min(0, x - r)`.
+///   `f(x) = min + Σ_l max(0, l - x) + Σ_r max(0, x - r)`.
 /// - `min` is the minimum of `f`.
 ///
 /// # Complexity
@@ -50,7 +50,7 @@ impl SlopeTrick {
         self.min
     }
 
-    /// The interval of which `f` attains its minimum, with `None` for an unbounded end.
+    /// The interval on which `f` attains its minimum, with `None` for an unbounded end.
     ///
     /// # Complexity
     /// - Time: O(1)
@@ -144,7 +144,7 @@ impl SlopeTrick {
         self.right.clear();
     }
 
-    /// Replaces `f` by `g(x) = max_{y>=x} f(y)`, which is non-decreasing.
+    /// Replaces `f` by `g(x) = min_{y>=x} f(y)`, which is non-decreasing.
     ///
     /// # Complexity
     /// - Time: O(n)
@@ -220,7 +220,7 @@ impl SlopeTrick {
         self.num_left() + self.num_right()
     }
 
-    /// The greatest breakpoint at which the slope decreses going left, or `None` if there is none.
+    /// The greatest breakpoint at which the slope decreases going left, or `None` if there is none.
     ///
     /// # Complexity
     /// - Time: O(1)
