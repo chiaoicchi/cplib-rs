@@ -82,7 +82,7 @@ impl<S: Semigroup<Value: Clone>> FoldableQueue<S> {
         self.front_raw.last().or(self.back_raw.first())
     }
 
-    /// The elements at the back, or `None` if the queue is empty.
+    /// The element at the back, or `None` if the queue is empty.
     ///
     /// # Complexity
     /// - Time: O(1)

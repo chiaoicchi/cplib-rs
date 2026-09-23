@@ -135,7 +135,7 @@ impl<S: Semigroup<Value: Clone>> FoldableDeque<S> {
         self.front_raw.last().or(self.back_raw.first())
     }
 
-    /// The elements at the back, or `None` if the deque is empty.
+    /// The element at the back, or `None` if the deque is empty.
     ///
     /// # Complexity
     /// - Time: O(1)
