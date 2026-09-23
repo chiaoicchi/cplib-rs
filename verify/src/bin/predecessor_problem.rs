@@ -43,11 +43,11 @@ fn main() {
                 writeln!(stdout, "{}", ans as u8).ok();
             }
             3 => {
-                let ans = int_set.min_ge(k).unwrap_or(!0);
+                let ans = int_set.floor(k).unwrap_or(!0);
                 writeln!(stdout, "{}", ans as isize).ok();
             }
             4 => {
-                let ans = int_set.max_le(k).unwrap_or(!0);
+                let ans = int_set.ceil(k).unwrap_or(!0);
                 writeln!(stdout, "{}", ans as isize).ok();
             }
             _ => unreachable!(),

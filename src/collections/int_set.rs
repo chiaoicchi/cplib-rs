@@ -170,7 +170,7 @@ impl IntSet {
     ///
     /// # Panics
     /// Panics if `x > u`.
-    pub fn min_ge(&self, x: usize) -> Option<usize> {
+    pub fn floor(&self, x: usize) -> Option<usize> {
         assert!(x <= self.bound, "out of bounds: x={x}, u={}", self.bound);
         if x == self.bound {
             return None;
@@ -201,7 +201,7 @@ impl IntSet {
     ///
     /// # Panics
     /// Panics if `x >= u`.
-    pub fn max_le(&self, x: usize) -> Option<usize> {
+    pub fn ceil(&self, x: usize) -> Option<usize> {
         assert!(x < self.bound, "out of bounds: x={x}, u={}", self.bound);
         let mut p = x;
         for h in 0..self.level.len() - 1 {
@@ -227,7 +227,7 @@ impl IntSet {
     /// - Time: O(log_64 u)
     /// - Space: O(1)
     pub fn min(&self) -> Option<usize> {
-        (self.bound > 0).then(|| self.min_ge(0)).flatten()
+        (self.bound > 0).then(|| self.floor(0)).flatten()
     }
 
     /// The greatest element of `S`, or `None` if `S` is empty.
@@ -237,7 +237,7 @@ impl IntSet {
     /// - Space: O(1)
     pub fn max(&self) -> Option<usize> {
         (self.bound > 0)
-            .then(|| self.max_le(self.bound - 1))
+            .then(|| self.ceil(self.bound - 1))
             .flatten()
     }
 
@@ -264,7 +264,7 @@ impl IntSet {
                 if start >= r {
                     return None;
                 }
-                let x = self.min_ge(start)?;
+                let x = self.floor(start)?;
                 if x >= r {
                     return None;
                 }
