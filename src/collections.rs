@@ -3,6 +3,7 @@ pub mod compression;
 pub mod dsu;
 pub mod dual_segment_tree;
 pub mod fenwick_tree;
+pub mod foldable_queue;
 pub mod int_set;
 pub mod lazy_segment_tree;
 pub mod potential_dsu;
