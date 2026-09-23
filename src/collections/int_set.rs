@@ -3,12 +3,12 @@ use crate::range::to_half_open;
 /// A subset `S` of `[0, u)`, as a 64-ary tree of bit words.
 ///
 /// # Definition
-/// `u` us the bound of `S`, `n = |S|`.
+/// `u` is the bound of `S`, `n = |S|`.
 ///
 /// # Invariants
-/// - `d` is the least `d >= 1` with `64^d >= u`, and word[level[h]..level[h + 1]]` is the level
+/// - `d` is the least `d >= 1` with `64^d >= u`, and `word[level[h]..level[h + 1]]` is the level
 ///   `h` for `h` in `[0, d)`, of `ceil(u / 64^{h+1})` words.
-/// - Bit `j` of `word[level[0] + i]` is set iff `64i + j` is in `S`, and bit `j` if
+/// - bit `j` of `word[level[0] + i]` is set iff `64i + j` is in `S`, and bit `j` if
 ///   `word[level[h + 1] + i]` is set iff `word[level[h] + 64i + j]` is nonzero.
 /// - `len = n`.
 ///
@@ -22,7 +22,7 @@ pub struct IntSet {
 }
 
 impl IntSet {
-    /// The empty subset of `[0, u)`
+    /// The empty subset of `[0, u)`.
     ///
     /// # Complexity
     /// - Time: O(u / 64)
@@ -278,7 +278,7 @@ impl IntSet {
     /// The elements of `S` in increasing order.
     ///
     /// # Complexity
-    /// - Time: O(k), where `k` is the number of elements in `S`
+    /// - Time: O(log_64 u + k), where `k` is the number of elements in `S`
     /// - Space: O(1)
     pub fn iter(&self) -> impl Iterator<Item = usize> {
         self.range(..)
