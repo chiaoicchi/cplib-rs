@@ -268,7 +268,7 @@ impl IntSet {
                 if x >= r {
                     return None;
                 }
-                base = base & !63;
+                base &= !63;
                 cur = self.word[x >> 6] & !((1 << (x & 63)) - 1);
                 start = base + 64;
             }
