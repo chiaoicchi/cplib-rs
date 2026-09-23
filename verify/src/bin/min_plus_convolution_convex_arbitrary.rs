@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::monge::monotone_minima;
+use cplib::convex::monge::monotone_minima;
 
 fn main() {
     let mut input = Vec::new();
