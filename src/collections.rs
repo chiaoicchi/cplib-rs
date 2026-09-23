@@ -1,3 +1,4 @@
+pub mod binary_trie;
 pub mod compression;
 pub mod dsu;
 pub mod dual_segment_tree;
