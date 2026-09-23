@@ -17,24 +17,18 @@ use crate::algebra::{Group, Monoid, RootOfUnity, Semigroup};
 /// # Contract
 /// `n >= 1`, and the values are in `[0, n)`.
 #[derive(Clone, Copy)]
-pub struct Cyclic {
-    n: usize,
-}
+pub struct Cyclic(pub usize);
 impl Cyclic {
-    /// The additive group `Z/nZ`.
-    pub const fn new(n: usize) -> Self {
-        Self { n }
-    }
     /// The order `n`.
     pub const fn order(&self) -> usize {
-        self.n
+        self.0
     }
 }
 
 impl Semigroup for Cyclic {
     type Value = usize;
     fn op(&self, a: &usize, b: &usize) -> usize {
-        (a + b) % self.n
+        (a + b) % self.0
     }
 }
 impl Monoid for Cyclic {
@@ -44,7 +38,7 @@ impl Monoid for Cyclic {
 }
 impl Group for Cyclic {
     fn inv(&self, a: &Self::Value) -> Self::Value {
-        if *a == 0 { 0 } else { self.n - a }
+        if *a == 0 { 0 } else { self.0 - a }
     }
 }
 
