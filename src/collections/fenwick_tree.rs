@@ -187,7 +187,7 @@ impl<G: Group> FenwickTree<G> {
         r
     }
 
-    /// An `l` in `[0, r]` at which `pred(fold[l, r))` tures from `true` to `false`as `l` decreases.
+    /// An `l` in `[0, r]` at which `pred(fold[l, r))` turns from `true` to `false` as `l` decreases.
     ///
     /// # Definition
     /// `pred(fold[l, r))` is `true`, and `l = 0` or `pred(fold[l - 1, r))` is `false`.
@@ -208,7 +208,7 @@ impl<G: Group> FenwickTree<G> {
         }
         let mut l = 0;
         let mut acc = self.monoid.id();
-        let mut k = (n + 1).next_power_of_two() >> 1;
+        let mut k = (r + 1).next_power_of_two() >> 1;
         while 0 < k {
             if l + k < r {
                 let next = self.monoid.op(&acc, &self.value[l + k]);

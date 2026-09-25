@@ -5,8 +5,9 @@ use crate::algebra::Zero;
 /// A shortest-path forest of a directed graph from a set of sources.
 ///
 /// # Definition
-/// `G` is a directed graph on `[0, n)` with weighted edges and `S` is a set of source, both given
-/// to the constructor. For a vectex `v`, `d(v)` is the minimum total weight of a walk such that `G`
+/// `G` is a directed graph on `[0, n)` with weighted edges and `S` is a set of sources, both given
+/// to the constructor. For a vertex `v`, `d(v)` is the minimum total weight of a walk in `G` from a
+/// vertex of `S` to `v`, and is undefined if no such walk exists. `p(v)` is a vertex such that `G`
 /// has an edge from `p(v)` to `v` of weight `w` with `d(p(v)) + w = d(v)`, and is undefined if
 /// `d(v)` is undefined or if `v` is in `S` and `d(v) = 0`. Following `p` from a vertex `v` with
 /// `d(v)` defined ends at a vertex of `S`. When several choices of `p` exist, which one is taken is
@@ -28,7 +29,7 @@ impl ShortestPathTree<usize> {
     ///
     /// # Definition
     /// `G` has an edge of weight `1` from `v` to each `u` in `edges(v)`, and `S` is the set of
-    /// `source`. `m` is the total member of items of `edges(v)` over all `v`. `edges(v)` is called
+    /// `sources`. `m` is the total nember of items of `edges(v)` over all `v`. `edges(v)` is called
     /// at most once for each `v`.
     ///
     /// # Complexity
@@ -72,7 +73,7 @@ impl ShortestPathTree<usize> {
     /// The shortest-path forest of a graph with weights `0` and `1`, by 0-1 breadth-first search.
     ///
     /// # Definition
-    /// `G` has an edge of weight `w` from `v` to `u` for each `(u, w)` in `edges(v)`, and `S` in
+    /// `G` has an edge of weight `w` from `v` to `u` for each `(u, w)` in `edges(v)`, and `S` is
     /// the set of `sources`. `m` is the total number of items of `edges(v)` over all `v`.
     /// `edges(v)` is called at most once for each `v`.
     ///
@@ -123,7 +124,7 @@ impl ShortestPathTree<usize> {
 }
 
 impl<W: Copy + Ord + std::ops::Add<Output = W> + Zero> ShortestPathTree<W> {
-    /// The shortest-path forest of a graph with non-negative weights, by Dijkstra`s algorithm.
+    /// The shortest-path forest of a graph with non-negative weights, by Dijkstra's algorithm.
     ///
     /// # Definition
     /// `G` has an edge of weight `w` from `v` to `u` for each `(u, w)` in `edges(v)`, and `S` is
@@ -131,7 +132,7 @@ impl<W: Copy + Ord + std::ops::Add<Output = W> + Zero> ShortestPathTree<W> {
     /// `edges(v)` is called at most once for each `v`.
     ///
     /// # Contract
-    /// - `d(v) + w` does not overflow `w` for every edge `(u + w)` in `edges(v)`.
+    /// - `d(v) + w` does not overflow `W` for every edge `(u, w)` in `edges(v)`.
     ///
     /// # Complexity
     /// - Time: O(n + m log m)

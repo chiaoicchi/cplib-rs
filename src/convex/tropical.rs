@@ -69,7 +69,7 @@ impl<T> Idempotent for MinPlus<T> {}
 ///
 /// # Contract
 /// - `a + b` neither overflows nor equals `-∞` for all `a`, `b` other than `-∞` that are
-/// multiplied.
+///   multiplied.
 pub struct MaxPlus<T>(PhantomData<T>);
 impl<T> MaxPlus<T> {
     /// The tropical semiring of `T`.
