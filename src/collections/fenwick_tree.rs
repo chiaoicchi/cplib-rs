@@ -154,6 +154,73 @@ impl<G: Group> FenwickTree<G> {
         self.monoid
             .op(&self.monoid.inv(&self.prefix_fold(l)), &self.prefix_fold(r))
     }
+
+    /// An `r` in `[l, n]` at which `pred(fold[l, r))` turns from `true` to `false`.
+    ///
+    /// # Definition
+    /// `pred(fold[l, r))` is `true`, and `r = n` or `pred(fold[l, r + 1))` is `false`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `l > n` or `pred(id())` is `false`.
+    pub fn max_right(&self, l: usize, mut pred: impl FnMut(&G::Value) -> bool) -> usize {
+        let n = self.len();
+        assert!(l <= n, "index out of bounds: l={l}, n={n}");
+        assert!(pred(&self.monoid.id()), "pred(id()) must be true");
+        let inv = self.monoid.inv(&self.prefix_fold(l));
+        let mut r = 0;
+        let mut acc = self.monoid.id();
+        let mut k = (n + 1).next_power_of_two() >> 1;
+        while 0 < k {
+            if r + k <= n {
+                let next = self.monoid.op(&acc, &self.value[r + k]);
+                if r + k <= l || pred(&self.monoid.op(&inv, &next)) {
+                    acc = next;
+                    r += k;
+                }
+            }
+            k >>= 1;
+        }
+        r
+    }
+
+    /// An `l` in `[0, r]` at which `pred(fold[l, r))` tures from `true` to `false`as `l` decreases.
+    ///
+    /// # Definition
+    /// `pred(fold[l, r))` is `true`, and `l = 0` or `pred(fold[l - 1, r))` is `false`.
+    ///
+    /// # Complexity
+    /// - Time: O(log n)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `r > n` or `pred(id())` is `false`.
+    pub fn min_left(&self, r: usize, mut pred: impl FnMut(&G::Value) -> bool) -> usize {
+        let n = self.len();
+        assert!(r <= n, "index out of bounds: r={r}, len={n}");
+        assert!(pred(&self.monoid.id()), "pred(id()) must be true");
+        let whole = self.prefix_fold(r);
+        if pred(&whole) {
+            return 0;
+        }
+        let mut l = 0;
+        let mut acc = self.monoid.id();
+        let mut k = (n + 1).next_power_of_two() >> 1;
+        while 0 < k {
+            if l + k < r {
+                let next = self.monoid.op(&acc, &self.value[l + k]);
+                if !pred(&self.monoid.op(&self.monoid.inv(&next), &whole)) {
+                    acc = next;
+                    l += k;
+                }
+            }
+            k >>= 1;
+        }
+        l + 1
+    }
 }
 
 impl<G: Group + Commutative> FenwickTree<G> {

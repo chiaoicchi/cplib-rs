@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::convex::tropical::{MinPlus, tropical_convolve_convex_arbitrary};
+use cplib::graph::spanning_tree::minimum_spanning_tree;
 
 fn main() {
     let mut input = Vec::new();
@@ -21,11 +21,17 @@ fn main() {
 
     let n = parse!(usize);
     let m = parse!(usize);
-    let a: Vec<u32> = (0..n).map(|_| parse!(u32)).collect();
-    let b: Vec<u32> = (0..m).map(|_| parse!(u32)).collect();
-    let c = tropical_convolve_convex_arbitrary(&MinPlus::new(), &a, &b);
-    for c in c {
-        write!(stdout, "{c} ").ok();
+    let e: Vec<(usize, usize, u64)> = (0..m)
+        .map(|_| (parse!(usize), parse!(usize), parse!(u64)))
+        .collect();
+
+    let mst = minimum_spanning_tree(n, &e);
+    let ans: u64 = (0..m).map(|i| if mst[i] { e[i].2 } else { 0 }).sum();
+    writeln!(stdout, "{ans}").ok();
+    for (i, b) in mst.iter().enumerate() {
+        if *b {
+            write!(stdout, "{i} ").ok();
+        }
     }
     writeln!(stdout).ok();
 }
