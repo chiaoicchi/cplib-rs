@@ -93,7 +93,7 @@ pub trait Commutative {}
 /// A marker for idempotency.
 ///
 /// # Contract
-/// For a semigroup, `op(a, a) = a` for all `a`.
+/// For a semigroup, `op(a, a) = a` for all `a`. For a semiring, `add(a, a) = a` for all `a`.
 pub trait Idempotent {}
 
 /// A type with a distinguished element `zero`.

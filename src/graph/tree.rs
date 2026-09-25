@@ -201,6 +201,30 @@ impl Tree {
         self.index[v]..self.out[v]
     }
 
+    /// The number of vertices in the subtree of `v`.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `v >= n`.
+    pub fn subtree_size(&self, v: usize) -> usize {
+        self.subtree(v).len()
+    }
+
+    /// Whether `v` is a leaf of `T`, that is, `v` has no children.
+    ///
+    /// # Complexity
+    /// - Time: O(1)
+    /// - Space: O(1)
+    ///
+    /// # Panics
+    /// Panics if `v >= n`.
+    pub fn is_leaf(&self, v: usize) -> bool {
+        self.subtree_size(v) == 1
+    }
+
     /// Whether `u` is an ancestor of `v`, including `u = v`.
     ///
     /// # Complexity

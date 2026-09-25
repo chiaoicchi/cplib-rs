@@ -1,6 +1,9 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::convex::tropical::{MinPlus, tropical_convolve_convex_arbitrary};
+use cplib::graph::short_cycle::for_each_triangle;
+use cplib::num::fp::{Fp, fp};
+
+const P: u32 = 998_244_353;
 
 fn main() {
     let mut input = Vec::new();
@@ -21,11 +24,11 @@ fn main() {
 
     let n = parse!(usize);
     let m = parse!(usize);
-    let a: Vec<u32> = (0..n).map(|_| parse!(u32)).collect();
-    let b: Vec<u32> = (0..m).map(|_| parse!(u32)).collect();
-    let c = tropical_convolve_convex_arbitrary(&MinPlus::new(), &a, &b);
-    for c in c {
-        write!(stdout, "{c} ").ok();
-    }
-    writeln!(stdout).ok();
+    let x: Vec<Fp<P>> = (0..n).map(|_| fp!(parse!(u32), mod P)).collect();
+    let e: Vec<(usize, usize)> = (0..m).map(|_| (parse!(usize), parse!(usize))).collect();
+    let mut ans = fp!(0);
+    for_each_triangle(n, &e, |a: usize, b: usize, c: usize| {
+        ans += x[a] * x[b] * x[c]
+    });
+    writeln!(stdout, "{ans}").ok();
 }

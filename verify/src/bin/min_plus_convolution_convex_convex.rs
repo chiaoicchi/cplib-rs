@@ -1,6 +1,6 @@
 use std::io::{BufWriter, Read, Write, stdin, stdout};
 
-use cplib::convex::tropical::{MinPlus, tropical_convolve_convex_arbitrary};
+use cplib::convex::tropical::{MinPlus, tropical_convolve_convex_convex};
 
 fn main() {
     let mut input = Vec::new();
@@ -23,7 +23,7 @@ fn main() {
     let m = parse!(usize);
     let a: Vec<u32> = (0..n).map(|_| parse!(u32)).collect();
     let b: Vec<u32> = (0..m).map(|_| parse!(u32)).collect();
-    let c = tropical_convolve_convex_arbitrary(&MinPlus::new(), &a, &b);
+    let c = tropical_convolve_convex_convex(&MinPlus::new(), &a, &b);
     for c in c {
         write!(stdout, "{c} ").ok();
     }
