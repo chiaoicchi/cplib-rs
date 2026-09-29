@@ -7,3 +7,4 @@ pub mod shortest_path;
 pub mod spanning_tree;
 pub mod topological_sort;
 pub mod tree;
+pub mod tree_metric;
